@@ -1,7 +1,7 @@
 class go::params (
-    $version = '1.3.3',
-    $package_url = 'https://storage.googleapis.com/golang/go1.3.3.linux-amd64.tar.gz',
-    $package_sha1 = '14068fbe349db34b838853a7878621bbd2b24646',
+    $version = '1.4',
+    $package_url = 'https://storage.googleapis.com/golang/go1.4.linux-amd64.tar.gz',
+    $package_sha1 = 'cd82abcb0734f82f7cf2d576c9528cebdafac4c6',
     $tmp_path = '/tmp',
     $install_root = '/usr/local',
     $gouser = undef,

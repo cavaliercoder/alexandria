@@ -28,7 +28,7 @@ class go (
             cwd     => $tmp_path,
             command => "/usr/bin/curl -sLf --retry 5 -O ${package_url}",
             unless  => "/usr/bin/sha1sum -b ${tmp_path}/go${version}.linux-amd64.tar.gz | /bin/grep ${package_sha1}"
-        } ->
+        } ~>
         exec { 'ExtractGoSources':
             cwd     => $install_root,
             command => "/bin/tar -xzf ${tmp_path}/go${version}.linux-amd64.tar.gz",

@@ -1,3 +1,5 @@
+git::tmp_path:              /vagrant/puppet/staging
+go::tmp_path:               /vagrant/puppet/staging
 go::params::gouser:         vagrant
 go::params::gouser_group:   vagrant
 go::params::gouser_home:    /home/vagrant

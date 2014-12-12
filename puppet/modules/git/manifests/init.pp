@@ -10,18 +10,6 @@ class git (
     # See: http://git-scm.com/book/en/v2/Getting-Started-Installing-Git
     #    
     if $::gitversion != $version {
-        if $::gitinstalled {
-          notify { "Upgrading Git from version ${::gitversion} to ${version}" : 
-            withpath => true,
-            before    => Exec['Install Git']
-          }
-        } else {
-          notify { "Installing Git version ${version}" :
-            withpath  => true,
-            before    => Exec['Install Git']
-          }
-        }
-        
         package { 'git' :
           ensure        => 'purged',
           allow_virtual => false
@@ -51,25 +39,25 @@ class git (
             command => "/usr/bin/curl -sLf --retry 5 -O ${package_url}",
             unless  => "/usr/bin/sha1sum -b ${tmp_path}/git-${version}.tar.gz | /bin/grep ${package_sha1}",
             require => Package[$prereqs]
-        } ->
+        } ~>
         exec { 'Extract Git sources':
             cwd     => $tmp_path,
             command => "/bin/tar -xzf ${tmp_path}/git-${version}.tar.gz",
-            creates => "/tmp/git-${version}/configure",
+            creates => "/${tmp_path}/git-${version}/configure",
             require => Package[$prereqs]
-        } ->
+        } ~>
         exec { 'Configure Git sources':
-            cwd     => "/tmp/git-${version}",
+            cwd     => "/${tmp_path}/git-${version}",
             command => '/usr/bin/make configure && ./configure',
             require => Package[$prereqs]
-        } ->
+        } ~>
         exec { 'Build Git sources' :
-            cwd     => "/tmp/git-${version}",
+            cwd     => "/${tmp_path}/git-${version}",
             command => '/usr/bin/make all',
             require => Package[$prereqs]
-        } ->
+        } ~>
         exec { 'Install Git' :
-            cwd     => "/tmp/git-${version}",
+            cwd     => "/${tmp_path}/git-${version}",
             command => '/usr/bin/make install',
             require => Package[$prereqs]
         }

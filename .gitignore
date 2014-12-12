@@ -3,3 +3,4 @@
 .DS_Store
 gin-bin
 src/cli/cli
+puppet/staging/
