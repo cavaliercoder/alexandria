@@ -1,0 +1,4 @@
+.vagrant/
+*.project
+.DS_Store
+gin-bin

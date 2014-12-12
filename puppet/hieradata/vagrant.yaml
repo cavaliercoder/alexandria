@@ -1,0 +1,4 @@
+go::params::gouser:         vagrant
+go::params::gouser_group:   vagrant
+go::params::gouser_home:    /home/vagrant
+go::params::gopath:         /home/vagrant/gocode
