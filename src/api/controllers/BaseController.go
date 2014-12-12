@@ -19,18 +19,20 @@
 package controllers
 
 import (
-    "github.com/go-martini/martini"
-    "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
     "encoding/json"
     "net/http"
     "log"
+    "alexandria/api/application"
     "alexandria/api/models"
 )
 
+type BaseController interface {
+    Init(app *application.AppContext)      error
+}
+
 type baseController struct {
-    m *martini.ClassicMartini
-    db *mgo.Database
+    app *application.AppContext
 }
 
 func (c baseController) RenderJson(w http.ResponseWriter, v interface{}) {
@@ -53,7 +55,7 @@ func (c baseController) Handle(err error) {
 }
 
 func (c baseController) GetEntities(collection string, w http.ResponseWriter) {    
-    dbcollection := c.db.C(collection)
+    dbcollection := c.app.Db.C(collection)
     var results []interface{}
     err := dbcollection.Find(bson.M{}).All(&results)
     c.Handle(err)
@@ -66,7 +68,7 @@ func (c baseController) AddEntity(collection string, uri string, model models.Ba
     // Insert new user
     model.SetCreated()
     
-    err := c.db.C(collection).Insert(&model)
+    err := c.app.Db.C(collection).Insert(&model)
     c.Handle(err)    
     w.Header().Set("Location", uri)
     

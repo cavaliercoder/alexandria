@@ -16,41 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package main
+package application
 
 import (
-	"alexandria/api/controllers"
 	"github.com/go-martini/martini"
 	"gopkg.in/mgo.v2"
-	"log"
-        "alexandria/api/application"
 )
 
-func main() {
-	// Initialize Martini
-        m := martini.Classic()
-
-	// Initialize MongoDB
-	mgoSession, err := mgo.Dial("localhost")
-	if err != nil {
-		log.Panic(err)
-	}
-	defer mgoSession.Close()
-
-	db := mgoSession.DB("alexandria")
-        
-        // Initialize application context
-        app := application.AppContext{m, db}
-
-	// Initialize controllers
-	userController := new(controllers.UserController)
-        err = userController.Init(&app)
-	if err != nil { log.Panic(err) }
-	
-	tenantController := new(controllers.TenantController)
-        err = tenantController.Init(&app)
-	if err != nil { log.Panic(err) }
-
-	// Git'er done
-	m.Run()
+type AppContext struct {
+    Martini     *martini.ClassicMartini
+    Db          *mgo.Database
 }

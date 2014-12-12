@@ -16,41 +16,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package main
+package application
 
 import (
-	"alexandria/api/controllers"
-	"github.com/go-martini/martini"
-	"gopkg.in/mgo.v2"
-	"log"
-        "alexandria/api/application"
+  "github.com/codegangsta/cli"
+  "bufio"
+  "fmt"
+  "io"
+  "os"
 )
 
-func main() {
-	// Initialize Martini
-        m := martini.Classic()
+var context *cli.Context
 
-	// Initialize MongoDB
-	mgoSession, err := mgo.Dial("localhost")
-	if err != nil {
-		log.Panic(err)
-	}
-	defer mgoSession.Close()
+func SetContext(c *cli.Context) error {
+    context = c    
+    return nil
+}
 
-	db := mgoSession.DB("alexandria")
+func DPrint(message interface{}) {
+    if context.GlobalBool("debug") {
+        fmt.Fprintf(os.Stderr, "DEBUG: %s\n", message)
+    }
+}
+
+func DPipeToStderr(reader io.Reader) {
+    if context.GlobalBool("debug") {
+        buf := bufio.NewReader(reader)
         
-        // Initialize application context
-        app := application.AppContext{m, db}
+        var line []byte
+        var err error = nil
+        for err == nil {
+           line, _, err = buf.ReadLine()
+           
+           DPrint(line)
+        }
+    }
+}
 
-	// Initialize controllers
-	userController := new(controllers.UserController)
-        err = userController.Init(&app)
-	if err != nil { log.Panic(err) }
-	
-	tenantController := new(controllers.TenantController)
-        err = tenantController.Init(&app)
-	if err != nil { log.Panic(err) }
-
-	// Git'er done
-	m.Run()
+func PipeToFile(reader io.Reader, file *os.File) {    
+    io.Copy(file, reader)
 }

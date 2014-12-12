@@ -23,7 +23,7 @@ import (
 )
 
 type User struct {
-    baseModel                       `bson:",inline"`
+    baseModel                       `json:"-" bson:",inline"`
     
     TenantId        bson.ObjectId   `json:"-"`
     FirstName       string          `json:"firstName"`

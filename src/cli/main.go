@@ -19,50 +19,55 @@
 package main
 
 import (
-  "os"
-  "github.com/codegangsta/cli"
+    "log"
+    "os"
+    "github.com/codegangsta/cli"
+    "alexandria/cli/application"
+    "alexandria/cli/controllers"
 )
 
+var app *cli.App
+
 func main() {
-    app := cli.NewApp()
+    app = cli.NewApp()
     app.Name = "alex"
     app.Usage = "Alexandria CMDB CLI"
     app.Version = "1.0.0"
   
+    // Global args
     app.Flags = []cli.Flag{
         cli.StringFlag{
             Name:  "u, url",
             Value: "http://localhost:3000",
-            Usage: "Specify the API base URL",
+            Usage: "specify the API base URL",
             EnvVar: "ALEX_API_URL",
+        },
+        cli.StringFlag{
+            Name: "k, api-key",
+            Usage: "specify the API authentication key",
+            EnvVar: "ALEX_API_KEY",
+        },
+        cli.BoolFlag{
+          Name: "i, stdin",
+          Usage: "read request body from stdin",
         },
         cli.BoolFlag{
             Name:  "verbose",
             Usage: "Show more output",
         },
+        cli.BoolFlag{
+            Name:  "debug",
+            Usage: "Show extra verbose output",
+            EnvVar: "ALEX_DEBUG",
+        },
     }
     
-    // Commands
-    app.Commands = []cli.Command{
-    {
-        Name: "build",
-        Flags: []cli.Flag{
-            cli.BoolFlag{
-                Name:  "no-cache",
-                Usage: "Do not use cache when building the image.",
-            },
-        },
-        Usage:  "Build or rebuild services",
-        Action: CmdBuild,
-    }}
-
-    app.Action = func(c *cli.Context) {
-        println("Hello friend!")
-    }
+    app.Before = application.SetContext
+    
+    // Add controllers
+    tenantController := new(controllers.TenantController)
+    err := tenantController.Init(app)
+    if err != nil { log.Fatal(err) }
 
     app.Run(os.Args)
-}
-
-func CmdBuild(c *cli.Context) {
-    println("Yep!")
 }
