@@ -31,7 +31,7 @@ import (
 )
 
 type UserController struct {
-    baseController
+    BaseController
 }
 
 func (c UserController) Init(app *application.AppContext)  error {

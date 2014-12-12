@@ -23,19 +23,18 @@ import (
     "time"
 )
 
-type BaseModel interface {
+type ModelInterface interface {
     SetCreated()
     SetModified()
 }
 
-type baseModel struct {
+type BaseModel struct {
     Id          bson.ObjectId      `json:"-" bson:"_id,omitempty"`
     Created     time.Time          `json:"-" bson:"created"`
     Modified    time.Time          `json:"-" bson:"modified"`
 }
 
-func (c *baseModel) SetCreated()  {
-    
+func (c *BaseModel) SetCreated()  {    
     if c.Id.Hex() == "" {
         c.Id = bson.NewObjectId()
     }
@@ -47,6 +46,6 @@ func (c *baseModel) SetCreated()  {
     }
 }
 
-func (c *baseModel) SetModified() {
+func (c *BaseModel) SetModified() {
     c.Modified = time.Now()
 }

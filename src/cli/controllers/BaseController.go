@@ -22,9 +22,10 @@ import (
   "github.com/codegangsta/cli"
   
   "bufio"
-  "net/http"
+  "errors"
   "fmt"
   "io"
+  "net/http"
   "strings"
   
   . "alexandria/cli/application"
@@ -43,7 +44,11 @@ func (c baseController) ApiRequest(context *cli.Context, method string, path str
     
     DPrint(fmt.Sprintf("API Request: %s %s", method, url))
     
-    client := new(http.Client)    
+    client := http.Client{
+        CheckRedirect: func(req *http.Request, via []*http.Request) error {
+            return errors.New("Never follow redirects")
+        },
+    }
     req, err := http.NewRequest(strings.ToUpper(method), url, body)
     if err != nil { return req, &http.Response{}, err }
     defer req.Body.Close()

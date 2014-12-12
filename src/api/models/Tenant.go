@@ -19,6 +19,6 @@
 package models
 
 type Tenant struct {
-    baseModel               `bson:",inline"`
+    BaseModel               `bson:",inline"`
     Name        string      `json:"name" binding:"required"`
 }

@@ -79,6 +79,7 @@ func (c TenantController) AddTenant(context *cli.Context) {
     
     if res.StatusCode == http.StatusCreated {
         fmt.Printf("Created %s\n", res.Header.Get("Location"))
+        c.DumpHttpError(req, res)
     } else {
         c.DumpHttpError(req, res)
     }

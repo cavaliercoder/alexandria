@@ -27,7 +27,7 @@ import (
 )
 
 type TenantController struct {
-    baseController
+    BaseController
 }
 
 func (c TenantController) Init(app *application.AppContext)  error {
@@ -35,7 +35,6 @@ func (c TenantController) Init(app *application.AppContext)  error {
         
     // Add routes
     c.app.Martini.Get("/tenants", c.GetTenants)
-    //m.Get("/tenants/:email", c.GetUserByEmail)
     c.app.Martini.Post("/tenants", binding.Bind(models.Tenant{}), c.AddTenant)
     
     return nil

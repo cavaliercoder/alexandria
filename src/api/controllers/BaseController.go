@@ -27,15 +27,15 @@ import (
     "alexandria/api/models"
 )
 
-type BaseController interface {
+type ControllerInterface interface {
     Init(app *application.AppContext)      error
 }
 
-type baseController struct {
+type BaseController struct {
     app *application.AppContext
 }
 
-func (c baseController) RenderJson(w http.ResponseWriter, v interface{}) {
+func (c BaseController) RenderJson(w http.ResponseWriter, v interface{}) {
     if v == nil {
         var empty []struct{}
         v = empty
@@ -48,13 +48,13 @@ func (c baseController) RenderJson(w http.ResponseWriter, v interface{}) {
     w.Write(json)
 }
 
-func (c baseController) Handle(err error) {
+func (c BaseController) Handle(err error) {
     if err != nil {
         log.Panic(err)
     }
 }
 
-func (c baseController) GetEntities(collection string, w http.ResponseWriter) {    
+func (c BaseController) GetEntities(collection string, w http.ResponseWriter) {    
     dbcollection := c.app.Db.C(collection)
     var results []interface{}
     err := dbcollection.Find(bson.M{}).All(&results)
@@ -63,13 +63,20 @@ func (c baseController) GetEntities(collection string, w http.ResponseWriter) {
     c.RenderJson(w, results)
 }
 
-func (c baseController) AddEntity(collection string, uri string, model models.BaseModel, w http.ResponseWriter) {
+func (c BaseController) AddEntity(collection string, uri string, model interface{}, w http.ResponseWriter) {
+    baseModel, success := model.(models.ModelInterface)
+    if ! success {
+        log.Panic("Model is invalid")
+        return
+    }
     
     // Insert new user
-    model.SetCreated()
+    baseModel.SetCreated()    
+    err := c.app.Db.C(collection).Insert(baseModel)
+    c.Handle(err)
     
-    err := c.app.Db.C(collection).Insert(&model)
-    c.Handle(err)    
+    // Update headers
+    w.WriteHeader(http.StatusCreated)
     w.Header().Set("Location", uri)
     
     c.RenderJson(w, model)
