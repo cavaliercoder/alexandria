@@ -26,6 +26,7 @@ type User struct {
     BaseModel                       `json:"-" bson:",inline"`
     
     TenantId        bson.ObjectId   `json:"-"`
+    ApiKey          string          `json:"apiKey"`
     FirstName       string          `json:"firstName"`
     LastName        string          `json:"lastName"`
     Email           string          `json:"email" binding:"required"`

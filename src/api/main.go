@@ -43,13 +43,17 @@ func main() {
         app := application.AppContext{m, db}
 
 	// Initialize controllers
+	configController := new(controllers.ConfigController)
+	err = configController.Init(&app)
+	if err != nil { log.Fatal(err) }
+	
 	userController := new(controllers.UserController)
         err = userController.Init(&app)
-	if err != nil { log.Panic(err) }
+	if err != nil { log.Fatal(err) }
 	
 	tenantController := new(controllers.TenantController)
         err = tenantController.Init(&app)
-	if err != nil { log.Panic(err) }
+	if err != nil { log.Fatal(err) }
 
 	// Git'er done
 	m.Run()

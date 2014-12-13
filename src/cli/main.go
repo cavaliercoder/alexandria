@@ -33,6 +33,8 @@ func main() {
     app.Name = "alex"
     app.Usage = "Alexandria CMDB CLI"
     app.Version = "1.0.0"
+    app.Author = "Ryan Armstrong"
+    app.Email = "ryan@cavaliercoder.com"
   
     // Global args
     app.Flags = []cli.Flag{
@@ -67,6 +69,10 @@ func main() {
     // Add controllers
     tenantController := new(controllers.TenantController)
     err := tenantController.Init(app)
+    if err != nil { log.Fatal(err) }
+    
+    configController := new(controllers.ConfigController)
+    err = configController.Init(app)
     if err != nil { log.Fatal(err) }
 
     app.Run(os.Args)

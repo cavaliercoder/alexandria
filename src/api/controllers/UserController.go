@@ -19,15 +19,19 @@
 package controllers
 
 import (
+    "crypto/sha1"
+    "log"
+    "encoding/json"
+    "fmt"
+    "net/http"
+    
+    "alexandria/api/application"
+    "alexandria/api/models"
+    
     "github.com/go-martini/martini"
     "github.com/martini-contrib/binding"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
-    "net/http"
-    "alexandria/api/application"
-    "alexandria/api/models"
-    "log"
-    "fmt"
 )
 
 type UserController struct {
@@ -45,12 +49,13 @@ func (c UserController) Init(app *application.AppContext)  error {
     // Initialize database
     c.app.Db.C("users").Create(&mgo.CollectionInfo{})
     c.app.Db.C("users").EnsureIndex(mgo.Index{ Key: []string{"Email"}, Unique: true})
+    c.app.Db.C("users").EnsureIndex(mgo.Index{ Key: []string{"apiKey"}, Unique: true, Sparse: true})
     
     return nil
 }
 
 func (c UserController) GetUsers(w http.ResponseWriter) {    
-    c.GetEntities("users", w)
+    c.GetEntities("users", models.User{}, nil, w)
 }
 
 func (c UserController) GetUserByEmail(params martini.Params, w http.ResponseWriter) {
@@ -69,6 +74,12 @@ func (c UserController) AddUser(user models.User, w http.ResponseWriter) {
         w.WriteHeader(http.StatusConflict)
         log.Panic(fmt.Sprintf("A user account already exists for email %s", user.Email))
     }
+    
+    // Create API key
+    jsonHash, err := json.Marshal(user)
+    c.Handle(err)
+    shaSum := sha1.Sum(jsonHash)
+    user.ApiKey = fmt.Sprintf("%x", shaSum)
     
     c.AddEntity("users", fmt.Sprintf("/users/%s", user.Email), &user, w)
 }

@@ -16,34 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package controllers
+package models
 
 import (
-    "github.com/martini-contrib/binding"
-    "net/http"
-    "alexandria/api/application"
-    "alexandria/api/models"
-    "fmt"
+    "gopkg.in/mgo.v2/bson"
 )
 
-type TenantController struct {
-    BaseController
-}
-
-func (c TenantController) Init(app *application.AppContext)  error {
-    c.app = app
-        
-    // Add routes
-    c.app.Martini.Get("/tenants", c.GetTenants)
-    c.app.Martini.Post("/tenants", binding.Bind(models.Tenant{}), c.AddTenant)
+type Config struct {
+    BaseModel               `bson:",inline"`
     
-    return nil
-}
-
-func (c TenantController) GetTenants(w http.ResponseWriter) {    
-    c.GetEntities("tenants", models.Tenant{}, nil, w)
-}
-
-func (c TenantController) AddTenant(tenant models.Tenant, w http.ResponseWriter) {
-    c.AddEntity("tenants", fmt.Sprintf("/tenants/%s", tenant.Id), &tenant, w)
+    Initialized     bool
+    RootTenant      bson.ObjectId
+    RootUser        bson.ObjectId
+    
+    Version         string
 }

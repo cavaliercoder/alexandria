@@ -20,9 +20,12 @@ package controllers
 
 import (
     "gopkg.in/mgo.v2/bson"
+    
     "encoding/json"
     "net/http"
     "log"
+    "reflect"
+    
     "alexandria/api/application"
     "alexandria/api/models"
 )
@@ -54,10 +57,14 @@ func (c BaseController) Handle(err error) {
     }
 }
 
-func (c BaseController) GetEntities(collection string, w http.ResponseWriter) {    
+func (c BaseController) GetEntities(collection string, resultType interface{}, query interface{}, w http.ResponseWriter) {
+    if query == nil { query = bson.M{} }
+    
+    typ := reflect.TypeOf(resultType)
+    results := reflect.New(reflect.SliceOf(typ)).Interface()
+    
     dbcollection := c.app.Db.C(collection)
-    var results []interface{}
-    err := dbcollection.Find(bson.M{}).All(&results)
+    err := dbcollection.Find(query).All(results)
     c.Handle(err)
     
     c.RenderJson(w, results)
@@ -70,12 +77,12 @@ func (c BaseController) AddEntity(collection string, uri string, model interface
         return
     }
     
-    // Insert new user
+    // Insert new entity
     baseModel.SetCreated()    
     err := c.app.Db.C(collection).Insert(baseModel)
     c.Handle(err)
     
-    // Update headers
+    // Update response headers
     w.WriteHeader(http.StatusCreated)
     w.Header().Set("Location", uri)
     

@@ -51,7 +51,6 @@ func (c baseController) ApiRequest(context *cli.Context, method string, path str
     }
     req, err := http.NewRequest(strings.ToUpper(method), url, body)
     if err != nil { return req, &http.Response{}, err }
-    defer req.Body.Close()
     
     req.Header.Add("Content-type", "application/json")
     req.Header.Add("X-Auth-Token", context.String("api-key"))
