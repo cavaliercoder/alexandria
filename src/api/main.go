@@ -19,40 +19,30 @@
 package main
 
 import (
+	"alexandria/api/services"
 	"alexandria/api/controllers"
 	"github.com/go-martini/martini"
-	"gopkg.in/mgo.v2"
 	"log"
-        "alexandria/api/application"
 )
 
 func main() {
 	// Initialize Martini
         m := martini.Classic()
-
-	// Initialize MongoDB
-	mgoSession, err := mgo.Dial("localhost")
-	if err != nil {
-		log.Panic(err)
-	}
-	defer mgoSession.Close()
-
-	db := mgoSession.DB("alexandria")
-        
-        // Initialize application context
-        app := application.AppContext{m, db}
+	m.Use(services.DatabaseService(nil))
+	m.Use(services.RendererService())
+	m.Use(services.UrlValues())
 
 	// Initialize controllers
 	configController := new(controllers.ConfigController)
-	err = configController.Init(&app)
+	err := configController.Init(m.Router)
 	if err != nil { log.Fatal(err) }
-	
+	/*
 	userController := new(controllers.UserController)
-        err = userController.Init(&app)
+        err = userController.Init(m.Router)
 	if err != nil { log.Fatal(err) }
-	
+	*/
 	tenantController := new(controllers.TenantController)
-        err = tenantController.Init(&app)
+        err = tenantController.Init(m.Router)
 	if err != nil { log.Fatal(err) }
 
 	// Git'er done

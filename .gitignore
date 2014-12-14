@@ -3,5 +3,5 @@
 .DS_Store
 gin-bin
 src/api/api
-src/cli/cli
+src/cli/alex
 puppet/staging/

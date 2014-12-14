@@ -19,31 +19,53 @@
 package controllers
 
 import (
-    "github.com/martini-contrib/binding"
-    "net/http"
-    "alexandria/api/application"
-    "alexandria/api/models"
     "fmt"
+    "log"
+    "net/http"
+    "strings"
+    "gopkg.in/mgo.v2/bson"
+    "github.com/go-martini/martini"
+    "github.com/martini-contrib/binding"
+    "alexandria/api/services"
+    "alexandria/api/models"
 )
 
 type TenantController struct {
     BaseController
 }
 
-func (c TenantController) Init(app *application.AppContext)  error {
-    c.app = app
-        
+func (c TenantController) Init(r martini.Router)  error {
     // Add routes
-    c.app.Martini.Get("/tenants", c.GetTenants)
-    c.app.Martini.Post("/tenants", binding.Bind(models.Tenant{}), c.AddTenant)
+    r.Get("/tenants", c.getTenants)
+    r.Get("/tenants/:id", c.getTenant)
+    r.Post("/tenants", binding.Bind(models.Tenant{}), c.addTenant)
     
     return nil
 }
 
-func (c TenantController) GetTenants(w http.ResponseWriter) {    
-    c.GetEntities("tenants", models.Tenant{}, nil, w)
+func (c TenantController) getTenant(dbsession *services.Database, r *services.Renderer, params martini.Params) {
+    var tenant models.Tenant
+    code := strings.ToUpper(params["id"])
+    err := dbsession.DB("alexandria").C("tenants").Find(bson.M{"code": code}).One(&tenant)
+    
+    r.Handle(err)
+    
+    r.Render(http.StatusOK, tenant)
 }
 
-func (c TenantController) AddTenant(tenant models.Tenant, w http.ResponseWriter) {
-    c.AddEntity("tenants", fmt.Sprintf("/tenants/%s", tenant.Id), &tenant, w)
+func (c TenantController) getTenants(dbsession *services.Database, r *services.Renderer) {
+    var tenants []models.Tenant
+    err := dbsession.DB("alexandria").C("tenants").Find(nil).All(&tenants)
+    r.Handle(err)
+    
+    r.Render(http.StatusOK, tenants)
+}
+
+func (c TenantController) addTenant(tenant models.Tenant, dbsession *services.Database, r *services.Renderer) {
+    tenant.Init()
+    err := dbsession.DB("alexandria").C("tenants").Insert(tenant)
+    if err != nil { log.Fatal(err) }
+    
+    r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/tenants/%s", tenant.Code))
+    r.Render(http.StatusCreated, "")
 }

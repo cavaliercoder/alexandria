@@ -23,11 +23,15 @@ import (
 )
 
 type Config struct {
-    BaseModel               `bson:",inline"`
+    model                           `bson:",inline"`
     
     Initialized     bool
     RootTenant      bson.ObjectId
     RootUser        bson.ObjectId
     
     Version         string
+}
+
+func (c *Config) Init() {
+    c.SetCreated()
 }

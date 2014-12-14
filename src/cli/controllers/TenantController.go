@@ -40,10 +40,12 @@ func (c TenantController) Init(app *cli.App) error {
         {
             Name: "tenants",
             Usage: "Create, retrieve, update or delete tenants",
+            Action: c.GetTenant,
             Subcommands: []cli.Command{
                 {
                     Name: "get",
                     Usage: "get tenants",
+                    Action: c.GetTenant,
                 },
                 {
                     Name: "add",
@@ -65,6 +67,25 @@ func (c TenantController) Init(app *cli.App) error {
     return nil
 }
 
+func (c TenantController) GetTenant(context *cli.Context) {
+    id := context.Args().First()
+    
+    var err error
+    var res *http.Response
+    
+    if id == "" {
+        _, res, err = c.ApiRequest(context, "GET", "/tenants", nil)
+    } else {
+        _, res, err = c.ApiRequest(context, "GET", fmt.Sprintf("/tenants/%s", id), nil)
+    }
+    
+    if err != nil {
+        log.Panic(err)
+    }
+    
+    c.ApiResult(res)
+}
+
 func (c TenantController) AddTenant(context *cli.Context) {
     var input io.Reader
     if context.GlobalBool("stdin") {
@@ -73,14 +94,13 @@ func (c TenantController) AddTenant(context *cli.Context) {
         input = strings.NewReader(context.Args().First())
     }
     
-    req, res, err := c.ApiRequest(context, "POST", "/tenants", input)
+    _, res, err := c.ApiRequest(context, "POST", "/tenants", input)
     if err != nil { log.Panic(err) }
     defer res.Body.Close()
     
     if res.StatusCode == http.StatusCreated {
         fmt.Printf("Created %s\n", res.Header.Get("Location"))
-        c.DumpHttpError(req, res)
     } else {
-        c.DumpHttpError(req, res)
+        c.ApiError(res)
     }
 }

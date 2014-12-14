@@ -20,9 +20,7 @@ package controllers
 
 import (
   "github.com/codegangsta/cli"
-  
   "fmt"
-  "io"
   "log"
   "net/http"
   "os"
@@ -43,11 +41,17 @@ func (c ConfigController) Init(app *cli.App) error {
                 {
                     Name: "get",
                     Usage: "get configuration",
+                    Action: c.GetConfig,
                 },
                 {
                     Name: "init",
                     Usage: "initialize a new server",
                     Action: c.InitConfig,
+                },
+                {
+                    Name: "destroy",
+                    Usage: "reset factory defaults",
+                    Action: c.ClearConfig,
                 },
             },
         },
@@ -56,22 +60,38 @@ func (c ConfigController) Init(app *cli.App) error {
     return nil
 }
 
-func (c ConfigController) InitConfig(context *cli.Context) {    
-    _, res, err := c.ApiRequest(context, "GET", "/config?init=true", nil)
+func (c ConfigController) GetConfig(context *cli.Context) {
+    _, res, err := c.ApiRequest(context, "GET", "/config", nil)
     if err != nil { log.Panic(err) }
-    defer res.Body.Close()
+    
+    c.ApiResult(res)
+}
+
+func (c ConfigController) InitConfig(context *cli.Context) {    
+    _, res, err := c.ApiRequest(context, "POST", "/config/actions/initialize", nil)
+    if err != nil { log.Panic(err) }
     
     switch res.StatusCode {
-        case http.StatusOK:
-            io.Copy(os.Stdout, res.Body)
+        case http.StatusCreated, http.StatusOK :
+            c.ApiResult(res)
             
         case http.StatusNotFound:
-            fmt.Fprintf(os.Stderr,"Server configuration is already intialized\n")
+            fmt.Fprintf(os.Stdout, "Configuration is already initialized.\n")
             os.Exit(1)
             
         default:
-            fmt.Fprintf(os.Stderr, "%s\n", res.Status)
-            io.Copy(os.Stderr, res.Body)
-            os.Exit(1)
+            c.ApiError(res)
+    }
+}
+
+func (c ConfigController) ClearConfig(context *cli.Context) {
+    _, res, err := c.ApiRequest(context, "POST", "/config/actions/destroy", nil)
+    if err != nil { log.Panic(err) }
+    defer res.Body.Close()
+    
+    if(res.StatusCode == http.StatusOK) {
+        fmt.Fprintf(os.Stdout, "Configuration destroyed.\n")
+    } else {
+        c.ApiError(res)
     }
 }

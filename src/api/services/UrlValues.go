@@ -16,36 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package models
+package services
 
 import (
-    "gopkg.in/mgo.v2/bson"
-    "time"
+        "net/http"
+	"github.com/go-martini/martini"
 )
 
-type ModelInterface interface {
-    SetCreated()
-    SetModified()
-}
 
-type BaseModel struct {
-    Id          bson.ObjectId      `json:"-" bson:"_id,omitempty"`
-    Created     time.Time          `json:"-" bson:"created"`
-    Modified    time.Time          `json:"-" bson:"modified"`
-}
-
-func (c *BaseModel) SetCreated()  {    
-    if c.Id.Hex() == "" {
-        c.Id = bson.NewObjectId()
+// Wire the service
+func UrlValues() martini.Handler {    
+    return func(req *http.Request, c martini.Context) {
+        c.Map(req.URL.Query())
     }
-    
-    if c.Created.IsZero() {
-        now := time.Now()
-        c.Created = now
-        c.Modified = now
-    }
-}
-
-func (c *BaseModel) SetModified() {
-    c.Modified = time.Now()
 }

@@ -16,14 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package application
+package controllers
 
 import (
 	"github.com/go-martini/martini"
-	"gopkg.in/mgo.v2"
 )
 
-type AppContext struct {
-    Martini     *martini.ClassicMartini
-    Db          *mgo.Database
+type ControllerInterface interface {
+    Init(martini.Router)      error
+}
+
+type BaseController struct {
 }

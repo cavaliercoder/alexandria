@@ -19,20 +19,32 @@
 package models
 
 import (
-    "crypto/sha1"
-    "fmt"
-    "strings"
+    "gopkg.in/mgo.v2/bson"
+    "time"
 )
 
-type Tenant struct {
-    model                   `bson:",inline"`
-    Name        string      `binding:"required"`
-    Code        string
+type Model interface {
+    Init()
 }
 
-func (c *Tenant) Init() {
-    c.SetCreated()
+type model struct {
+    Id          bson.ObjectId      `json:"-" bson:"_id,omitempty"`
+    Created     time.Time          `json:"-" bson:"created"`
+    Modified    time.Time          `json:"-" bson:"modified"`
+}
+
+func (c *model) SetCreated()  {    
+    if c.Id.Hex() == "" {
+        c.Id = bson.NewObjectId()
+    }
     
-    shaSum := sha1.Sum([]byte(c.Id.Hex()))
-    c.Code = strings.ToUpper(fmt.Sprintf("%x-%x-%x", shaSum[0:3], shaSum[3:6], shaSum[7:10]))
+    if c.Created.IsZero() {
+        now := time.Now()
+        c.Created = now
+        c.Modified = now
+    }
+}
+
+func (c *model) SetModified() {
+    c.Modified = time.Now()
 }

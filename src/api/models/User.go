@@ -19,15 +19,36 @@
 package models
 
 import (
+    "crypto/sha1"
+    "encoding/json"
+    "fmt"
     "gopkg.in/mgo.v2/bson"
 )
 
 type User struct {
-    BaseModel                       `json:"-" bson:",inline"`
+    model                           `json:"-" bson:",inline"`
     
     TenantId        bson.ObjectId   `json:"-"`
     ApiKey          string          `json:"apiKey"`
     FirstName       string          `json:"firstName"`
     LastName        string          `json:"lastName"`
     Email           string          `json:"email" binding:"required"`
+}
+
+func (c *User) Init() {
+    c.SetCreated()
+    c.GenerateApiKey()
+}
+
+func (c *User) GenerateApiKey() string {
+    // Create API key
+    jsonHash, err := json.Marshal(c)
+    if err != nil {
+        panic(err)
+    }
+    
+    shaSum := sha1.Sum(jsonHash)
+    c.ApiKey = fmt.Sprintf("%x", shaSum)
+    
+    return c.ApiKey
 }

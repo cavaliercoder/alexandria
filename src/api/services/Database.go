@@ -16,23 +16,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package models
+package services
 
 import (
-    "crypto/sha1"
-    "fmt"
-    "strings"
+        "log"
+        
+	"github.com/go-martini/martini"
+	"gopkg.in/mgo.v2"
 )
 
-type Tenant struct {
-    model                   `bson:",inline"`
-    Name        string      `binding:"required"`
-    Code        string
+type Database struct {
+    *mgo.Session
 }
 
-func (c *Tenant) Init() {
-    c.SetCreated()
+// Wire the service
+func DatabaseService(session *mgo.Session) martini.Handler {
+    if session == nil {
+        var err error
+        session, err = mgo.Dial("mongodb://localhost")
+        if err != nil {
+                log.Panic(err)
+        }
+    }
     
-    shaSum := sha1.Sum([]byte(c.Id.Hex()))
-    c.Code = strings.ToUpper(fmt.Sprintf("%x-%x-%x", shaSum[0:3], shaSum[3:6], shaSum[7:10]))
+    return func(c martini.Context) {
+	newSession := session.Clone()
+	db := Database{newSession}
+        c.Map(&db)
+        defer newSession.Close()
+        c.Next()
+    }
 }

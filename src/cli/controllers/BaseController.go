@@ -26,6 +26,7 @@ import (
   "fmt"
   "io"
   "net/http"
+  "os"
   "strings"
   
   . "alexandria/cli/application"
@@ -40,7 +41,7 @@ type baseController struct {
 }
 
 func (c baseController) ApiRequest(context *cli.Context, method string, path string, body io.Reader) (*http.Request, *http.Response, error) {
-    url := fmt.Sprintf("%s%s", context.GlobalString("url"), path)
+    url := fmt.Sprintf("%s%s?pretty=true", context.GlobalString("url"), path)
     
     DPrint(fmt.Sprintf("API Request: %s %s", method, url))
     
@@ -62,9 +63,24 @@ func (c baseController) ApiRequest(context *cli.Context, method string, path str
     return req, res, err
 }
 
+func (c baseController) ApiResult(res *http.Response) {
+    defer res.Body.Close()
+    io.Copy(os.Stdout, res.Body)
+    fmt.Println()
+}
+
+func (c baseController) ApiError(res *http.Response) {
+        fmt.Fprintf(os.Stderr, "%s\n", res.Status)
+        io.Copy(os.Stderr, res.Body)
+        fmt.Fprintf(os.Stderr, "\n")
+        os.Exit(1)
+}
+
 func (c baseController) DumpHttpError(req *http.Request, res *http.Response) {    
     // Print request body
     if req != nil {
+        defer req.Body.Close()
+        
         DPrint("<><><> Request <><><>")
         
         for k := range req.Header {

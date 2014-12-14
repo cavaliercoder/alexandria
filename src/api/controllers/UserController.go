@@ -17,7 +17,7 @@
  * package controllers
  */
 package controllers
-
+/*
 import (
     "crypto/sha1"
     "log"
@@ -25,12 +25,11 @@ import (
     "fmt"
     "net/http"
     
-    "alexandria/api/application"
+    "alexandria/api/services"
     "alexandria/api/models"
     
     "github.com/go-martini/martini"
     "github.com/martini-contrib/binding"
-    "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
 )
 
@@ -38,48 +37,43 @@ type UserController struct {
     BaseController
 }
 
-func (c UserController) Init(app *application.AppContext)  error {
-    c.app = app
+func (c UserController) Init(r martini.Router)  error {
     
     // Add routes
-    c.app.Martini.Get("/users", c.GetUsers)
-    c.app.Martini.Get("/users/:email", c.GetUserByEmail)
-    c.app.Martini.Post("/users", binding.Bind(models.User{}), c.AddUser)
-  
-    // Initialize database
-    c.app.Db.C("users").Create(&mgo.CollectionInfo{})
-    c.app.Db.C("users").EnsureIndex(mgo.Index{ Key: []string{"Email"}, Unique: true})
-    c.app.Db.C("users").EnsureIndex(mgo.Index{ Key: []string{"apiKey"}, Unique: true, Sparse: true})
+    r.Get("/users", c.GetUsers)
+    r.Get("/users/:email", c.GetUserByEmail)
+    r.Post("/users", binding.Bind(models.User{}), c.AddUser)
     
     return nil
 }
 
-func (c UserController) GetUsers(w http.ResponseWriter) {    
-    c.GetEntities("users", models.User{}, nil, w)
+func (c UserController) GetUsers(context *services.AppContext) {    
+    context.GetEntities("users", models.User{}, nil)
 }
 
-func (c UserController) GetUserByEmail(params martini.Params, w http.ResponseWriter) {
+func (c UserController) GetUserByEmail(context *services.AppContext) {
     var user models.User
-    err := c.app.Db.C("users").Find(bson.M{"email": params["email"]}).One(&user)
-    c.Handle(err)
+    err := context.MongoSession.DB("alexandria").C("users").Find(bson.M{"email": (*context.Params)["email"]}).One(&user)
+    context.Handle(err)
     
-    c.RenderJson(w, user)
+    context.RenderJson(user)
 }
 
-func (c UserController) AddUser(user models.User, w http.ResponseWriter) {
+func (c UserController) AddUser(user models.User, context *services.AppContext) {
     // Make sure user doesn't already exist
-    count, err := c.app.Db.C("users").Find(bson.M{"email": user.Email}).Count()
-    c.Handle(err)    
+    count, err := context.MongoSession.DB("alexandria").C("users").Find(bson.M{"email": user.Email}).Count()
+    context.Handle(err)    
     if count > 0 {
-        w.WriteHeader(http.StatusConflict)
+        context.ResponseWriter.WriteHeader(http.StatusConflict)
         log.Panic(fmt.Sprintf("A user account already exists for email %s", user.Email))
     }
     
     // Create API key
     jsonHash, err := json.Marshal(user)
-    c.Handle(err)
+    context.Handle(err)
     shaSum := sha1.Sum(jsonHash)
     user.ApiKey = fmt.Sprintf("%x", shaSum)
     
-    c.AddEntity("users", fmt.Sprintf("/users/%s", user.Email), &user, w)
+    context.AddEntity("users", fmt.Sprintf("/users/%s", user.Email), &user)
 }
+*/
