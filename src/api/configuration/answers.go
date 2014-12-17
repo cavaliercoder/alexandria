@@ -16,21 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package models
+package configuration
 
 import (
-	"gopkg.in/mgo.v2/bson"
+	"encoding/json"
+	"os"
 )
 
-type Config struct {
-	model `bson:",inline"`
-
-	RootTenant bson.ObjectId
-	RootUser   bson.ObjectId
-
-	Version string
+type Answers struct {
+	Tenant struct {
+		Name string `json:"name"`
+	} `json:"tenant"`
+	User struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		Password  string `json:"password"`
+	} `json:"user"`
 }
 
-func (c *Config) Init() {
-	c.SetCreated()
+func LoadAnswers(filePath string) (*Answers, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	answers := &Answers{}
+
+	parser := json.NewDecoder(file)
+	if err = parser.Decode(answers); err != nil {
+		return nil, err
+	}
+
+	return answers, nil
 }

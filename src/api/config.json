@@ -1,0 +1,8 @@
+{
+    "database": {
+        "driver": "mongodb",
+        "servers": [ "localhost" ],
+        "timeout": 5,
+        "database": "alexandria"
+    }
+}

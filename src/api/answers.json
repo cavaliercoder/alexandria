@@ -1,0 +1,11 @@
+{
+    "tenant": {
+        "name": "Default tenant"
+    },
+    "user": {
+        "firstName": "Alexandria",
+        "lastName": "CMDB",
+        "email": "root@localhost",
+        "password": "C0nf!g"
+    }
+}

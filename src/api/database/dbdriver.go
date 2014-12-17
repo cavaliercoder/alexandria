@@ -16,21 +16,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package models
+package database
 
 import (
-	"gopkg.in/mgo.v2/bson"
+	"alexandria/api/configuration"
+	"alexandria/api/database/mongodb"
+	"fmt"
 )
 
-type Config struct {
-	model `bson:",inline"`
-
-	RootTenant bson.ObjectId
-	RootUser   bson.ObjectId
-
-	Version string
+type DbDriver interface {
+	IsBootStrapped() (bool, error)
+	BootStrap(*configuration.Answers) error
 }
 
-func (c *Config) Init() {
-	c.SetCreated()
+var dbsession DbDriver
+
+func Connect() (DbDriver, error) {
+	if dbsession == nil {
+		config, err := configuration.GetConfig()
+		if err != nil {
+			return nil, err
+		}
+
+		switch config.Database.Driver {
+		case "mongodb":
+			// Connect to database
+			dbsession, err = mongodb.GetConnection()
+			if err != nil {
+				return nil, err
+			}
+
+		default:
+			panic(fmt.Sprintf("Unsupported database driver: %s", config.Database.Driver))
+		}
+	}
+	return dbsession, nil
 }

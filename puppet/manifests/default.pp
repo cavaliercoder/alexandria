@@ -11,6 +11,8 @@ $packages = [
   'gopkg.in/redis.v2',                  # Redis driver
   'github.com/codegangsta/gin',         # Gin live reload
   'github.com/codegangsta/cli'		# CLI framework
+  'gopkg.in/yaml.v2'			# YAML parser
+  'code.google.com/p/go.crypto/bcrypt'	# Password encryption
 ]
 
 go::package { $packages :
