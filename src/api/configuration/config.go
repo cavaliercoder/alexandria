@@ -39,7 +39,7 @@ type database struct {
 }
 
 // default configuration file path
-var confFilePath = "./config.json"
+var confFilePath string = ""
 
 // global, singleton configuration struct
 var config *Config
@@ -55,6 +55,17 @@ func GetConfigFromFile(path string) (*Config, error) {
 // GetConfig returns a pointer to a singleton configuration structure.
 func GetConfig() (*Config, error) {
 	if config == nil {
+		// Select a configuration file
+		if confFilePath == "" {
+			if _, err := os.Stat("./config.json"); err == nil {
+				confFilePath = "./config.json"
+			} else if _, err := os.Stat("/etc/alexandria/config.json"); err == nil {
+				confFilePath = "/etc/alexandria/config.json"
+			} else {
+				return nil, errors.New("no configuration file was found")
+			}
+		}
+		
 		// Open configuration file
 		confFile, err := os.Open(confFilePath)
 		if err != nil {

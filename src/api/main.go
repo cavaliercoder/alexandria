@@ -44,7 +44,6 @@ func main() {
 		cli.StringFlag{
 			Name: "c, config",
 			Usage: "configuration file",
-			Value: "config.json",
 		},
 		cli.StringFlag{
 			Name:  "answers",
@@ -61,9 +60,12 @@ func serve(context *cli.Context) {
 	var err error
 	
 	// Load configuration
-	_, err = configuration.GetConfigFromFile(context.GlobalString("config"))
-	if err != nil {
-		log.Fatal(err)
+	confFile := context.GlobalString("config")
+	if confFile != "" {
+		_, err = configuration.GetConfigFromFile(confFile)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	
 	// Establish db connection
