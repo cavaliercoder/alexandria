@@ -31,16 +31,17 @@ func main() {
 	m.Use(services.DatabaseService(nil))
 	m.Use(services.RendererService())
 	m.Use(services.UrlValues())
+	m.Use(services.ApiKeyValidation())
 
 	// Initialize controllers
 	configController := new(controllers.ConfigController)
 	err := configController.Init(m.Router)
 	if err != nil { log.Fatal(err) }
-	/*
+	
 	userController := new(controllers.UserController)
         err = userController.Init(m.Router)
 	if err != nil { log.Fatal(err) }
-	*/
+	
 	tenantController := new(controllers.TenantController)
         err = tenantController.Init(m.Router)
 	if err != nil { log.Fatal(err) }

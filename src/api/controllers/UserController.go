@@ -17,11 +17,9 @@
  * package controllers
  */
 package controllers
-/*
+
 import (
-    "crypto/sha1"
     "log"
-    "encoding/json"
     "fmt"
     "net/http"
     
@@ -40,40 +38,34 @@ type UserController struct {
 func (c UserController) Init(r martini.Router)  error {
     
     // Add routes
-    r.Get("/users", c.GetUsers)
-    r.Get("/users/:email", c.GetUserByEmail)
-    r.Post("/users", binding.Bind(models.User{}), c.AddUser)
+    r.Get("/users", c.getUsers)
+    r.Get("/users/:email", c.getUserByEmail)
+    r.Post("/users", binding.Bind(models.User{}), c.addUser)
     
     return nil
 }
 
-func (c UserController) GetUsers(context *services.AppContext) {    
-    context.GetEntities("users", models.User{}, nil)
+func (c UserController) getUsers(dbsession *services.Database, r *services.Renderer) {    
+    var users []models.User
+    err := dbsession.DB("alexandria").C("users").Find(nil).All(&users)
+    r.Handle(err)
+    
+    r.Render(http.StatusOK, users)
 }
 
-func (c UserController) GetUserByEmail(context *services.AppContext) {
+func (c UserController) getUserByEmail(dbsession *services.Database, r *services.Renderer, params martini.Params) {
     var user models.User
-    err := context.MongoSession.DB("alexandria").C("users").Find(bson.M{"email": (*context.Params)["email"]}).One(&user)
-    context.Handle(err)
+    err := dbsession.DB("alexandria").C("users").Find(bson.M{"email": params["email"]}).One(&user)
+    r.Handle(err)
     
-    context.RenderJson(user)
+    r.Render(http.StatusOK, user)
 }
 
-func (c UserController) AddUser(user models.User, context *services.AppContext) {
-    // Make sure user doesn't already exist
-    count, err := context.MongoSession.DB("alexandria").C("users").Find(bson.M{"email": user.Email}).Count()
-    context.Handle(err)    
-    if count > 0 {
-        context.ResponseWriter.WriteHeader(http.StatusConflict)
-        log.Panic(fmt.Sprintf("A user account already exists for email %s", user.Email))
-    }
+func (c UserController) addUser(user models.User, dbsession *services.Database, r *services.Renderer) {
+    user.Init()
+    err := dbsession.DB("alexandria").C("users").Insert(user)
+    if err != nil { log.Fatal(err) }
     
-    // Create API key
-    jsonHash, err := json.Marshal(user)
-    context.Handle(err)
-    shaSum := sha1.Sum(jsonHash)
-    user.ApiKey = fmt.Sprintf("%x", shaSum)
-    
-    context.AddEntity("users", fmt.Sprintf("/users/%s", user.Email), &user)
+    r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/users/%s", user.Email))
+    r.Render(http.StatusCreated, "")
 }
-*/

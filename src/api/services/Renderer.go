@@ -42,8 +42,13 @@ func RendererService() martini.Handler {
 }
 
 func (c *Renderer) Handle(err error) {
-    if err != nil {
-        log.Panic(err)
+    if err == nil { return }
+    
+    switch err.Error() {
+        case "not found":
+            c.WriteHeader(http.StatusNotFound)
+        default:
+            log.Panic(err)
     }
 }
 

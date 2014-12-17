@@ -67,8 +67,14 @@ func main() {
     app.Before = application.SetContext
     
     // Add controllers
+    var err error
+    
+    userController := new(controllers.UserController)
+    err = userController.Init(app)
+    if err != nil { log.Fatal(err) }
+    
     tenantController := new(controllers.TenantController)
-    err := tenantController.Init(app)
+    err = tenantController.Init(app)
     if err != nil { log.Fatal(err) }
     
     configController := new(controllers.ConfigController)

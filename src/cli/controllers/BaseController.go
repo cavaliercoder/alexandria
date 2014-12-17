@@ -41,8 +41,20 @@ type baseController struct {
 }
 
 func (c baseController) ApiRequest(context *cli.Context, method string, path string, body io.Reader) (*http.Request, *http.Response, error) {
-    url := fmt.Sprintf("%s%s?pretty=true", context.GlobalString("url"), path)
+    url := context.GlobalString("url")
+    apiKey := context.GlobalString("api-key")
     
+    if url == "" {
+        fmt.Fprintf(os.Stderr, "API base URL not specified\n")
+        os.Exit(1)
+    }
+    
+    if apiKey == "" {
+        fmt.Fprintf(os.Stderr, "API authentication key not specified\n")
+        os.Exit(1)
+    }
+    
+    url = fmt.Sprintf("%s%s?pretty=true", url, path)    
     DPrint(fmt.Sprintf("API Request: %s %s", method, url))
     
     client := http.Client{
@@ -54,7 +66,7 @@ func (c baseController) ApiRequest(context *cli.Context, method string, path str
     if err != nil { return req, &http.Response{}, err }
     
     req.Header.Add("Content-type", "application/json")
-    req.Header.Add("X-Auth-Token", context.String("api-key"))
+    req.Header.Add("X-Auth-Token", apiKey)
     req.Header.Add("User-Agent", "Alexandria CMDB CLI")
         
     var res *http.Response

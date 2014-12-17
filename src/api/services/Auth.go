@@ -16,43 +16,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
+
 package services
 
 import (
-        "log"
+        "net/http"
         
 	"github.com/go-martini/martini"
-	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+        
+        "alexandria/api/models"
 )
 
-type Database struct {
-    *mgo.Session
-}
-
-var dbsession *Database
-
-// Wire the service
-func DatabaseService(session *mgo.Session) martini.Handler {
-    if session != nil {
-	dbsession = &Database{session}
-    }
+// validate an api key
+func ApiKeyValidation() martini.Handler {
+    db := DbConnect();
     
-    return func(c martini.Context) {
-	db:= DbConnect().Clone()
-        c.Map(db)
-        defer db.Close()
-        c.Next()
-    }
-}
-
-func DbConnect() *Database {
-    if dbsession == nil {
-        session, err := mgo.Dial("mongodb://localhost")
-        if err != nil {
-                log.Panic(err)
+    return func (res http.ResponseWriter, req *http.Request) {
+        apiKey := req.Header.Get("X-Auth-Token")
+        if apiKey == "" {
+          res.WriteHeader(http.StatusUnauthorized)
+        } else {
+            var user models.User
+            var tenant models.Tenant
+            err := db.DB("alexandria").C("users").Find(bson.M{"apiKey": apiKey }).One(&user)
+            if err != nil {
+                res.WriteHeader(http.StatusUnauthorized)
+                return    
+            }
+            
+            err = db.DB("alexandria").C("tenants").FindId(user.TenantId).One(&tenant)
+            if err != nil {
+                res.WriteHeader(http.StatusUnauthorized)
+                return   
+            }
         }
-	dbsession = &Database{session}
     }
-    
-    return dbsession
 }
