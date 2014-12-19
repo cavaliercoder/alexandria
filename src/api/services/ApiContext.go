@@ -26,7 +26,7 @@ import (
 	"net/http"
 
 	"github.com/go-martini/martini"
-	
+
 	"alexandria/api/database"
 	"alexandria/api/models"
 )
@@ -34,25 +34,29 @@ import (
 type ApiContext struct {
 	*http.Request
 	http.ResponseWriter
-	context			martini.Context		// Martini context
-	DB			database.Driver		// Database driver
-	AuthUser		*models.User		// Authenticated user
+	context  martini.Context // Martini context
+	DB       database.Driver // Database driver
+	AuthUser *models.User    // Authenticated user
 }
 
 // Wire the service
 func ApiContextService() martini.Handler {
 	db, err := database.Connect()
-	if err != nil { log.Panic(err) }
-	
+	if err != nil {
+		log.Panic(err)
+	}
+
 	return func(req *http.Request, res http.ResponseWriter, c martini.Context) {
 		// Connect to the database
 		clone, err := db.Clone()
-		if err != nil { log.Panic(err) }
+		if err != nil {
+			log.Panic(err)
+		}
 		defer clone.Close()
-		
+
 		// Create context
 		r := &ApiContext{req, res, c, clone, nil}
-		
+
 		// Get authenticated user
 		user, err := r.GetAuthUser()
 		if r.Handle(err) {
@@ -60,7 +64,7 @@ func ApiContextService() martini.Handler {
 			return
 		}
 		r.AuthUser = user
-		
+
 		// Wire it up
 		c.Map(r)
 		c.Next()
@@ -69,13 +73,17 @@ func ApiContextService() martini.Handler {
 
 func (c *ApiContext) GetAuthUser() (*models.User, error) {
 	var user models.User
-	
+
 	apiKey := c.Request.Header.Get("X-Auth-Token")
-	if apiKey == "" { return nil, errors.New("Authentication token not set") }
-	
+	if apiKey == "" {
+		return nil, errors.New("Authentication token not set")
+	}
+
 	err := c.DB.GetOne("users", database.M{"apikey": apiKey}, &user)
-	if err != nil { return nil, err }
-	
+	if err != nil {
+		return nil, err
+	}
+
 	return &user, nil
 }
 
@@ -87,12 +95,12 @@ func (c *ApiContext) Handle(err error) bool {
 	switch err.Error() {
 	case "not found":
 		c.ResponseWriter.WriteHeader(http.StatusNotFound)
-                c.ResponseWriter.Write([]byte("404 page not found\n"))
+		c.ResponseWriter.Write([]byte("404 page not found\n"))
 	default:
 		log.Panic(err)
 	}
-        
-        return true
+
+	return true
 }
 
 func (c *ApiContext) NotFound() {

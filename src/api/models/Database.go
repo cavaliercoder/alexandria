@@ -24,12 +24,12 @@ import (
 )
 
 type Database struct {
-	model 				`json:"-" bson:",inline"`
-	TenantId  	interface{}	`json:"-"`
-	Name	  	string        	`json:"name" binding:"required"`
-	ShortName	string		`json:"shortName"`
-	Description	string		`json:"description"`
-	Backend		string		`json:"-"`
+	model       `json:"-" bson:",inline"`
+	TenantId    interface{} `json:"-"`
+	Name        string      `json:"name" binding:"required"`
+	ShortName   string      `json:"shortName"`
+	Description string      `json:"description"`
+	Backend     string      `json:"-"`
 }
 
 func (c *Database) Init() {
@@ -40,18 +40,18 @@ func (c *Database) Init() {
 func (c *Database) GetShortName() string {
 	if c.ShortName == "" {
 		c.ShortName = strings.ToLower(c.Name)
-		
+
 		// replace all spaces with hyphens
 		c.ShortName = strings.Replace(c.ShortName, " ", "-", -1)
-		
+
 		// remove all non alphanumerics and non hyphens
 		r := regexp.MustCompile(`[^a-z0-9-]+`)
 		c.ShortName = r.ReplaceAllString(c.ShortName, "")
-		
+
 		// Replace multiple hyphens
 		r = regexp.MustCompile(`-+`)
 		c.ShortName = r.ReplaceAllString(c.ShortName, "-")
 	}
-	
+
 	return c.ShortName
 }

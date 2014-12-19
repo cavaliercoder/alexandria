@@ -41,7 +41,7 @@ func (c *UserController) Init(r martini.Router) error {
 	r.Get("/users", c.getUsers)
 	r.Get("/users/:email", c.getUserByEmail)
 	r.Post("/users", binding.Bind(models.User{}), c.addUser)
-        r.Delete("/users/:email", c.deleteUserByEmail)
+	r.Delete("/users/:email", c.deleteUserByEmail)
 
 	return nil
 }
@@ -57,7 +57,9 @@ func (c *UserController) getUsers(r *services.ApiContext) {
 func (c *UserController) getUserByEmail(r *services.ApiContext, params martini.Params) {
 	var user models.User
 	err := r.DB.GetOne("users", database.M{"email": params["email"]}, &user)
-	if r.Handle(err) { return }
+	if r.Handle(err) {
+		return
+	}
 
 	r.Render(http.StatusOK, user)
 }
@@ -65,17 +67,21 @@ func (c *UserController) getUserByEmail(r *services.ApiContext, params martini.P
 func (c *UserController) addUser(user models.User, r *services.ApiContext) {
 	user.Init()
 	user.TenantId = r.AuthUser.TenantId
-        
-        err := r.DB.Insert("users", &user)
-	if err != nil { log.Panic(err) }
+
+	err := r.DB.Insert("users", &user)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/users/%s", user.Email))
 	r.Render(http.StatusCreated, "")
 }
 
 func (c *UserController) deleteUserByEmail(r *services.ApiContext, params martini.Params) {
-        err := r.DB.Delete("users", database.M{"tenantid": r.AuthUser.TenantId, "email": params["email"]})
-        if r.Handle(err) { return }
-        
-        r.Render(http.StatusNoContent, "")
+	err := r.DB.Delete("users", database.M{"tenantid": r.AuthUser.TenantId, "email": params["email"]})
+	if r.Handle(err) {
+		return
+	}
+
+	r.Render(http.StatusNoContent, "")
 }

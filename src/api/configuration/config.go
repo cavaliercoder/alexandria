@@ -48,10 +48,11 @@ func GetConfigFromFile(path string) (*Config, error) {
 	if config != nil {
 		return nil, errors.New("a configuration file was specified but configuration is already loaded")
 	}
-	
+
 	confFilePath = path
 	return GetConfig()
 }
+
 // GetConfig returns a pointer to a singleton configuration structure.
 func GetConfig() (*Config, error) {
 	if config == nil {
@@ -65,7 +66,7 @@ func GetConfig() (*Config, error) {
 				return nil, errors.New("no configuration file was found")
 			}
 		}
-		
+
 		// Open configuration file
 		confFile, err := os.Open(confFilePath)
 		if err != nil {

@@ -31,17 +31,19 @@ import (
 )
 
 type MongoDriver struct {
-	session	*mgo.Session
-	rootDB	*mgo.Database
-	config 	*configuration.DatabaseConfig
+	session *mgo.Session
+	rootDB  *mgo.Database
+	config  *configuration.DatabaseConfig
 }
 
 func (c *MongoDriver) Connect(config *configuration.DatabaseConfig) error {
 	if c.session == nil || c.config != config {
-		if c.session != nil { c.session.Close() }
-		
+		if c.session != nil {
+			c.session.Close()
+		}
+
 		var err error
-		
+
 		// Establish database connection
 		dialInfo := mgo.DialInfo{
 			Addrs:    config.Servers,
@@ -56,7 +58,7 @@ func (c *MongoDriver) Connect(config *configuration.DatabaseConfig) error {
 		if err != nil {
 			return err
 		}
-		
+
 		// enable error checking
 		c.session.SetSafe(&mgo.Safe{})
 
@@ -66,7 +68,7 @@ func (c *MongoDriver) Connect(config *configuration.DatabaseConfig) error {
 		if err != nil {
 			return err
 		}
-		
+
 		c.config = config
 		c.rootDB = c.session.DB(config.Database)
 	}
@@ -74,12 +76,12 @@ func (c *MongoDriver) Connect(config *configuration.DatabaseConfig) error {
 	return nil
 }
 
-func (c *MongoDriver) Clone () (Driver, error) {
+func (c *MongoDriver) Clone() (Driver, error) {
 	clone := new(MongoDriver)
 	clone.session = c.session.Clone()
 	clone.config = c.config
 	clone.rootDB = clone.session.DB(c.config.Database)
-	
+
 	return clone, nil
 }
 
@@ -110,9 +112,9 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 	if booted {
 		return errors.New("database is already bootstrapped")
 	}
-	
-	db:= c.rootDB
-	
+
+	db := c.rootDB
+
 	// Create collections and indexes
 	log.Printf("Creating collections and indexes...")
 	db.C("config").Create(&mgo.CollectionInfo{})
@@ -126,7 +128,7 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 
 	db.C("databases").Create(&mgo.CollectionInfo{})
 	db.C("databases").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: false})
-	
+
 	// Create default tenant
 	tenant := models.Tenant{
 		Name: answers.Tenant.Name,
@@ -170,7 +172,7 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 }
 
 func (c *MongoDriver) IdToString(id interface{}) string {
-	return id.(bson.ObjectId).Hex()	
+	return id.(bson.ObjectId).Hex()
 }
 
 func (c *MongoDriver) CreateDatabase(database string) error {
@@ -179,7 +181,7 @@ func (c *MongoDriver) CreateDatabase(database string) error {
 
 func (c *MongoDriver) DeleteDatabase(database string) error {
 	err := c.session.DB(database).DropDatabase()
-	
+
 	return err
 }
 
@@ -202,7 +204,7 @@ func (c *MongoDriver) Insert(collection string, item models.Model) error {
 	if item.GetId() == nil || c.IdToString(item.GetId()) == "" {
 		item.SetId(bson.NewObjectId())
 	}
-	
+
 	err := c.rootDB.C(collection).Insert(item)
 	return err
 }

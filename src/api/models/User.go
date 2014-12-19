@@ -25,12 +25,12 @@ import (
 )
 
 type User struct {
-	model `json:"-" bson:",inline"`
-	TenantId  interface{}   `json:"-"`
-	ApiKey    string        `json:"-"`
-	FirstName string        `json:"firstName"`
-	LastName  string        `json:"lastName"`
-	Email     string        `json:"email" binding:"required"`
+	model     `json:"-" bson:",inline"`
+	TenantId  interface{} `json:"-"`
+	ApiKey    string      `json:"-"`
+	FirstName string      `json:"firstName"`
+	LastName  string      `json:"lastName"`
+	Email     string      `json:"email" binding:"required"`
 }
 
 func (c *User) Init() {

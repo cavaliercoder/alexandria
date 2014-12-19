@@ -25,8 +25,8 @@ import (
 )
 
 type Tenant struct {
-	model           `bson:",inline"`
-	Name  string    `binding:"required"`
+	model `bson:",inline"`
+	Name  string `binding:"required"`
 	Code  string
 }
 

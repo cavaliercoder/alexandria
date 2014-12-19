@@ -23,13 +23,13 @@ import (
 )
 
 type CIType struct {
-	tenantedModel                   `bson:",inline"`
+	tenantedModel `bson:",inline"`
 
-        ParentId        interface{}
-	Name            string
-        ShortName       string
-        Description     string
-        Attributes      []attributes.Type
+	ParentId    interface{}
+	Name        string
+	ShortName   string
+	Description string
+	Attributes  []attributes.Type
 }
 
 func (c *CIType) Init() {

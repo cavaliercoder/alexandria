@@ -25,19 +25,19 @@ import (
 )
 
 type Driver interface {
-        Connect(*configuration.DatabaseConfig) error		// Connect to the database
-	Clone() (Driver, error)					// Clone a database connection
-	Close() error						// Disconnect from the database
-	IsBootStrapped() (bool, error)				// Return true is datasbe schema is intialized
-	BootStrap(*configuration.Answers) error			// Initialize database schema
-	CreateDatabase(string) error				// Create a new CMDB
-	DeleteDatabase(string) error				// Delete a CMDB
-	IdToString(interface{}) string				// Convert a database ID record to string
-        GetAll(string, M, interface{}) error			// Get multiple entities from the database
-        GetOne(string, M, interface{}) error			// Get a single entity from the database
-	GetOneById(string, interface{}, interface{}) error	// Get a single entity from the database by ID
-        Insert(string, models.Model) error			// Add an entity to the database
-	Delete(string, M) error					// Delete a resource from the CMDB
+	Connect(*configuration.DatabaseConfig) error       // Connect to the database
+	Clone() (Driver, error)                            // Clone a database connection
+	Close() error                                      // Disconnect from the database
+	IsBootStrapped() (bool, error)                     // Return true is datasbe schema is intialized
+	BootStrap(*configuration.Answers) error            // Initialize database schema
+	CreateDatabase(string) error                       // Create a new CMDB
+	DeleteDatabase(string) error                       // Delete a CMDB
+	IdToString(interface{}) string                     // Convert a database ID record to string
+	GetAll(string, M, interface{}) error               // Get multiple entities from the database
+	GetOne(string, M, interface{}) error               // Get a single entity from the database
+	GetOneById(string, interface{}, interface{}) error // Get a single entity from the database by ID
+	Insert(string, models.Model) error                 // Add an entity to the database
+	Delete(string, M) error                            // Delete a resource from the CMDB
 }
 
 // M is a convenience shortcut for `map[string]interface{}`
@@ -51,7 +51,9 @@ type M map[string]interface{}
 func Connect() (Driver, error) {
 	var driver Driver
 	config, err := configuration.GetConfig()
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 
 	switch config.Database.Driver {
 	case "mongodb":
@@ -65,6 +67,6 @@ func Connect() (Driver, error) {
 	default:
 		panic(fmt.Sprintf("Unsupported database driver: %s", config.Database.Driver))
 	}
-        
+
 	return driver, nil
 }

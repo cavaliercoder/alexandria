@@ -47,7 +47,9 @@ func (c *DatabaseController) Init(r martini.Router) error {
 func (c *DatabaseController) getDatabases(r *services.ApiContext) {
 	var databases []models.Database
 	err := r.DB.GetAll("databases", database.M{"tenantid": r.AuthUser.TenantId}, &databases)
-	if r.Handle(err) { return }
+	if r.Handle(err) {
+		return
+	}
 
 	r.Render(http.StatusOK, databases)
 }
@@ -55,26 +57,29 @@ func (c *DatabaseController) getDatabases(r *services.ApiContext) {
 func (c *DatabaseController) getDatabaseByShortName(r *services.ApiContext, params martini.Params) {
 	var db models.Database
 	err := r.DB.GetOne("databases", database.M{"tenantid": r.AuthUser.TenantId, "shortname": params["shortname"]}, &db)
-	if r.Handle(err) { return }
+	if r.Handle(err) {
+		return
+	}
 
 	r.Render(http.StatusOK, db)
 }
 
-
 func (c *DatabaseController) createDatabase(database models.Database, r *services.ApiContext) {
 	database.Init()
 	database.TenantId = r.AuthUser.TenantId
-	
+
 	// Create backend database name
 	database.Backend = fmt.Sprintf("cmdb-%s-%s", r.DB.IdToString(r.AuthUser.TenantId), database.ShortName)
-	
+
 	// Create database entry
-        err := r.DB.Insert("databases", &database)
-	if err != nil { log.Panic(err) }
+	err := r.DB.Insert("databases", &database)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	// Create actual database
 	err = r.DB.CreateDatabase(database.Backend)
-	
+
 	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/databases/%s", database.ShortName))
 	r.Render(http.StatusCreated, "")
 }

@@ -42,7 +42,7 @@ func main() {
 	// Global args
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name: "c, config",
+			Name:  "c, config",
 			Usage: "configuration file",
 		},
 		cli.StringFlag{
@@ -58,7 +58,7 @@ func main() {
 
 func serve(context *cli.Context) {
 	var err error
-	
+
 	// Load configuration
 	confFile := context.GlobalString("config")
 	if confFile != "" {
@@ -67,7 +67,7 @@ func serve(context *cli.Context) {
 			log.Fatal(err)
 		}
 	}
-	
+
 	// Establish db connection
 	log.Printf("Initializing database connection...")
 	db, err := database.Connect()
@@ -85,9 +85,9 @@ func serve(context *cli.Context) {
 	// Build db schema if required
 	answerFile := context.GlobalString("answers")
 	if booted && answerFile != "" {
-		log.Fatal("An answer file was specified by the database is already initialized")	
+		log.Fatal("An answer file was specified by the database is already initialized")
 	}
-	
+
 	if !booted {
 		if answerFile == "" {
 			log.Fatal("Database is not initialized but no answer file was specified.")

@@ -19,32 +19,32 @@
 package models
 
 import (
-        "time"
+	"time"
 )
 
 type Model interface {
 	Init()
-        GetId()             interface{}
-        SetId(interface{})
+	GetId() interface{}
+	SetId(interface{})
 }
 
 type model struct {
-	Id       interface{}   `json:"-" bson:"_id,omitempty"`
-	Created  time.Time     `json:"-" bson:"created"`
-	Modified time.Time     `json:"-" bson:"modified"`
+	Id       interface{} `json:"-" bson:"_id,omitempty"`
+	Created  time.Time   `json:"-" bson:"created"`
+	Modified time.Time   `json:"-" bson:"modified"`
 }
 
 type tenantedModel struct {
-        model
-        TenantId    interface{}   `json:"-"`
+	model
+	TenantId interface{} `json:"-"`
 }
 
 func (c *model) GetId() interface{} {
-    return c.Id
+	return c.Id
 }
 
 func (c *model) SetId(id interface{}) {
-    c.Id = id
+	c.Id = id
 }
 
 func (c *model) SetCreated() {

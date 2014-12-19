@@ -24,9 +24,9 @@ type String struct {
 }
 
 func (c *String) GetName() string {
-    return "String"    
+	return "String"
 }
 
 func (c *String) GetDescription() string {
-    return "A plain old string of characters"
+	return "A plain old string of characters"
 }

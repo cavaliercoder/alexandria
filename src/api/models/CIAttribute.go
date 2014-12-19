@@ -19,8 +19,8 @@
 package models
 
 type CIAttribute struct {
-        Name            string
-        ShortName       string
-        Description     string
-	Type		string
+	Name        string
+	ShortName   string
+	Description string
+	Type        string
 }

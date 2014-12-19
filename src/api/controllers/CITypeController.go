@@ -45,7 +45,7 @@ func (c *CITypeController) Init(r martini.Router) error {
 	r.Get("/citypes", c.getCITypes)
 	r.Get("/citypes/:shortname", c.getCITypeByShortName)
 	r.Post("/citypes", binding.Bind(models.CIType{}), c.addCIType)
-        r.Delete("/citypes/:shortname", c.deleteCITypeByShortName)
+	r.Delete("/citypes/:shortname", c.deleteCITypeByShortName)
 
 	return nil
 }
@@ -61,7 +61,9 @@ func (c *CITypeController) getCITypes(r *services.ApiContext) {
 func (c *CITypeController) getCITypeByShortName(r *services.ApiContext, params martini.Params) {
 	var citype models.CIType
 	err := r.DB.GetOne(citype_table, database.M{"shortname": params["shortname"]}, &citype)
-	if r.Handle(err) { return }
+	if r.Handle(err) {
+		return
+	}
 
 	r.Render(http.StatusOK, citype)
 }
@@ -69,17 +71,21 @@ func (c *CITypeController) getCITypeByShortName(r *services.ApiContext, params m
 func (c *CITypeController) addCIType(citype models.CIType, r *services.ApiContext) {
 	citype.Init()
 	citype.TenantId = r.AuthUser.TenantId
-        
-        err := r.DB.Insert(citype_table, &citype)
-	if err != nil { log.Panic(err) }
+
+	err := r.DB.Insert(citype_table, &citype)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/citypes/%s", citype.ShortName))
 	r.Render(http.StatusCreated, "")
 }
 
 func (c *CITypeController) deleteCITypeByShortName(r *services.ApiContext, params martini.Params) {
-        err := r.DB.Delete(citype_table, database.M{"tenantid": r.AuthUser.TenantId, "shortname": params["shortname"]})
-        if r.Handle(err) { return }
-        
-        r.Render(http.StatusNoContent, "")
+	err := r.DB.Delete(citype_table, database.M{"tenantid": r.AuthUser.TenantId, "shortname": params["shortname"]})
+	if r.Handle(err) {
+		return
+	}
+
+	r.Render(http.StatusNoContent, "")
 }

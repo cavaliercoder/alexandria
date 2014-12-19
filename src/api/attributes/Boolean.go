@@ -20,9 +20,9 @@
 package attributes
 
 import (
-    "errors"
-    "fmt"
-    "strings"
+	"errors"
+	"fmt"
+	"strings"
 )
 
 type Boolean struct {
@@ -30,22 +30,22 @@ type Boolean struct {
 }
 
 func (c *Boolean) GetName() string {
-    return "Boolean"    
+	return "Boolean"
 }
 
 func (c *Boolean) GetDescription() string {
-    return "True/False binary value"
+	return "True/False binary value"
 }
 
 func (c *Boolean) SetValue(value string) error {
-    switch strings.ToLower(value) {
-        case "true", "1", "yes", "y":
-            c.value = "True"
-        case "false", "0", "no", "n", "null", "nil":
-            c.value = "False"
-        default:
-            return errors.New(fmt.Sprintf("Invalid boolean value: %s", value))
-    }
-    
-    return nil
+	switch strings.ToLower(value) {
+	case "true", "1", "yes", "y":
+		c.value = "True"
+	case "false", "0", "no", "n", "null", "nil":
+		c.value = "False"
+	default:
+		return errors.New(fmt.Sprintf("Invalid boolean value: %s", value))
+	}
+
+	return nil
 }

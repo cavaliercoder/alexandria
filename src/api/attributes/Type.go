@@ -20,14 +20,14 @@
 package attributes
 
 type Type interface {
-	GetName()		string
-	GetDescription()	string
-	GetValue()		string
-	SetValue(string) 	error
+	GetName() string
+	GetDescription() string
+	GetValue() string
+	SetValue(string) error
 }
 
 type typ struct {
-	value	string
+	value string
 }
 
 func (c *typ) GetValue() string {
@@ -45,12 +45,12 @@ var types TypeMap
 
 func GetAttributeTypes() TypeMap {
 	if len(types) == 0 {
-		typs := []Type{ &String{} }
-		
+		typs := []Type{&String{}}
+
 		for _, typ := range typs {
 			types[typ.GetName()] = typ
 		}
 	}
-	
+
 	return types
 }
