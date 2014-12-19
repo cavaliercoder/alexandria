@@ -19,7 +19,6 @@
 package controllers
 
 import (
-	"alexandria/api/database"
 	"alexandria/api/models"
 	"alexandria/api/services"
 
@@ -38,9 +37,9 @@ func (c *ConfigController) Init(r martini.Router) error {
 	return nil
 }
 
-func (c *ConfigController) getConfig(dbdriver database.Driver, r *services.ApiContext) {
+func (c *ConfigController) getConfig(r *services.ApiContext) {
 	var config models.Config
-	err := dbdriver.GetOne("config", nil, &config)
+	err := r.DB.GetOne("config", nil, &config)
 	r.Handle(err)
 
 	r.Render(http.StatusOK, config)

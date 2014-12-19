@@ -43,27 +43,27 @@ func (c *TenantController) Init(r martini.Router) error {
 	return nil
 }
 
-func (c *TenantController) getTenant(dbdriver database.Driver, r *services.ApiContext, params martini.Params) {
+func (c *TenantController) getTenant(r *services.ApiContext, params martini.Params) {
 	var tenant models.Tenant
 	code := strings.ToUpper(params["id"])
-	err := dbdriver.GetOne("tenants", database.M{"code": code}, &tenant)
+	err := r.DB.GetOne("tenants", database.M{"code": code}, &tenant)
 
 	r.Handle(err)
 
 	r.Render(http.StatusOK, tenant)
 }
 
-func (c *TenantController) getTenants(dbdriver database.Driver, r *services.ApiContext) {
+func (c *TenantController) getTenants(r *services.ApiContext) {
 	var tenants []models.Tenant
-	err := dbdriver.GetAll("tenants", nil, &tenants)
+	err := r.DB.GetAll("tenants", nil, &tenants)
 	r.Handle(err)
 
 	r.Render(http.StatusOK, tenants)
 }
 
-func (c *TenantController) addTenant(tenant models.Tenant, dbdriver database.Driver, r *services.ApiContext) {
+func (c *TenantController) addTenant(tenant models.Tenant, r *services.ApiContext) {
 	tenant.Init()
-	err := dbdriver.Insert("tenants", tenant)
+	err := r.DB.Insert("tenants", tenant)
 	if err != nil {
 		log.Fatal(err)
 	}

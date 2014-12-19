@@ -45,25 +45,25 @@ func (c *UserController) Init(r martini.Router) error {
 	return nil
 }
 
-func (c *UserController) getUsers(dbdriver database.Driver, r *services.ApiContext) {
+func (c *UserController) getUsers(r *services.ApiContext) {
 	var users []models.User
-	err := dbdriver.GetAll("users", nil, &users)
+	err := r.DB.GetAll("users", nil, &users)
 	r.Handle(err)
 
 	r.Render(http.StatusOK, users)
 }
 
-func (c *UserController) getUserByEmail(dbdriver database.Driver, r *services.ApiContext, params martini.Params) {
+func (c *UserController) getUserByEmail(r *services.ApiContext, params martini.Params) {
 	var user models.User
-	err := dbdriver.GetOne("users", database.M{"email": params["email"]}, &user)
+	err := r.DB.GetOne("users", database.M{"email": params["email"]}, &user)
 	if r.Handle(err) { return }
 
 	r.Render(http.StatusOK, user)
 }
 
-func (c *UserController) addUser(user models.User, dbdriver database.Driver, r *services.ApiContext) {
+func (c *UserController) addUser(user models.User, r *services.ApiContext) {
 	user.Init()
-        err := dbdriver.Insert("users", user)
+        err := r.DB.Insert("users", user)
 	if err != nil { log.Panic(err) }
 
 	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/users/%s", user.Email))
