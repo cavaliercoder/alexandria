@@ -56,15 +56,13 @@ func (c *UserController) getUsers(dbdriver database.Driver, r *services.Renderer
 func (c *UserController) getUserByEmail(dbdriver database.Driver, r *services.Renderer, params martini.Params) {
 	var user models.User
 	err := dbdriver.GetOne("users", database.M{"email": params["email"]}, &user)
-	r.Handle(err)
+	if r.Handle(err) { return }
 
 	r.Render(http.StatusOK, user)
 }
 
 func (c *UserController) addUser(user models.User, dbdriver database.Driver, r *services.Renderer) {
-        log.Printf("%#v", user)
 	user.Init()
-	log.Printf("%#v", user)
         err := dbdriver.Insert("users", user)
 	if err != nil { log.Panic(err) }
 

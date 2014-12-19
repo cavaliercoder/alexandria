@@ -41,9 +41,9 @@ func RendererService() martini.Handler {
 	}
 }
 
-func (c *Renderer) Handle(err error) {
+func (c *Renderer) Handle(err error) bool {
 	if err == nil {
-		return
+		return false
 	}
 
 	switch err.Error() {
@@ -52,6 +52,8 @@ func (c *Renderer) Handle(err error) {
 	default:
 		log.Panic(err)
 	}
+        
+        return true
 }
 
 func (c *Renderer) NotFound() {
