@@ -19,8 +19,7 @@
 package models
 
 import (
-	"regexp"
-	"strings"
+	"alexandria/api/configuration"
 )
 
 type Database struct {
@@ -34,24 +33,5 @@ type Database struct {
 
 func (c *Database) Init() {
 	c.SetCreated()
-	c.GetShortName()
-}
-
-func (c *Database) GetShortName() string {
-	if c.ShortName == "" {
-		c.ShortName = strings.ToLower(c.Name)
-
-		// replace all spaces with hyphens
-		c.ShortName = strings.Replace(c.ShortName, " ", "-", -1)
-
-		// remove all non alphanumerics and non hyphens
-		r := regexp.MustCompile(`[^a-z0-9-]+`)
-		c.ShortName = r.ReplaceAllString(c.ShortName, "")
-
-		// Replace multiple hyphens
-		r = regexp.MustCompile(`-+`)
-		c.ShortName = r.ReplaceAllString(c.ShortName, "-")
-	}
-
-	return c.ShortName
+	if c.ShortName == "" { c.ShortName = configuration.GetShortName(c.Name) }
 }

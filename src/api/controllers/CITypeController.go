@@ -23,6 +23,7 @@ import (
 	"log"
 	"net/http"
 
+	"alexandria/api/configuration"
 	"alexandria/api/database"
 	"alexandria/api/models"
 	"alexandria/api/services"
@@ -42,10 +43,10 @@ type CITypeController struct {
 func (c *CITypeController) Init(r martini.Router) error {
 
 	// Add routes
-	r.Get("/citypes", c.getCITypes)
-	r.Get("/citypes/:shortname", c.getCITypeByShortName)
-	r.Post("/citypes", binding.Bind(models.CIType{}), c.addCIType)
-	r.Delete("/citypes/:shortname", c.deleteCITypeByShortName)
+	r.Get("/types", c.getCITypes)
+	r.Get("/types/:shortname", c.getCITypeByShortName)
+	r.Post("/types", binding.Bind(models.CIType{}), c.addCIType)
+	r.Delete("/types/:shortname", c.deleteCITypeByShortName)
 
 	return nil
 }
@@ -71,13 +72,14 @@ func (c *CITypeController) getCITypeByShortName(r *services.ApiContext, params m
 func (c *CITypeController) addCIType(citype models.CIType, r *services.ApiContext) {
 	citype.Init()
 	citype.TenantId = r.AuthUser.TenantId
+	if citype.ShortName == "" { citype.ShortName = configuration.GetShortName(citype.Name) }
 
 	err := r.DB.Insert(citype_table, &citype)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/citypes/%s", citype.ShortName))
+	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/types/%s", citype.ShortName))
 	r.Render(http.StatusCreated, "")
 }
 
