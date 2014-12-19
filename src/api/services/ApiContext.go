@@ -20,26 +20,52 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/go-martini/martini"
+	
+	"alexandria/api/database"
+	"alexandria/api/models"
 )
 
 type ApiContext struct {
 	*http.Request
 	http.ResponseWriter
-	martini.Context
+	context	martini.Context		// Martini context
+	DB	database.Driver		// Database driver
 }
 
 // Wire the service
 func ApiContextService() martini.Handler {
+	db, err := database.Connect()
+	if err != nil { log.Panic(err) }
+	
 	return func(req *http.Request, res http.ResponseWriter, c martini.Context) {
-		r := &ApiContext{req, res, c}
-
+		clone, err := db.Clone()
+		if err != nil { log.Panic(err) }
+		defer clone.Close()
+		
+		r := &ApiContext{req, res, c, clone}
 		c.Map(r)
+		
+		// Wait to close the DB
+		c.Next()
 	}
+}
+
+func (c *ApiContext) GetAuthUser() (*models.User, error) {
+	var user models.User
+	
+	apiKey := c.Request.Header.Get("X-Auth-Token")
+	if apiKey == "" { return nil, errors.New("Authentication token not set") }
+	
+	err := c.DB.GetOne("users", database.M{"apikey": apiKey}, &user)
+	if err != nil { return nil, err }
+	
+	return &user, nil
 }
 
 func (c *ApiContext) Handle(err error) bool {
@@ -59,11 +85,11 @@ func (c *ApiContext) Handle(err error) bool {
 }
 
 func (c *ApiContext) NotFound() {
-	c.WriteHeader(http.StatusNotFound)
+	c.ResponseWriter.WriteHeader(http.StatusNotFound)
 }
 
 func (c *ApiContext) Render(status int, v interface{}) {
-	format := c.URL.Query().Get("format")
+	format := c.Request.URL.Query().Get("format")
 	if format == "" {
 		format = "json"
 	}
@@ -84,7 +110,7 @@ func (c *ApiContext) JSON(status int, v interface{}) {
 
 	var err error
 	var data []byte
-	if c.URL.Query().Get("pretty") == "true" {
+	if c.Request.URL.Query().Get("pretty") == "true" {
 		data, err = json.MarshalIndent(v, "", "    ")
 	} else {
 		data, err = json.Marshal(v)
@@ -94,7 +120,7 @@ func (c *ApiContext) JSON(status int, v interface{}) {
 	}
 
 	c.ResponseWriter.Header().Set("Content-Type", "application/json")
-	c.WriteHeader(status)
+	c.ResponseWriter.WriteHeader(status)
 
 	c.ResponseWriter.Write(data)
 }
