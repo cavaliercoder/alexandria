@@ -31,43 +31,37 @@ import (
 	"github.com/martini-contrib/binding"
 )
 
-type UserController struct {
+type DatabaseController struct {
 	controller
 }
 
-func (c *UserController) Init(r martini.Router) error {
-
+func (c *DatabaseController) Init(r martini.Router) error {
 	// Add routes
-	r.Get("/users", c.getUsers)
-	r.Get("/users/:email", c.getUserByEmail)
-	r.Post("/users", binding.Bind(models.User{}), c.addUser)
+	r.Get("/databases", c.getDatabases)
+	r.Post("/databases", binding.Bind(models.Database{}), c.addDatabase)
 
 	return nil
 }
 
-func (c *UserController) getUsers(r *services.ApiContext) {
-	var users []models.User
-	err := r.DB.GetAll("users", nil, &users)
-	r.Handle(err)
-
-	r.Render(http.StatusOK, users)
-}
-
-func (c *UserController) getUserByEmail(r *services.ApiContext, params martini.Params) {
-	var user models.User
-	err := r.DB.GetOne("users", database.M{"email": params["email"]}, &user)
+func (c *DatabaseController) getDatabases(r *services.ApiContext) {
+	var databases []models.Database
+	err := r.DB.GetAll("databases", database.M{"tenantid": r.AuthUser.TenantId}, &databases)
 	if r.Handle(err) { return }
 
-	r.Render(http.StatusOK, user)
+	r.Render(http.StatusOK, databases)
 }
 
-func (c *UserController) addUser(user models.User, r *services.ApiContext) {
-	user.Init()
-	user.TenantId = r.AuthUser.TenantId
-        
-        err := r.DB.Insert("users", user)
+func (c *DatabaseController) addDatabase(database models.Database, r *services.ApiContext) {
+	database.Init()
+	database.TenantId = r.AuthUser.TenantId
+	
+	// Create database entry
+        err := r.DB.Insert("databases", database)
 	if err != nil { log.Panic(err) }
 
-	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/users/%s", user.Email))
+	// Create actual database
+	err = r.DB.CreateDatabase(database.Id.Hex())
+	
+	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/databases/%s", database.ShortName))
 	r.Render(http.StatusCreated, "")
 }

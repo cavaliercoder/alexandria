@@ -137,4 +137,10 @@ func initRoutes(router martini.Router) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	databaseController := new(controllers.DatabaseController)
+	err = databaseController.Init(router)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

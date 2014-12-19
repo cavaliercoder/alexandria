@@ -29,6 +29,8 @@ type Driver interface {
 	Close() error						// Disconnect from the database
 	IsBootStrapped() (bool, error)				// Return true is datasbe schema is intialized
 	BootStrap(*configuration.Answers) error			// Initialize database schema
+	CreateDatabase(string) error				// Create a new CMDB
+	DeleteDatabase(string) error				// Delete a CMDB
         GetAll(string, M, interface{}) error			// Get multiple entities from the database
         GetOne(string, M, interface{}) error			// Get a single entity from the database
 	GetOneById(string, interface{}, interface{}) error	// Get a single entity from the database by ID

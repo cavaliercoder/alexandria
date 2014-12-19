@@ -19,35 +19,39 @@
 package models
 
 import (
-	"crypto/sha1"
-	"encoding/json"
-	"fmt"
+	"regexp"
+	"strings"
 	"gopkg.in/mgo.v2/bson"
 )
 
-type User struct {
-	model `json:"-" bson:",inline"`
-	TenantId  bson.ObjectId `json:"-"`
-	ApiKey    string        `json:"-"`
-	FirstName string        `json:"firstName"`
-	LastName  string        `json:"lastName"`
-	Email     string        `json:"email" binding:"required"`
+type Database struct {
+	model 				`json:"-" bson:",inline"`
+	TenantId  	bson.ObjectId	`json:"-"`
+	Name	  	string        	`json:"name" binding:"required"`
+	ShortName	string		`json:"shortName"`
+	Description	string		`json:"description"`
 }
 
-func (c *User) Init() {
+func (c *Database) Init() {
 	c.SetCreated()
-	c.GenerateApiKey()
+	c.GetShortName()
 }
 
-func (c *User) GenerateApiKey() string {
-	// Create API key
-	jsonHash, err := json.Marshal(c)
-	if err != nil {
-		panic(err)
+func (c *Database) GetShortName() string {
+	if c.ShortName == "" {
+		c.ShortName = strings.ToLower(c.Name)
+		
+		// replace all spaces with hyphens
+		c.ShortName = strings.Replace(c.ShortName, " ", "-", -1)
+		
+		// remove all non alphanumerics and non hyphens
+		r := regexp.MustCompile(`[^a-z0-9-]+`)
+		c.ShortName = r.ReplaceAllString(c.ShortName, "")
+		
+		// Replace multiple hyphens
+		r = regexp.MustCompile(`-+`)
+		c.ShortName = r.ReplaceAllString(c.ShortName, "-")
 	}
-
-	shaSum := sha1.Sum(jsonHash)
-	c.ApiKey = fmt.Sprintf("%x", shaSum)
-
-	return c.ApiKey
+	
+	return c.ShortName
 }

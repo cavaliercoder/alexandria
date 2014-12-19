@@ -110,6 +110,7 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 	db:= c.rootDB
 	
 	// Create collections and indexes
+	log.Printf("Creating collections and indexes...")
 	db.C("config").Create(&mgo.CollectionInfo{})
 
 	db.C("tenants").Create(&mgo.CollectionInfo{})
@@ -119,6 +120,9 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"email"}, Unique: true})
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"apiKey"}, Unique: true, Sparse: true})
 
+	db.C("databases").Create(&mgo.CollectionInfo{})
+	db.C("databases").EnsureIndex(mgo.Index{Key: []string{"tenantId"}, Unique: false})
+	
 	// Create default tenant
 	tenant := models.Tenant{
 		Name: answers.Tenant.Name,
@@ -178,5 +182,15 @@ func (c *MongoDriver) GetOneById(collection string, id interface{}, result inter
 
 func (c *MongoDriver) Insert(collection string, items interface{}) error {
 	err := c.rootDB.C(collection).Insert(items)
+	return err
+}
+
+func (c *MongoDriver) CreateDatabase(database string) error {
+	return nil
+}
+
+func (c *MongoDriver) DeleteDatabase(database string) error {
+	err := c.session.DB(database).DropDatabase()
+	
 	return err
 }

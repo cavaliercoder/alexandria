@@ -34,9 +34,9 @@ import (
 type ApiContext struct {
 	*http.Request
 	http.ResponseWriter
-	context		martini.Context		// Martini context
-	DB		database.Driver		// Database driver
-	AuthUser	*models.User		// Authenticated user
+	context			martini.Context		// Martini context
+	DB			database.Driver		// Database driver
+	AuthUser		*models.User		// Authenticated user
 }
 
 // Wire the service
