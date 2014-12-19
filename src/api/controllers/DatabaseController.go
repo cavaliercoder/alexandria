@@ -38,7 +38,8 @@ type DatabaseController struct {
 func (c *DatabaseController) Init(r martini.Router) error {
 	// Add routes
 	r.Get("/databases", c.getDatabases)
-	r.Post("/databases", binding.Bind(models.Database{}), c.addDatabase)
+	r.Get("/databases/:shortname", c.getDatabaseByShortName)
+	r.Post("/databases", binding.Bind(models.Database{}), c.createDatabase)
 
 	return nil
 }
@@ -51,7 +52,16 @@ func (c *DatabaseController) getDatabases(r *services.ApiContext) {
 	r.Render(http.StatusOK, databases)
 }
 
-func (c *DatabaseController) addDatabase(database models.Database, r *services.ApiContext) {
+func (c *DatabaseController) getDatabaseByShortName(r *services.ApiContext, params martini.Params) {
+	var db models.Database
+	err := r.DB.GetOne("databases", database.M{"tenantid": r.AuthUser.TenantId, "shortname": params["shortname"]}, &db)
+	if r.Handle(err) { return }
+
+	r.Render(http.StatusOK, db)
+}
+
+
+func (c *DatabaseController) createDatabase(database models.Database, r *services.ApiContext) {
 	database.Init()
 	database.TenantId = r.AuthUser.TenantId
 	
