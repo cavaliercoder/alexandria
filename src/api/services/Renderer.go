@@ -48,7 +48,8 @@ func (c *Renderer) Handle(err error) bool {
 
 	switch err.Error() {
 	case "not found":
-		c.WriteHeader(http.StatusNotFound)
+		c.ResponseWriter.WriteHeader(http.StatusNotFound)
+                c.ResponseWriter.Write([]byte("404 page not found\n"))
 	default:
 		log.Panic(err)
 	}

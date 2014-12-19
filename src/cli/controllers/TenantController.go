@@ -20,13 +20,6 @@ package controllers
 
 import (
   "github.com/codegangsta/cli"
-  
-  "fmt"
-  "io"
-  "log"
-  "net/http"
-  "os"
-  "strings"
 )
 
 type TenantController struct {
@@ -68,39 +61,9 @@ func (c *TenantController) Init(app *cli.App) error {
 }
 
 func (c *TenantController) GetTenant(context *cli.Context) {
-    id := context.Args().First()
-    
-    var err error
-    var res *http.Response
-    
-    if id == "" {
-        res, err = c.ApiRequest(context, "GET", "/tenants", nil)
-    } else {
-        res, err = c.ApiRequest(context, "GET", fmt.Sprintf("/tenants/%s", id), nil)
-    }
-    
-    if err != nil {
-        log.Panic(err)
-    }
-    
-    c.ApiResult(res)
+    c.getResource(context, "/tenants")
 }
 
 func (c *TenantController) AddTenant(context *cli.Context) {
-    var input io.Reader
-    if context.GlobalBool("stdin") {
-        input = os.Stdin
-    } else {
-        input = strings.NewReader(context.Args().First())
-    }
-    
-    res, err := c.ApiRequest(context, "POST", "/tenants", input)
-    if err != nil { log.Panic(err) }
-    defer res.Body.Close()
-    
-    if res.StatusCode == http.StatusCreated {
-        fmt.Printf("Created %s\n", res.Header.Get("Location"))
-    } else {
-        c.ApiError(res)
-    }
+    c.addResource(context, "tenants", "")
 }
