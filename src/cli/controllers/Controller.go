@@ -21,7 +21,6 @@ package controllers
 import (
   "github.com/codegangsta/cli"
   
-  "bufio"
   "errors"
   "fmt"
   "io"
@@ -44,19 +43,16 @@ func (c *controller) ApiRequest(context *cli.Context, method string, path string
     url := context.GlobalString("url")
     apiKey := context.GlobalString("api-key")
     
-    if url == "" {
-        fmt.Fprintf(os.Stderr, "API base URL not specified\n")
-        os.Exit(1)
-    }
+    // Validate URL and API Key
+    if url == "" { Die("API base URL not specified\n") }
+    if apiKey == "" { Die("API authentication key not specified\n") }
     
-    if apiKey == "" {
-        fmt.Fprintf(os.Stderr, "API authentication key not specified\n")
-        os.Exit(1)
-    }
-    
+    // Formulate request URL
     url = fmt.Sprintf("%s%s?pretty=true", url, path)    
     DPrint(fmt.Sprintf("API Request: %s %s", method, url))
     
+    // Create a HTTP client that does not follow redirects
+    // This allows 'Location' headers to be printed to the CLI
     client := http.Client{
         CheckRedirect: func(req *http.Request, via []*http.Request) error {
             return errors.New("Never follow redirects")
@@ -65,12 +61,13 @@ func (c *controller) ApiRequest(context *cli.Context, method string, path string
     req, err := http.NewRequest(strings.ToUpper(method), url, body)
     if err != nil { return nil, err }
     
+    // Add request headers
     req.Header.Add("Content-type", "application/json")
     req.Header.Add("X-Auth-Token", apiKey)
     req.Header.Add("User-Agent", "Alexandria CMDB CLI")
-        
-    var res *http.Response
-    res, err = client.Do(req)
+    
+    // Submit the request  
+    res, err := client.Do(req)
     
     return res, err
 }
@@ -83,49 +80,52 @@ func (c *controller) ApiResult(res *http.Response) {
 
 func (c *controller) ApiError(res *http.Response) {
         fmt.Fprintf(os.Stderr, "%s\n", res.Status)
-        io.Copy(os.Stderr, res.Body)
-        fmt.Fprintf(os.Stderr, "\n")
+        //io.Copy(os.Stderr, res.Body)
+        //fmt.Fprintf(os.Stderr, "\n")
         os.Exit(1)
 }
 
-func (c *controller) DumpHttpError(req *http.Request, res *http.Response) {    
-    // Print request body
-    if req != nil {
-        defer req.Body.Close()
-        
-        DPrint("<><><> Request <><><>")
-        
-        for k := range req.Header {
-            DPrint(fmt.Sprintf("Header %s: %s", k, req.Header[k][0]))
-        }
-        
-        DPrint("Body:")
-        buf := bufio.NewReader(req.Body)        
-        var line []byte
-        var err error = nil
-        for err == nil {
-           line, _, err = buf.ReadLine()           
-           DPrint(line)
-        }
+func (c *controller) getResource(context *cli.Context, path string) {
+    // Get requested resource ID from first command argument
+    id := context.Args().First()
+    
+    var err error
+    var res *http.Response
+    
+    if id != "" {
+        // Get one by id
+        path = fmt.Sprintf("%s/%s", path, id)
     }
     
-    if res != nil {
-        DPrint("<><><> Response <><><>")
-        DPrint(fmt.Sprintf("Status: HTTP %s", res.Status))
-        
-        for k := range res.Header {
-            DPrint(fmt.Sprintf("Header %s: %s", k, res.Header[k][0]))
-        }
-        
-        DPrint("Body:")
-        
-        // Print request body
-        buf := bufio.NewReader(res.Body)        
-        var line []byte
-        var err error = nil
-        for err == nil {
-           line, _, err = buf.ReadLine()           
-           DPrint(line)
-        }
+    res, err = c.ApiRequest(context, "GET", path, nil)
+    if err != nil { Die(err) }
+    
+    switch res.StatusCode {
+        case http.StatusOK:
+            c.ApiResult(res)
+        case http.StatusNotFound:
+            Die(fmt.Sprintf("No such resource found at %s", path))
+        default:
+            c.ApiError(res)
+    }
+}
+
+func (c *controller) addResource(context *cli.Context, path string) {
+    // Decode the resource from STDIN or from the first command argument?
+    var input io.Reader
+    if context.GlobalBool("stdin") {
+        input = os.Stdin
+    } else {
+        input = strings.NewReader(context.Args().First())
+    }
+    
+    res, err := c.ApiRequest(context, "POST", path, input)
+    defer res.Body.Close()
+    if err != nil { Die(err) }
+    
+    if res.StatusCode == http.StatusCreated {
+        fmt.Printf("Created %s\n", res.Header.Get("Location"))
+    } else {
+        c.ApiError(res)
     }
 }

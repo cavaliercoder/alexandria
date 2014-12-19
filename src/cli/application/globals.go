@@ -33,6 +33,11 @@ func SetContext(c *cli.Context) error {
     return nil
 }
 
+func Die(message interface{}) {
+	fmt.Fprintf(os.Stderr, "%s\n", message)
+	os.Exit(1)
+}
+
 func DPrint(message interface{}) {
     if context.GlobalBool("debug") {
         fmt.Fprintf(os.Stderr, "DEBUG: %s\n", message)

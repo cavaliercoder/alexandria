@@ -20,13 +20,6 @@ package controllers
 
 import (
   "github.com/codegangsta/cli"
-  
-  "fmt"
-  "io"
-  "log"
-  "net/http"
-  "os"
-  "strings"
 )
 
 type UserController struct {
@@ -68,39 +61,9 @@ func (c *UserController) Init(app *cli.App) error {
 }
 
 func (c *UserController) GetUser(context *cli.Context) {
-    id := context.Args().First()
-    
-    var err error
-    var res *http.Response
-    
-    if id == "" {
-        res, err = c.ApiRequest(context, "GET", "/users", nil)
-    } else {
-        res, err = c.ApiRequest(context, "GET", fmt.Sprintf("/users/%s", id), nil)
-    }
-    
-    if err != nil {
-        log.Panic(err)
-    }
-    
-    c.ApiResult(res)
+    c.getResource(context, "/users")
 }
 
 func (c *UserController) AddUser(context *cli.Context) {
-    var input io.Reader
-    if context.GlobalBool("stdin") {
-        input = os.Stdin
-    } else {
-        input = strings.NewReader(context.Args().First())
-    }
-    
-    res, err := c.ApiRequest(context, "POST", "/users", input)
-    if err != nil { log.Panic(err) }
-    defer res.Body.Close()
-    
-    if res.StatusCode == http.StatusCreated {
-        fmt.Printf("Created %s\n", res.Header.Get("Location"))
-    } else {
-        c.ApiError(res)
-    }
+    c.addResource(context, "/users")
 }
