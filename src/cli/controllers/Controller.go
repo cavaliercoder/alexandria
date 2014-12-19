@@ -32,15 +32,15 @@ import (
   . "alexandria/cli/application"
 )
 
-type BaseController interface {
+type Controller interface {
     Init(app *cli.App) error
 }
 
-type baseController struct {
+type controller struct {
     app     *cli.App
 }
 
-func (c baseController) ApiRequest(context *cli.Context, method string, path string, body io.Reader) (*http.Request, *http.Response, error) {
+func (c *controller) ApiRequest(context *cli.Context, method string, path string, body io.Reader) (*http.Request, *http.Response, error) {
     url := context.GlobalString("url")
     apiKey := context.GlobalString("api-key")
     
@@ -75,20 +75,20 @@ func (c baseController) ApiRequest(context *cli.Context, method string, path str
     return req, res, err
 }
 
-func (c baseController) ApiResult(res *http.Response) {
+func (c *controller) ApiResult(res *http.Response) {
     defer res.Body.Close()
     io.Copy(os.Stdout, res.Body)
     fmt.Println()
 }
 
-func (c baseController) ApiError(res *http.Response) {
+func (c *controller) ApiError(res *http.Response) {
         fmt.Fprintf(os.Stderr, "%s\n", res.Status)
         io.Copy(os.Stderr, res.Body)
         fmt.Fprintf(os.Stderr, "\n")
         os.Exit(1)
 }
 
-func (c baseController) DumpHttpError(req *http.Request, res *http.Response) {    
+func (c *controller) DumpHttpError(req *http.Request, res *http.Response) {    
     // Print request body
     if req != nil {
         defer req.Body.Close()

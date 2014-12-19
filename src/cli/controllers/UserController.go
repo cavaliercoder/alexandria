@@ -30,10 +30,10 @@ import (
 )
 
 type UserController struct {
-    baseController    
+    controller
 }
 
-func (c UserController) Init(app *cli.App) error {
+func (c *UserController) Init(app *cli.App) error {
     c.app = app
     
     c.app.Commands = append(c.app.Commands, []cli.Command{
@@ -67,7 +67,7 @@ func (c UserController) Init(app *cli.App) error {
     return nil
 }
 
-func (c UserController) GetUser(context *cli.Context) {
+func (c *UserController) GetUser(context *cli.Context) {
     id := context.Args().First()
     
     var err error
@@ -86,7 +86,7 @@ func (c UserController) GetUser(context *cli.Context) {
     c.ApiResult(res)
 }
 
-func (c UserController) AddUser(context *cli.Context) {
+func (c *UserController) AddUser(context *cli.Context) {
     var input io.Reader
     if context.GlobalBool("stdin") {
         input = os.Stdin

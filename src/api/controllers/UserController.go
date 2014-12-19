@@ -62,11 +62,11 @@ func (c *UserController) getUserByEmail(dbdriver database.Driver, r *services.Re
 }
 
 func (c *UserController) addUser(user models.User, dbdriver database.Driver, r *services.Renderer) {
+        log.Printf("%#v", user)
 	user.Init()
-	err := dbdriver.Insert("users", &user)
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Printf("%#v", user)
+        err := dbdriver.Insert("users", user)
+	if err != nil { log.Panic(err) }
 
 	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/users/%s", user.Email))
 	r.Render(http.StatusCreated, "")

@@ -27,8 +27,7 @@ import (
 
 type User struct {
 	model `json:"-" bson:",inline"`
-
-	TenantId  bson.ObjectId `json:"-"`
+	TenantId  bson.ObjectId `json:"-" binding:"required"`
 	ApiKey    string        `json:"apiKey"`
 	FirstName string        `json:"firstName"`
 	LastName  string        `json:"lastName"`

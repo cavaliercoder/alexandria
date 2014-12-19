@@ -30,10 +30,10 @@ import (
 )
 
 type TenantController struct {
-    baseController    
+    controller
 }
 
-func (c TenantController) Init(app *cli.App) error {
+func (c *TenantController) Init(app *cli.App) error {
     c.app = app
     
     c.app.Commands = append(c.app.Commands, []cli.Command{
@@ -67,7 +67,7 @@ func (c TenantController) Init(app *cli.App) error {
     return nil
 }
 
-func (c TenantController) GetTenant(context *cli.Context) {
+func (c *TenantController) GetTenant(context *cli.Context) {
     id := context.Args().First()
     
     var err error
@@ -86,7 +86,7 @@ func (c TenantController) GetTenant(context *cli.Context) {
     c.ApiResult(res)
 }
 
-func (c TenantController) AddTenant(context *cli.Context) {
+func (c *TenantController) AddTenant(context *cli.Context) {
     var input io.Reader
     if context.GlobalBool("stdin") {
         input = os.Stdin
