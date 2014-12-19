@@ -22,7 +22,6 @@ import (
 	. "alexandria/cli/application"
 	"alexandria/cli/controllers"
 	"github.com/codegangsta/cli"
-	"log"
 	"os"
 )
 
@@ -68,36 +67,18 @@ func main() {
 
 	// Add controllers
 	var err error
-
-	resController := new(controllers.ResourceController)
-	err = resController.Init(app)
-	if err != nil {
-		Die(err)
+	controllers := []controllers.Controller{
+		&controllers.CITypeController{},
+		&controllers.ConfigController{},
+		&controllers.ResourceController{},
+		&controllers.TenantController{},
+		&controllers.UserController{},
 	}
-
-	userController := new(controllers.UserController)
-	err = userController.Init(app)
-	if err != nil {
-		log.Fatal(err)
+	
+	for _, controller := range controllers {
+		err = controller.Init(app)
+		if err != nil { Die(err) }
 	}
-
-	tenantController := new(controllers.TenantController)
-	err = tenantController.Init(app)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	configController := new(controllers.ConfigController)
-	err = configController.Init(app)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	/*
-	   databaseController := new(controllers.DatabaseController)
-	   err = databaseController.Init(app)
-	   if err != nil { log.Fatal(err) }
-	*/
 
 	app.Run(os.Args)
 }

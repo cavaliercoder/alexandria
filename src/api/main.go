@@ -111,42 +111,20 @@ func serve(context *cli.Context) {
 	m.Use(services.ApiContextService())
 
 	// Initialize controllers
-	initRoutes(m.Router)
+	controllers := []controllers.Controller{
+		new(controllers.CITypeController),
+		new(controllers.ConfigController),
+		new(controllers.DatabaseController),
+		new(controllers.TenantController),
+		new(controllers.UserController),
+	}
+	
+	for _, controller := range controllers {
+		err = controller.Init(m.Router)
+		if err != nil { log.Fatal(err) }
+	}
 
 	// Git'er done
 	log.Printf("Initialization complete")
 	m.Run()
-}
-
-func initRoutes(router martini.Router) {
-	var err error
-	configController := new(controllers.ConfigController)
-	err = configController.Init(router)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	userController := new(controllers.UserController)
-	err = userController.Init(router)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tenantController := new(controllers.TenantController)
-	err = tenantController.Init(router)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	databaseController := new(controllers.DatabaseController)
-	err = databaseController.Init(router)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	citypeController := new(controllers.CITypeController)
-	err = citypeController.Init(router)
-	if err != nil {
-		log.Fatal(err)
-	}
 }

@@ -19,8 +19,8 @@
 package models
 
 type CIAttribute struct {
-	Name        string
+	Name        string	`binding:"required"`
 	ShortName   string
 	Description string
-	Type        string
+	Type        string	`binding:"required"`
 }
