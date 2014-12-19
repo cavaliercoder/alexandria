@@ -66,7 +66,7 @@ func (c *UserController) addUser(user models.User, r *services.ApiContext) {
 	user.Init()
 	user.TenantId = r.AuthUser.TenantId
         
-        err := r.DB.Insert("users", user)
+        err := r.DB.Insert("users", &user)
 	if err != nil { log.Panic(err) }
 
 	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/users/%s", user.Email))

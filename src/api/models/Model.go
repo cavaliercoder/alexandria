@@ -19,30 +19,35 @@
 package models
 
 import (
-	"gopkg.in/mgo.v2/bson"
-	"time"
+        "time"
 )
 
 type Model interface {
 	Init()
+        GetId()             interface{}
+        SetId(interface{})
 }
 
 type model struct {
-	Id       bson.ObjectId `json:"-" bson:"_id,omitempty"`
+	Id       interface{}   `json:"-" bson:"_id,omitempty"`
 	Created  time.Time     `json:"-" bson:"created"`
 	Modified time.Time     `json:"-" bson:"modified"`
 }
 
 type tenantedModel struct {
         model
-        TenantId    bson.ObjectId   `json:"-"`
+        TenantId    interface{}   `json:"-"`
+}
+
+func (c *model) GetId() interface{} {
+    return c.Id
+}
+
+func (c *model) SetId(id interface{}) {
+    c.Id = id
 }
 
 func (c *model) SetCreated() {
-	if c.Id.Hex() == "" {
-		c.Id = bson.NewObjectId()
-	}
-
 	if c.Created.IsZero() {
 		now := time.Now()
 		c.Created = now

@@ -65,12 +65,15 @@ func (c *DatabaseController) createDatabase(database models.Database, r *service
 	database.Init()
 	database.TenantId = r.AuthUser.TenantId
 	
+	// Create backend database name
+	database.Backend = fmt.Sprintf("cmdb-%s-%s", r.DB.IdToString(r.AuthUser.TenantId), database.ShortName)
+	
 	// Create database entry
-        err := r.DB.Insert("databases", database)
+        err := r.DB.Insert("databases", &database)
 	if err != nil { log.Panic(err) }
 
 	// Create actual database
-	err = r.DB.CreateDatabase(database.Id.Hex())
+	err = r.DB.CreateDatabase(database.Backend)
 	
 	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/databases/%s", database.ShortName))
 	r.Render(http.StatusCreated, "")

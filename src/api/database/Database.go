@@ -20,6 +20,7 @@ package database
 
 import (
 	"alexandria/api/configuration"
+	"alexandria/api/models"
 	"fmt"
 )
 
@@ -31,10 +32,11 @@ type Driver interface {
 	BootStrap(*configuration.Answers) error			// Initialize database schema
 	CreateDatabase(string) error				// Create a new CMDB
 	DeleteDatabase(string) error				// Delete a CMDB
+	IdToString(interface{}) string				// Convert a database ID record to string
         GetAll(string, M, interface{}) error			// Get multiple entities from the database
         GetOne(string, M, interface{}) error			// Get a single entity from the database
 	GetOneById(string, interface{}, interface{}) error	// Get a single entity from the database by ID
-        Insert(string, interface{}) error			// Add an entity to the database
+        Insert(string, models.Model) error			// Add an entity to the database
 	Delete(string, M) error					// Delete a resource from the CMDB
 }
 

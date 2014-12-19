@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"alexandria/api/configuration"
 	"alexandria/api/models"
@@ -135,7 +136,7 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Created detault tenant '%s' with ID %s", tenant.Name, tenant.Id.Hex())
+	log.Printf("Created detault tenant '%s' with ID %s", tenant.Name, tenant.Id.(bson.ObjectId).Hex())
 
 	// Create root user
 	user := models.User{
@@ -150,13 +151,13 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Created root user '%s %s <%s>' with ID %s", user.FirstName, user.LastName, user.Email, user.Id.Hex())
+	log.Printf("Created root user '%s %s <%s>' with ID %s", user.FirstName, user.LastName, user.Email, user.Id.(bson.ObjectId).Hex())
 
 	// Create configuration entry
 	cfgData := models.Config{
 		Version:    "1.0.0",
-		RootTenant: tenant.Id,
-		RootUser:   user.Id,
+		RootTenant: tenant.Id.(bson.ObjectId),
+		RootUser:   user.Id.(bson.ObjectId),
 	}
 	cfgData.Init()
 	err = db.C("config").Insert(cfgData)
@@ -166,6 +167,10 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 	log.Printf("Configuration initialization completed successfully")
 
 	return nil
+}
+
+func (c *MongoDriver) IdToString(id interface{}) string {
+	return id.(bson.ObjectId).Hex()	
 }
 
 func (c *MongoDriver) CreateDatabase(database string) error {
@@ -193,8 +198,12 @@ func (c *MongoDriver) GetOneById(collection string, id interface{}, result inter
 	return err
 }
 
-func (c *MongoDriver) Insert(collection string, items interface{}) error {
-	err := c.rootDB.C(collection).Insert(items)
+func (c *MongoDriver) Insert(collection string, item models.Model) error {
+	if item.GetId() == nil || c.IdToString(item.GetId()) == "" {
+		item.SetId(bson.NewObjectId())
+	}
+	
+	err := c.rootDB.C(collection).Insert(item)
 	return err
 }
 

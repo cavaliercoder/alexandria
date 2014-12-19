@@ -18,14 +18,10 @@
  */
 package models
 
-import (
-	"gopkg.in/mgo.v2/bson"
-)
-
 type CIType struct {
 	tenantedModel                   `bson:",inline"`
 
-        ParentId        bson.ObjectId
+        ParentId        interface{}
 	Name            string
         ShortName       string
         Description     string

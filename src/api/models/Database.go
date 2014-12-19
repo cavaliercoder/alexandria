@@ -21,15 +21,15 @@ package models
 import (
 	"regexp"
 	"strings"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Database struct {
 	model 				`json:"-" bson:",inline"`
-	TenantId  	bson.ObjectId	`json:"-"`
+	TenantId  	interface{}	`json:"-"`
 	Name	  	string        	`json:"name" binding:"required"`
 	ShortName	string		`json:"shortName"`
 	Description	string		`json:"description"`
+	Backend		string		`json:"-"`
 }
 
 func (c *Database) Init() {

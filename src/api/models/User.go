@@ -22,12 +22,11 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type User struct {
 	model `json:"-" bson:",inline"`
-	TenantId  bson.ObjectId `json:"-"`
+	TenantId  interface{}   `json:"-"`
 	ApiKey    string        `json:"-"`
 	FirstName string        `json:"firstName"`
 	LastName  string        `json:"lastName"`

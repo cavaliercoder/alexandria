@@ -63,7 +63,7 @@ func (c *TenantController) getTenants(r *services.ApiContext) {
 
 func (c *TenantController) addTenant(tenant models.Tenant, r *services.ApiContext) {
 	tenant.Init()
-	err := r.DB.Insert("tenants", tenant)
+	err := r.DB.Insert("tenants", &tenant)
 	if err != nil {
 		log.Fatal(err)
 	}

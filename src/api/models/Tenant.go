@@ -25,14 +25,14 @@ import (
 )
 
 type Tenant struct {
-	model `bson:",inline"`
-	Name  string `binding:"required"`
+	model           `bson:",inline"`
+	Name  string    `binding:"required"`
 	Code  string
 }
 
 func (c *Tenant) Init() {
 	c.SetCreated()
 
-	shaSum := sha1.Sum([]byte(c.Id.Hex()))
+	shaSum := sha1.Sum(c.Id.([]byte))
 	c.Code = strings.ToUpper(fmt.Sprintf("%x-%x-%x", shaSum[0:3], shaSum[3:6], shaSum[7:10]))
 }

@@ -70,7 +70,7 @@ func (c *CITypeController) addCIType(citype models.CIType, r *services.ApiContex
 	citype.Init()
 	citype.TenantId = r.AuthUser.TenantId
         
-        err := r.DB.Insert(citype_table, citype)
+        err := r.DB.Insert(citype_table, &citype)
 	if err != nil { log.Panic(err) }
 
 	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/citypes/%s", citype.ShortName))
