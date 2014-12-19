@@ -1,5 +1,5 @@
 /*
- * Alexandria CMDB - Open source configuration management database
+ * Alexandria CMDB - Open source common.management database
  * Copyright (C) 2014  Ryan Armstrong <ryan@cavaliercoder.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,17 +19,17 @@
 package database
 
 import (
-	"alexandria/api/configuration"
+	"alexandria/api/common"
 	"alexandria/api/models"
 	"fmt"
 )
 
 type Driver interface {
-	Connect(*configuration.DatabaseConfig) error       // Connect to the database
+	Connect(*common.DatabaseConfig) error       // Connect to the database
 	Clone() (Driver, error)                            // Clone a database connection
 	Close() error                                      // Disconnect from the database
 	IsBootStrapped() (bool, error)                     // Return true is datasbe schema is intialized
-	BootStrap(*configuration.Answers) error            // Initialize database schema
+	BootStrap(*common.Answers) error            // Initialize database schema
 	CreateDatabase(string) error                       // Create a new CMDB
 	DeleteDatabase(string) error                       // Delete a CMDB
 	IdToString(interface{}) string                     // Convert a database ID record to string
@@ -44,13 +44,13 @@ type Driver interface {
 type M map[string]interface{}
 
 /*
- * Connect loads application configuration to select a database driver, loads
+ * Connect loads application common.to select a database driver, loads
  * the driver and connects to the database using the specified connection
- * configuration.
+ * common.
  */
 func Connect() (Driver, error) {
 	var driver Driver
-	config, err := configuration.GetConfig()
+	config, err := common.GetConfig()
 	if err != nil {
 		return nil, err
 	}

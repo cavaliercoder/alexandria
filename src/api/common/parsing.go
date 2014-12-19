@@ -1,5 +1,5 @@
 /*
- * Alexandria CMDB - Open source configuration management database
+ * Alexandria CMDB - Open source common.management database
  * Copyright (C) 2014  Ryan Armstrong <ryan@cavaliercoder.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,38 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package configuration
+package common
 
 import (
-	"encoding/json"
-	"os"
+	"regexp"
+	"strings"
 )
 
-type Answers struct {
-	Tenant struct {
-		Name string `json:"name"`
-	} `json:"tenant"`
-	User struct {
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
-		Email     string `json:"email"`
-		Password  string `json:"password"`
-	} `json:"user"`
-}
+func GetShortName(name string) string {
+        short := strings.ToLower(name)
 
-func LoadAnswers(filePath string) (*Answers, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
+        // replace all spaces with hyphens
+        short = strings.Replace(short, " ", "-", -1)
 
-	answers := &Answers{}
+        // remove all non alphanumerics and non hyphens
+        r := regexp.MustCompile(`[^a-z0-9-]+`)
+        short = r.ReplaceAllString(short, "")
 
-	parser := json.NewDecoder(file)
-	if err = parser.Decode(answers); err != nil {
-		return nil, err
-	}
-
-	return answers, nil
+        // Replace multiple hyphens
+        r = regexp.MustCompile(`-+`)
+        short = r.ReplaceAllString(short, "-")
+        
+        return short
 }

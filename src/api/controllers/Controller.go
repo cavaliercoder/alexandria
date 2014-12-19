@@ -1,5 +1,5 @@
 /*
- * Alexandria CMDB - Open source configuration management database
+ * Alexandria CMDB - Open source common.management database
  * Copyright (C) 2014  Ryan Armstrong <ryan@cavaliercoder.com>
  *
  * This program is free software: you can redistribute it and/or modify

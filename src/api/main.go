@@ -1,5 +1,5 @@
 /*
- * Alexandria CMDB - Open source configuration management database
+ * Alexandria CMDB - Open source common.management database
  * Copyright (C) 2014  Ryan Armstrong <ryan@cavaliercoder.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 package main
 
 import (
-	"alexandria/api/configuration"
+	"alexandria/api/common"
 	"alexandria/api/controllers"
 	"alexandria/api/database"
 	"alexandria/api/services"
@@ -43,11 +43,11 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "c, config",
-			Usage: "configuration file",
+			Usage: "common.file",
 		},
 		cli.StringFlag{
 			Name:  "answers",
-			Usage: "initial configuration answer file",
+			Usage: "initial common.answer file",
 		},
 	}
 
@@ -62,7 +62,7 @@ func serve(context *cli.Context) {
 	// Load configuration
 	confFile := context.GlobalString("config")
 	if confFile != "" {
-		_, err = configuration.GetConfigFromFile(confFile)
+		_, err = common.GetConfigFromFile(confFile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -94,7 +94,7 @@ func serve(context *cli.Context) {
 		}
 
 		log.Print("Bootstrapping database schema...")
-		answers, err := configuration.LoadAnswers(answerFile)
+		answers, err := common.LoadAnswers(answerFile)
 		if err != nil {
 			log.Fatal(err)
 		}

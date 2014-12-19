@@ -1,5 +1,5 @@
 /*
- * Alexandria CMDB - Open source configuration management database
+ * Alexandria CMDB - Open source common.management database
  * Copyright (C) 2014  Ryan Armstrong <ryan@cavaliercoder.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package configuration
+package common
 
 import (
 	"encoding/json"
@@ -38,36 +38,36 @@ type DatabaseConfig struct {
 	Password string   `json:"password"`
 }
 
-// default configuration file path
+// default common.file path
 var confFilePath string = ""
 
-// global, singleton configuration struct
+// global, singleton common.struct
 var config *Config
 
 func GetConfigFromFile(path string) (*Config, error) {
 	if config != nil {
-		return nil, errors.New("a configuration file was specified but configuration is already loaded")
+		return nil, errors.New("a common.file was specified but common.is already loaded")
 	}
 
 	confFilePath = path
 	return GetConfig()
 }
 
-// GetConfig returns a pointer to a singleton configuration structure.
+// GetConfig returns a pointer to a singleton common.structure.
 func GetConfig() (*Config, error) {
 	if config == nil {
-		// Select a configuration file
+		// Select a common.file
 		if confFilePath == "" {
 			if _, err := os.Stat("./config.json"); err == nil {
 				confFilePath = "./config.json"
 			} else if _, err := os.Stat("/etc/alexandria/config.json"); err == nil {
 				confFilePath = "/etc/alexandria/config.json"
 			} else {
-				return nil, errors.New("no configuration file was found")
+				return nil, errors.New("no common.file was found")
 			}
 		}
 
-		// Open configuration file
+		// Open common.file
 		confFile, err := os.Open(confFilePath)
 		if err != nil {
 			return nil, err
@@ -90,7 +90,7 @@ func GetConfig() (*Config, error) {
 			return nil, err
 		}
 
-		log.Printf("Loaded configuration from %s", confFilePath)
+		log.Printf("Loaded common.from %s", confFilePath)
 	}
 
 	return config, nil

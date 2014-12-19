@@ -1,5 +1,5 @@
 /*
- * Alexandria CMDB - Open source configuration management database
+ * Alexandria CMDB - Open source common.management database
  * Copyright (C) 2014  Ryan Armstrong <ryan@cavaliercoder.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,17 +26,17 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"alexandria/api/configuration"
+	"alexandria/api/common"
 	"alexandria/api/models"
 )
 
 type MongoDriver struct {
 	session *mgo.Session
 	rootDB  *mgo.Database
-	config  *configuration.DatabaseConfig
+	config  *common.DatabaseConfig
 }
 
-func (c *MongoDriver) Connect(config *configuration.DatabaseConfig) error {
+func (c *MongoDriver) Connect(config *common.DatabaseConfig) error {
 	if c.session == nil || c.config != config {
 		if c.session != nil {
 			c.session.Close()
@@ -103,7 +103,7 @@ func (c *MongoDriver) IsBootStrapped() (bool, error) {
 	}
 }
 
-func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
+func (c *MongoDriver) BootStrap(answers *common.Answers) error {
 	// Double check we're not bootstrapped
 	booted, err := c.IsBootStrapped()
 	if err != nil {
@@ -155,7 +155,7 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 	}
 	log.Printf("Created root user '%s %s <%s>' with ID %s", user.FirstName, user.LastName, user.Email, user.Id.(bson.ObjectId).Hex())
 
-	// Create configuration entry
+	// Create common.entry
 	cfgData := models.Config{
 		Version:    "1.0.0",
 		RootTenant: tenant.Id.(bson.ObjectId),

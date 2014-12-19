@@ -1,5 +1,5 @@
 /*
- * Alexandria CMDB - Open source configuration management database
+ * Alexandria CMDB - Open source common.management database
  * Copyright (C) 2014  Ryan Armstrong <ryan@cavaliercoder.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@ import (
 	"log"
 	"net/http"
 
-	"alexandria/api/configuration"
+	"alexandria/api/common"
 	"alexandria/api/database"
 	"alexandria/api/models"
 	"alexandria/api/services"
@@ -72,7 +72,7 @@ func (c *CITypeController) getCITypeByShortName(r *services.ApiContext, params m
 func (c *CITypeController) addCIType(citype models.CIType, r *services.ApiContext) {
 	citype.Init()
 	citype.TenantId = r.AuthUser.TenantId
-	if citype.ShortName == "" { citype.ShortName = configuration.GetShortName(citype.Name) }
+	if citype.ShortName == "" { citype.ShortName = common.GetShortName(citype.Name) }
 
 	err := r.DB.Insert(citype_table, &citype)
 	if err != nil {
