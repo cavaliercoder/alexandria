@@ -16,22 +16,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package models
+
+package attributes
 
 import (
-	"alexandria/api/attributes"
+    "errors"
+    "fmt"
+    "strings"
 )
 
-type CIType struct {
-	tenantedModel                   `bson:",inline"`
-
-        ParentId        interface{}
-	Name            string
-        ShortName       string
-        Description     string
-        Attributes      []attributes.Type
+type Boolean struct {
+	typ
 }
 
-func (c *CIType) Init() {
-	c.SetCreated()
+func (c *Boolean) GetName() string {
+    return "Boolean"    
+}
+
+func (c *Boolean) GetDescription() string {
+    return "True/False binary value"
+}
+
+func (c *Boolean) SetValue(value string) error {
+    switch strings.ToLower(value) {
+        case "true", "1", "yes", "y":
+            c.value = "True"
+        case "false", "0", "no", "n", "null", "nil":
+            c.value = "False"
+        default:
+            return errors.New(fmt.Sprintf("Invalid boolean value: %s", value))
+    }
+    
+    return nil
 }

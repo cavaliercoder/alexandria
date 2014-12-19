@@ -18,20 +18,9 @@
  */
 package models
 
-import (
-	"alexandria/api/attributes"
-)
-
-type CIType struct {
-	tenantedModel                   `bson:",inline"`
-
-        ParentId        interface{}
-	Name            string
+type CIAttribute struct {
+        Name            string
         ShortName       string
         Description     string
-        Attributes      []attributes.Type
-}
-
-func (c *CIType) Init() {
-	c.SetCreated()
+	Type		string
 }

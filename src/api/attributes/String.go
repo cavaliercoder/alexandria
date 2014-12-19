@@ -16,22 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package models
 
-import (
-	"alexandria/api/attributes"
-)
+package attributes
 
-type CIType struct {
-	tenantedModel                   `bson:",inline"`
-
-        ParentId        interface{}
-	Name            string
-        ShortName       string
-        Description     string
-        Attributes      []attributes.Type
+type String struct {
+	typ
 }
 
-func (c *CIType) Init() {
-	c.SetCreated()
+func (c *String) GetName() string {
+    return "String"    
+}
+
+func (c *String) GetDescription() string {
+    return "A plain old string of characters"
 }
