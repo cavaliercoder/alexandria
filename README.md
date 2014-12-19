@@ -62,13 +62,15 @@ For Go `net/http` response codes see: [Package http](http://golang.org/pkg/net/h
 
 * All entities must be retrievable from one or more persistent URIs
 
-* All response bodies must be empty of in JSON format
+* All response bodies must be empty or in JSON format
 
 * On failure, must return on of:
 
   * `401 Unauthorized` if the end user is not authorized for the request
   
   * `405 Method not allowed` if the request method is not supported for the requested URI
+  
+  * `406 Not acceptable` if the `Content-Type` request header is not set to `application/json`
 
 ### Create
 

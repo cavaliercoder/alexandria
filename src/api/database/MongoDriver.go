@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"gopkg.in/mgo.v2"
-	//"gopkg.in/mgo.v2/bson"
 
 	"alexandria/api/configuration"
 	"alexandria/api/models"
@@ -33,30 +32,25 @@ import (
 type MongoDriver struct {
 	session	*mgo.Session
 	rootDB	*mgo.Database
-	config 	*configuration.Config
+	config 	*configuration.DatabaseConfig
 }
 
-func (c *MongoDriver) Connect() error {
-	if c.session == nil {
-		var err error
+func (c *MongoDriver) Connect(config *configuration.DatabaseConfig) error {
+	if c.session == nil || c.config != config {
+		if c.session != nil { c.session.Close() }
 		
-		// Get app configuration
-		c.config, err = configuration.GetConfig()
-		if err != nil {
-			return err
-		}
-		dbConfig := &c.config.Database
+		var err error
 		
 		// Establish database connection
 		dialInfo := mgo.DialInfo{
-			Addrs:    dbConfig.Servers,
-			Database: dbConfig.Database,
-			Timeout:  time.Duration(dbConfig.Timeout * 1000000000),
-			Username: dbConfig.Username,
-			Password: dbConfig.Password,
+			Addrs:    config.Servers,
+			Database: config.Database,
+			Timeout:  time.Duration(config.Timeout * 1000000000),
+			Username: config.Username,
+			Password: config.Password,
 		}
 
-		log.Printf("MongoDB: Connecting to %s (%s)...", dbConfig.Servers, dbConfig.Database)
+		log.Printf("MongoDB: Connecting to %s (%s)...", config.Servers, config.Database)
 		c.session, err = mgo.DialWithInfo(&dialInfo)
 		if err != nil {
 			return err
@@ -69,10 +63,20 @@ func (c *MongoDriver) Connect() error {
 			return err
 		}
 		
-		c.rootDB = c.session.DB(dbConfig.Database)
+		c.config = config
+		c.rootDB = c.session.DB(config.Database)
 	}
 
 	return nil
+}
+
+func (c *MongoDriver) Clone () (Driver, error) {
+	clone := new(MongoDriver)
+	clone.session = c.session.Clone()
+	clone.config = c.config
+	clone.rootDB = clone.session.DB(c.config.Database)
+	
+	return clone, nil
 }
 
 func (c *MongoDriver) Close() error {

@@ -24,7 +24,8 @@ import (
 )
 
 type Driver interface {
-        Connect() error
+        Connect(*configuration.DatabaseConfig) error
+	Clone() (Driver, error)
 	Close() error
 	IsBootStrapped() (bool, error)
 	BootStrap(*configuration.Answers) error
@@ -36,27 +37,22 @@ type Driver interface {
 
 type M map[string]interface{}
 
-var driver Driver
-
 func Connect() (Driver, error) {
-        if driver == nil {
-		config, err := configuration.GetConfig()
+	var driver Driver
+	config, err := configuration.GetConfig()
+	if err != nil { return nil, err }
+
+	switch config.Database.Driver {
+	case "mongodb":
+		// Connect to database
+		driver = new(MongoDriver)
+		err = driver.Connect(&config.Database)
 		if err != nil {
 			return nil, err
 		}
 
-		switch config.Database.Driver {
-		case "mongodb":
-			// Connect to database
-                        driver = new(MongoDriver)
-                        err = driver.Connect()
-                        if err != nil {
-                                return nil, err
-                        }
-
-		default:
-			panic(fmt.Sprintf("Unsupported database driver: %s", config.Database.Driver))
-		}
+	default:
+		panic(fmt.Sprintf("Unsupported database driver: %s", config.Database.Driver))
 	}
         
 	return driver, nil

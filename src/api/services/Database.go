@@ -26,12 +26,15 @@ import (
 
 // Wire the service
 func DatabaseService() martini.Handler {
+	db, err := database.Connect()
+	if err != nil { log.Panic(err) }	
+    
 	return func(c martini.Context) {
-		db, err := database.Connect()
+		clone, err := db.Clone()
 		if err != nil { log.Panic(err) }
 		
-		c.Map(db)
-		defer db.Close()
+		c.Map(clone)
+		defer clone.Close()
 		c.Next()
 	}
 }

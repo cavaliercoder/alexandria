@@ -26,10 +26,10 @@ import (
 )
 
 type Config struct {
-	Database database `json:"database"`
+	Database DatabaseConfig `json:"database"`
 }
 
-type database struct {
+type DatabaseConfig struct {
 	Driver   string   `json:"driver"`
 	Servers  []string `json:"servers"`
 	Timeout  int      `json:"timeout"`
@@ -76,7 +76,7 @@ func GetConfig() (*Config, error) {
 
 		// Configuration defaults
 		config = &Config{
-			Database: database{
+			Database: DatabaseConfig{
 				Driver:   "mongodb",
 				Database: "alexandria",
 			},
