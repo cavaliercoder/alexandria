@@ -33,7 +33,7 @@ func (c *UserController) Init(app *cli.App) error {
         {
             Name: "users",
             Usage: "Create, retrieve, update or delete users",
-            Action: c.GetUser,
+            //Action: c.GetUser,
             Subcommands: []cli.Command{
                 {
                     Name: "get",
@@ -43,7 +43,7 @@ func (c *UserController) Init(app *cli.App) error {
                 {
                     Name: "add",
                     Usage: "add a user",
-                    Action: c.AddUser,
+                    Action: c.CreateUser,
                 },
                 {
                     Name: "update",
@@ -52,6 +52,7 @@ func (c *UserController) Init(app *cli.App) error {
                 {
                     Name: "delete",
                     Usage: "delete users",
+                    Action: c.DeleteUser,
                 },
             },
         },
@@ -64,6 +65,10 @@ func (c *UserController) GetUser(context *cli.Context) {
     c.getResource(context, "/users")
 }
 
-func (c *UserController) AddUser(context *cli.Context) {
+func (c *UserController) CreateUser(context *cli.Context) {
     c.addResource(context, "/users", "")
+}
+
+func (c *UserController) DeleteUser(context *cli.Context) {
+    c.deleteResource(context, "/users")
 }

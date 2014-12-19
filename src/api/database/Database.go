@@ -35,6 +35,7 @@ type Driver interface {
         GetOne(string, M, interface{}) error			// Get a single entity from the database
 	GetOneById(string, interface{}, interface{}) error	// Get a single entity from the database by ID
         Insert(string, interface{}) error			// Add an entity to the database
+	Delete(string, M) error					// Delete a resource from the CMDB
 }
 
 // M is a convenience shortcut for `map[string]interface{}`

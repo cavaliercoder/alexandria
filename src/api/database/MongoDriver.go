@@ -55,6 +55,9 @@ func (c *MongoDriver) Connect(config *configuration.DatabaseConfig) error {
 		if err != nil {
 			return err
 		}
+		
+		// enable error checking
+		c.session.SetSafe(&mgo.Safe{})
 
 		// Validate connection
 		log.Printf("MongoDB: Validating connection...")
@@ -118,10 +121,10 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 
 	db.C("users").Create(&mgo.CollectionInfo{})
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"email"}, Unique: true})
-	db.C("users").EnsureIndex(mgo.Index{Key: []string{"apiKey"}, Unique: true, Sparse: true})
+	db.C("users").EnsureIndex(mgo.Index{Key: []string{"apikey"}, Unique: true, Sparse: true})
 
 	db.C("databases").Create(&mgo.CollectionInfo{})
-	db.C("databases").EnsureIndex(mgo.Index{Key: []string{"tenantId"}, Unique: false})
+	db.C("databases").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: false})
 	
 	// Create default tenant
 	tenant := models.Tenant{
@@ -165,6 +168,16 @@ func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 	return nil
 }
 
+func (c *MongoDriver) CreateDatabase(database string) error {
+	return nil
+}
+
+func (c *MongoDriver) DeleteDatabase(database string) error {
+	err := c.session.DB(database).DropDatabase()
+	
+	return err
+}
+
 func (c *MongoDriver) GetAll(collection string, filter M, results interface{}) error {
 	err := c.rootDB.C(collection).Find(filter).All(results)
 	return err
@@ -185,12 +198,7 @@ func (c *MongoDriver) Insert(collection string, items interface{}) error {
 	return err
 }
 
-func (c *MongoDriver) CreateDatabase(database string) error {
-	return nil
-}
-
-func (c *MongoDriver) DeleteDatabase(database string) error {
-	err := c.session.DB(database).DropDatabase()
-	
+func (c *MongoDriver) Delete(collection string, filter M) error {
+	err := c.rootDB.C(collection).Remove(filter)
 	return err
 }

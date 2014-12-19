@@ -90,7 +90,7 @@ curl -ikX POST -H "Content Type: application/json" -d "{\"key\":\"value\"}" http
   
   * `403 Forbidden` if the entity collection is read only
   
-  * `406 Not acceptable` if the entity is invalid
+  * `406 Not Acceptable` if the entity is invalid
 
   * `409 Conflict` if the entity already exists
 
@@ -100,14 +100,20 @@ curl -ikX POST -H "Content Type: application/json" -d "{\"key\":\"value\"}" http
 
 * The request body should be empty
 
-* On success, must return `200` with a JSON formatted response body
+* On success, must return `200 OK` with a JSON formatted response body
 
 * On success, must return an appropriate `cache-control` header
 
 * On failure, must return one of:
 
-  * `404` if the resource is not found
+  * `404 Not found` if the resource is not found
 
 ### Update
 
 ### Delete
+
+* Must be a `DELETE` request
+
+* The request body should be empty
+
+* On success, must return `204 No Content` with an empty body

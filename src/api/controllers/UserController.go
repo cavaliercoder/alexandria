@@ -41,6 +41,7 @@ func (c *UserController) Init(r martini.Router) error {
 	r.Get("/users", c.getUsers)
 	r.Get("/users/:email", c.getUserByEmail)
 	r.Post("/users", binding.Bind(models.User{}), c.addUser)
+        r.Delete("/users/:email", c.deleteUserByEmail)
 
 	return nil
 }
@@ -70,4 +71,11 @@ func (c *UserController) addUser(user models.User, r *services.ApiContext) {
 
 	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/users/%s", user.Email))
 	r.Render(http.StatusCreated, "")
+}
+
+func (c *UserController) deleteUserByEmail(r *services.ApiContext, params martini.Params) {
+        err := r.DB.Delete("users", database.M{"tenantid": r.AuthUser.TenantId, "email": params["email"]})
+        if r.Handle(err) { return }
+        
+        r.Render(http.StatusNoContent, "")
 }

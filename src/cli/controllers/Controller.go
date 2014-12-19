@@ -133,3 +133,29 @@ func (c *controller) addResource(context *cli.Context, path string, resource str
         c.ApiError(res)
     }
 }
+
+func (c *controller) deleteResource(context *cli.Context, path string) {
+     // Get requested resource ID from first command argument
+    id := context.Args().First()
+    
+    var err error
+    var res *http.Response
+    
+    if id == "" {
+        Die("No user specified")
+    }
+    
+    path = fmt.Sprintf("%s/%s", path, id)
+    
+    res, err = c.ApiRequest(context, "DELETE", path, nil)
+    if err != nil { Die(err) }
+    
+    switch res.StatusCode {
+        case http.StatusNoContent:
+            fmt.Printf("Deleted %s\n", path)
+        case http.StatusNotFound:
+            Die(fmt.Sprintf("No such resource found at %s", path))
+        default:
+            c.ApiError(res)
+    }   
+}
