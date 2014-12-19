@@ -32,13 +32,13 @@ type ConfigController struct {
 	BaseController
 }
 
-func (c ConfigController) Init(r martini.Router) error {
+func (c *ConfigController) Init(r martini.Router) error {
 	// Add routes
 	r.Get("/config", c.getConfig)
 	return nil
 }
 
-func (c ConfigController) getConfig(dbdriver database.Driver, r *services.Renderer) {
+func (c *ConfigController) getConfig(dbdriver database.Driver, r *services.Renderer) {
 	var config models.Config
 	err := dbdriver.GetOne("config", nil, &config)
 	r.Handle(err)

@@ -81,7 +81,6 @@ func (c *MongoDriver) Close() error {
 }
 
 func (c *MongoDriver) IsBootStrapped() (bool, error) {
-	log.Printf("%#v", c)
 	count, err := c.rootDB.C("config").Find(nil).Count()
 	if err != nil {
 		return false, err

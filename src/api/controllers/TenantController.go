@@ -34,7 +34,7 @@ type TenantController struct {
 	BaseController
 }
 
-func (c TenantController) Init(r martini.Router) error {
+func (c *TenantController) Init(r martini.Router) error {
 	// Add routes
 	r.Get("/tenants", c.getTenants)
 	r.Get("/tenants/:id", c.getTenant)
@@ -43,7 +43,7 @@ func (c TenantController) Init(r martini.Router) error {
 	return nil
 }
 
-func (c TenantController) getTenant(dbdriver database.Driver, r *services.Renderer, params martini.Params) {
+func (c *TenantController) getTenant(dbdriver database.Driver, r *services.Renderer, params martini.Params) {
 	var tenant models.Tenant
 	code := strings.ToUpper(params["id"])
 	err := dbdriver.GetOne("tenants", database.M{"code": code}, &tenant)
@@ -53,7 +53,7 @@ func (c TenantController) getTenant(dbdriver database.Driver, r *services.Render
 	r.Render(http.StatusOK, tenant)
 }
 
-func (c TenantController) getTenants(dbdriver database.Driver, r *services.Renderer) {
+func (c *TenantController) getTenants(dbdriver database.Driver, r *services.Renderer) {
 	var tenants []models.Tenant
 	err := dbdriver.GetOne("tenants", nil, &tenants)
 	r.Handle(err)
@@ -61,7 +61,7 @@ func (c TenantController) getTenants(dbdriver database.Driver, r *services.Rende
 	r.Render(http.StatusOK, tenants)
 }
 
-func (c TenantController) addTenant(tenant models.Tenant, dbdriver database.Driver, r *services.Renderer) {
+func (c *TenantController) addTenant(tenant models.Tenant, dbdriver database.Driver, r *services.Renderer) {
 	tenant.Init()
 	err := dbdriver.Insert("tenants", tenant)
 	if err != nil {
