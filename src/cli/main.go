@@ -22,7 +22,7 @@ import (
     "log"
     "os"
     "github.com/codegangsta/cli"
-    "alexandria/cli/application"
+    . "alexandria/cli/application"
     "alexandria/cli/controllers"
 )
 
@@ -64,10 +64,14 @@ func main() {
         },
     }
     
-    app.Before = application.SetContext
+    app.Before = SetContext
     
     // Add controllers
     var err error
+    
+    resController := new (controllers.ResourceController)
+    err = resController.Init(app)
+    if err != nil { Die(err) }
     
     userController := new(controllers.UserController)
     err = userController.Init(app)

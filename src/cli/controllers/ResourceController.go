@@ -22,36 +22,23 @@ import (
   "github.com/codegangsta/cli"
 )
 
-type UserController struct {
+type ResourceController struct {
     controller
 }
 
-func (c *UserController) Init(app *cli.App) error {
+func (c *ResourceController) Init(app *cli.App) error {
     c.app = app
     
     c.app.Commands = append(c.app.Commands, []cli.Command{
         {
-            Name: "users",
-            Usage: "Create, retrieve, update or delete users",
-            Action: c.GetUser,
+            Name: "resources",
+            Usage: "Create, retrieve, update or delete generic API resources",
+            Action: c.GetResource,
             Subcommands: []cli.Command{
                 {
                     Name: "get",
-                    Usage: "get users",
-                    Action: c.GetUser,
-                },
-                {
-                    Name: "add",
-                    Usage: "add a user",
-                    Action: c.AddUser,
-                },
-                {
-                    Name: "update",
-                    Usage: "update users",
-                },
-                {
-                    Name: "delete",
-                    Usage: "delete users",
+                    Usage: "get resources",
+                    Action: c.GetResource,
                 },
             },
         },
@@ -60,10 +47,6 @@ func (c *UserController) Init(app *cli.App) error {
     return nil
 }
 
-func (c *UserController) GetUser(context *cli.Context) {
-    c.getResource(context, "/users")
-}
-
-func (c *UserController) AddUser(context *cli.Context) {
-    c.addResource(context, "/users", "")
+func (c *ResourceController) GetResource(context *cli.Context) {
+    c.getResource(context, "")
 }

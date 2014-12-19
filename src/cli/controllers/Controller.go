@@ -110,13 +110,17 @@ func (c *controller) getResource(context *cli.Context, path string) {
     }
 }
 
-func (c *controller) addResource(context *cli.Context, path string) {
+func (c *controller) addResource(context *cli.Context, path string, resource string) {
     // Decode the resource from STDIN or from the first command argument?
     var input io.Reader
     if context.GlobalBool("stdin") {
         input = os.Stdin
     } else {
-        input = strings.NewReader(context.Args().First())
+        if resource == "" {
+            resource = context.Args().First()
+        }
+        
+        input = strings.NewReader(resource)
     }
     
     res, err := c.ApiRequest(context, "POST", path, input)
