@@ -26,7 +26,7 @@ type CIType struct {
 	tenantedModel `bson:",inline"`
 
 	ParentId    interface{}
-	Name        string		`binding:"required"`
+	Name        string `json:"name" binding:"required"`
 	ShortName   string
 	Description string
 	Attributes  []attributes.Type

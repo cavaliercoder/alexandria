@@ -33,5 +33,7 @@ type Database struct {
 
 func (c *Database) Init() {
 	c.SetCreated()
-	if c.ShortName == "" { c.ShortName = common.GetShortName(c.Name) }
+	if c.ShortName == "" {
+		c.ShortName = common.GetShortName(c.Name)
+	}
 }

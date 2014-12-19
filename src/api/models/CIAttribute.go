@@ -19,8 +19,9 @@
 package models
 
 type CIAttribute struct {
-	Name        string	`binding:"required"`
-	ShortName   string
-	Description string
-	Type        string	`binding:"required"`
+	Name        string        `json:"name" binding:"required"`
+	ShortName   string        `json:"shortname"`
+	Description string        `json:"description"`
+	Type        string        `json:"type" binding:"required"`
+	Children    []CIAttribute `json:"children"`
 }
