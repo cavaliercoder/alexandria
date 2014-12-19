@@ -34,8 +34,9 @@ import (
 type ApiContext struct {
 	*http.Request
 	http.ResponseWriter
-	context	martini.Context		// Martini context
-	DB	database.Driver		// Database driver
+	context		martini.Context		// Martini context
+	DB		database.Driver		// Database driver
+	AuthUser	*models.User		// Authenticated user
 }
 
 // Wire the service
@@ -44,14 +45,24 @@ func ApiContextService() martini.Handler {
 	if err != nil { log.Panic(err) }
 	
 	return func(req *http.Request, res http.ResponseWriter, c martini.Context) {
+		// Connect to the database
 		clone, err := db.Clone()
 		if err != nil { log.Panic(err) }
 		defer clone.Close()
 		
-		r := &ApiContext{req, res, c, clone}
-		c.Map(r)
+		// Create context
+		r := &ApiContext{req, res, c, clone, nil}
 		
-		// Wait to close the DB
+		// Get authenticated user
+		user, err := r.GetAuthUser()
+		if r.Handle(err) {
+			res.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		r.AuthUser = user
+		
+		// Wire it up
+		c.Map(r)
 		c.Next()
 	}
 }
