@@ -22,9 +22,9 @@ import (
 	"github.com/go-martini/martini"
 )
 
-type ControllerInterface interface {
+type Controller interface {
 	Init(martini.Router) error
 }
 
-type BaseController struct {
+type controller struct {
 }

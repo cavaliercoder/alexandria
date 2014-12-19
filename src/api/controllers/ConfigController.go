@@ -29,7 +29,7 @@ import (
 )
 
 type ConfigController struct {
-	BaseController
+	controller
 }
 
 func (c *ConfigController) Init(r martini.Router) error {

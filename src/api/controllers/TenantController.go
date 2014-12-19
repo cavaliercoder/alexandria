@@ -31,7 +31,7 @@ import (
 )
 
 type TenantController struct {
-	BaseController
+	controller
 }
 
 func (c *TenantController) Init(r martini.Router) error {

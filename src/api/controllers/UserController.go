@@ -32,7 +32,7 @@ import (
 )
 
 type UserController struct {
-	BaseController
+	controller
 }
 
 func (c *UserController) Init(r martini.Router) error {
