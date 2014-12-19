@@ -38,7 +38,7 @@ func (c *ConfigController) Init(r martini.Router) error {
 	return nil
 }
 
-func (c *ConfigController) getConfig(dbdriver database.Driver, r *services.Renderer) {
+func (c *ConfigController) getConfig(dbdriver database.Driver, r *services.ApiContext) {
 	var config models.Config
 	err := dbdriver.GetOne("config", nil, &config)
 	r.Handle(err)

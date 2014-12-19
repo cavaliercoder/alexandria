@@ -45,7 +45,7 @@ func (c *UserController) Init(r martini.Router) error {
 	return nil
 }
 
-func (c *UserController) getUsers(dbdriver database.Driver, r *services.Renderer) {
+func (c *UserController) getUsers(dbdriver database.Driver, r *services.ApiContext) {
 	var users []models.User
 	err := dbdriver.GetAll("users", nil, &users)
 	r.Handle(err)
@@ -53,7 +53,7 @@ func (c *UserController) getUsers(dbdriver database.Driver, r *services.Renderer
 	r.Render(http.StatusOK, users)
 }
 
-func (c *UserController) getUserByEmail(dbdriver database.Driver, r *services.Renderer, params martini.Params) {
+func (c *UserController) getUserByEmail(dbdriver database.Driver, r *services.ApiContext, params martini.Params) {
 	var user models.User
 	err := dbdriver.GetOne("users", database.M{"email": params["email"]}, &user)
 	if r.Handle(err) { return }
@@ -61,7 +61,7 @@ func (c *UserController) getUserByEmail(dbdriver database.Driver, r *services.Re
 	r.Render(http.StatusOK, user)
 }
 
-func (c *UserController) addUser(user models.User, dbdriver database.Driver, r *services.Renderer) {
+func (c *UserController) addUser(user models.User, dbdriver database.Driver, r *services.ApiContext) {
 	user.Init()
         err := dbdriver.Insert("users", user)
 	if err != nil { log.Panic(err) }

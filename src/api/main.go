@@ -109,8 +109,7 @@ func serve(context *cli.Context) {
 	log.Printf("Starting HTTP handlers...")
 	m := martini.Classic()
 	m.Use(services.DatabaseService())
-	m.Use(services.RendererService())
-	m.Use(services.UrlValues())
+	m.Use(services.ApiContextService())
 	m.Use(services.ApiKeyValidation())
 
 	// Initialize controllers

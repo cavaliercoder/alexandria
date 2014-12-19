@@ -27,21 +27,22 @@ import (
 	"github.com/go-martini/martini"
 )
 
-type Renderer struct {
+type ApiContext struct {
 	*http.Request
 	http.ResponseWriter
+	martini.Context
 }
 
 // Wire the service
-func RendererService() martini.Handler {
+func ApiContextService() martini.Handler {
 	return func(req *http.Request, res http.ResponseWriter, c martini.Context) {
-		r := &Renderer{req, res}
+		r := &ApiContext{req, res, c}
 
 		c.Map(r)
 	}
 }
 
-func (c *Renderer) Handle(err error) bool {
+func (c *ApiContext) Handle(err error) bool {
 	if err == nil {
 		return false
 	}
@@ -57,11 +58,11 @@ func (c *Renderer) Handle(err error) bool {
         return true
 }
 
-func (c *Renderer) NotFound() {
+func (c *ApiContext) NotFound() {
 	c.WriteHeader(http.StatusNotFound)
 }
 
-func (c *Renderer) Render(status int, v interface{}) {
+func (c *ApiContext) Render(status int, v interface{}) {
 	format := c.URL.Query().Get("format")
 	if format == "" {
 		format = "json"
@@ -76,7 +77,7 @@ func (c *Renderer) Render(status int, v interface{}) {
 	}
 }
 
-func (c *Renderer) JSON(status int, v interface{}) {
+func (c *ApiContext) JSON(status int, v interface{}) {
 	if v == nil {
 		v = new(struct{})
 	}

@@ -84,6 +84,12 @@ func main() {
     configController := new(controllers.ConfigController)
     err = configController.Init(app)
     if err != nil { log.Fatal(err) }
-
+    
+    /*
+    databaseController := new(controllers.DatabaseController)
+    err = databaseController.Init(app)
+    if err != nil { log.Fatal(err) }
+    */
+    
     app.Run(os.Args)
 }
