@@ -20,36 +20,24 @@ package models
 
 import (
 	"gopkg.in/mgo.v2/bson"
-	"time"
 )
 
-type Model interface {
-	Init()
+type CIType struct {
+	tenantedModel                   `bson:",inline"`
+
+        ParentId        bson.ObjectId
+	Name            string
+        ShortName       string
+        Description     string
+        Attributes      []CIAttribute
 }
 
-type model struct {
-	Id       bson.ObjectId `json:"-" bson:"_id,omitempty"`
-	Created  time.Time     `json:"-" bson:"created"`
-	Modified time.Time     `json:"-" bson:"modified"`
+func (c *CIType) Init() {
+	c.SetCreated()
 }
 
-type tenantedModel struct {
-        model
-        TenantId    bson.ObjectId   `json:"-"`
-}
-
-func (c *model) SetCreated() {
-	if c.Id.Hex() == "" {
-		c.Id = bson.NewObjectId()
-	}
-
-	if c.Created.IsZero() {
-		now := time.Now()
-		c.Created = now
-		c.Modified = now
-	}
-}
-
-func (c *model) SetModified() {
-	c.Modified = time.Now()
+type CIAttribute struct {
+        Name            string
+        ShortName       string
+        Description     string
 }

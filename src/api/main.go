@@ -143,4 +143,10 @@ func initRoutes(router martini.Router) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	citypeController := new(controllers.CITypeController)
+	err = citypeController.Init(router)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
