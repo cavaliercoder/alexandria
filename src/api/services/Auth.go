@@ -20,18 +20,20 @@
 package services
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-martini/martini"
-	"gopkg.in/mgo.v2/bson"
 
+	"alexandria/api/database"
 	"alexandria/api/models"
 )
 
 // validate an api key
 func ApiKeyValidation() martini.Handler {
-	db := DbConnect()
-
+	db, err  := database.Connect()
+	if err != nil { log.Panic(err) }
+	
 	return func(res http.ResponseWriter, req *http.Request) {
 		apiKey := req.Header.Get("X-Auth-Token")
 		if apiKey == "" {
@@ -39,14 +41,16 @@ func ApiKeyValidation() martini.Handler {
 		} else {
 			var user models.User
 			var tenant models.Tenant
-			err := db.DB("alexandria").C("users").Find(bson.M{"apiKey": apiKey}).One(&user)
+			err := db.GetOne("users", database.M{"apikey": apiKey}, &user)
 			if err != nil {
+				log.Print(err)
 				res.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			err = db.DB("alexandria").C("tenants").FindId(user.TenantId).One(&tenant)
+			err = db.GetOneById("tenants", user.TenantId, &tenant)
 			if err != nil {
+				log.Print(err)
 				res.WriteHeader(http.StatusUnauthorized)
 				return
 			}

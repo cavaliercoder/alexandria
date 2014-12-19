@@ -20,19 +20,26 @@ package database
 
 import (
 	"alexandria/api/configuration"
-	"alexandria/api/database/mongodb"
 	"fmt"
 )
 
-type DbDriver interface {
+type Driver interface {
+        Connect() error
+	Close() error
 	IsBootStrapped() (bool, error)
 	BootStrap(*configuration.Answers) error
+        GetAll(string, M, interface{}) error
+        GetOne(string, M, interface{}) error
+	GetOneById(string, interface{}, interface{}) error
+        Insert(string, interface{}) error
 }
 
-var dbsession DbDriver
+type M map[string]interface{}
 
-func Connect() (DbDriver, error) {
-	if dbsession == nil {
+var driver Driver
+
+func Connect() (Driver, error) {
+        if driver == nil {
 		config, err := configuration.GetConfig()
 		if err != nil {
 			return nil, err
@@ -41,14 +48,16 @@ func Connect() (DbDriver, error) {
 		switch config.Database.Driver {
 		case "mongodb":
 			// Connect to database
-			dbsession, err = mongodb.GetConnection()
-			if err != nil {
-				return nil, err
-			}
+                        driver = new(MongoDriver)
+                        err = driver.Connect()
+                        if err != nil {
+                                return nil, err
+                        }
 
 		default:
 			panic(fmt.Sprintf("Unsupported database driver: %s", config.Database.Driver))
 		}
 	}
-	return dbsession, nil
+        
+	return driver, nil
 }

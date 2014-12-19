@@ -23,19 +23,19 @@ import (
 	"log"
 	"net/http"
 
+	"alexandria/api/database"
 	"alexandria/api/models"
 	"alexandria/api/services"
 
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type UserController struct {
 	BaseController
 }
 
-func (c UserController) Init(r martini.Router) error {
+func (c *UserController) Init(r martini.Router) error {
 
 	// Add routes
 	r.Get("/users", c.getUsers)
@@ -45,25 +45,25 @@ func (c UserController) Init(r martini.Router) error {
 	return nil
 }
 
-func (c UserController) getUsers(dbsession *services.Database, r *services.Renderer) {
+func (c *UserController) getUsers(dbdriver database.Driver, r *services.Renderer) {
 	var users []models.User
-	err := dbsession.DB("alexandria").C("users").Find(nil).All(&users)
+	err := dbdriver.GetAll("users", nil, &users)
 	r.Handle(err)
 
 	r.Render(http.StatusOK, users)
 }
 
-func (c UserController) getUserByEmail(dbsession *services.Database, r *services.Renderer, params martini.Params) {
+func (c *UserController) getUserByEmail(dbdriver database.Driver, r *services.Renderer, params martini.Params) {
 	var user models.User
-	err := dbsession.DB("alexandria").C("users").Find(bson.M{"email": params["email"]}).One(&user)
+	err := dbdriver.GetOne("users", database.M{"email": params["email"]}, &user)
 	r.Handle(err)
 
 	r.Render(http.StatusOK, user)
 }
 
-func (c UserController) addUser(user models.User, dbsession *services.Database, r *services.Renderer) {
+func (c *UserController) addUser(user models.User, dbdriver database.Driver, r *services.Renderer) {
 	user.Init()
-	err := dbsession.DB("alexandria").C("users").Insert(user)
+	err := dbdriver.Insert("users", &user)
 	if err != nil {
 		log.Fatal(err)
 	}

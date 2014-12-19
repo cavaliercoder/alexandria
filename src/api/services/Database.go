@@ -20,39 +20,18 @@ package services
 
 import (
 	"log"
-
 	"github.com/go-martini/martini"
-	"gopkg.in/mgo.v2"
+	"alexandria/api/database"
 )
 
-type Database struct {
-	*mgo.Session
-}
-
-var dbsession *Database
-
 // Wire the service
-func DatabaseService(session *mgo.Session) martini.Handler {
-	if session != nil {
-		dbsession = &Database{session}
-	}
-
+func DatabaseService() martini.Handler {
 	return func(c martini.Context) {
-		db := DbConnect().Clone()
+		db, err := database.Connect()
+		if err != nil { log.Panic(err) }
+		
 		c.Map(db)
 		defer db.Close()
 		c.Next()
 	}
-}
-
-func DbConnect() *Database {
-	if dbsession == nil {
-		session, err := mgo.Dial("mongodb://localhost")
-		if err != nil {
-			log.Panic(err)
-		}
-		dbsession = &Database{session}
-	}
-
-	return dbsession
 }

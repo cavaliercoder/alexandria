@@ -19,12 +19,12 @@
 package controllers
 
 import (
+	"alexandria/api/database"
 	"alexandria/api/models"
 	"alexandria/api/services"
 	"fmt"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"
-	"gopkg.in/mgo.v2/bson"
 	"log"
 	"net/http"
 	"strings"
@@ -43,27 +43,27 @@ func (c TenantController) Init(r martini.Router) error {
 	return nil
 }
 
-func (c TenantController) getTenant(dbsession *services.Database, r *services.Renderer, params martini.Params) {
+func (c TenantController) getTenant(dbdriver database.Driver, r *services.Renderer, params martini.Params) {
 	var tenant models.Tenant
 	code := strings.ToUpper(params["id"])
-	err := dbsession.DB("alexandria").C("tenants").Find(bson.M{"code": code}).One(&tenant)
+	err := dbdriver.GetOne("tenants", database.M{"code": code}, &tenant)
 
 	r.Handle(err)
 
 	r.Render(http.StatusOK, tenant)
 }
 
-func (c TenantController) getTenants(dbsession *services.Database, r *services.Renderer) {
+func (c TenantController) getTenants(dbdriver database.Driver, r *services.Renderer) {
 	var tenants []models.Tenant
-	err := dbsession.DB("alexandria").C("tenants").Find(nil).All(&tenants)
+	err := dbdriver.GetOne("tenants", nil, &tenants)
 	r.Handle(err)
 
 	r.Render(http.StatusOK, tenants)
 }
 
-func (c TenantController) addTenant(tenant models.Tenant, dbsession *services.Database, r *services.Renderer) {
+func (c TenantController) addTenant(tenant models.Tenant, dbdriver database.Driver, r *services.Renderer) {
 	tenant.Init()
-	err := dbsession.DB("alexandria").C("tenants").Insert(tenant)
+	err := dbdriver.Insert("tenants", tenant)
 	if err != nil {
 		log.Fatal(err)
 	}

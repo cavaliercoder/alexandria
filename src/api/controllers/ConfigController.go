@@ -19,17 +19,13 @@
 package controllers
 
 import (
+	"alexandria/api/database"
 	"alexandria/api/models"
 	"alexandria/api/services"
 
 	"net/http"
 
 	"github.com/go-martini/martini"
-)
-
-const (
-	database   string = "alexandria"
-	collection string = "config"
 )
 
 type ConfigController struct {
@@ -42,9 +38,9 @@ func (c ConfigController) Init(r martini.Router) error {
 	return nil
 }
 
-func (c ConfigController) getConfig(dbsession *services.Database, r *services.Renderer) {
+func (c ConfigController) getConfig(dbdriver database.Driver, r *services.Renderer) {
 	var config models.Config
-	err := dbsession.DB(database).C(collection).Find(nil).One(&config)
+	err := dbdriver.GetOne("config", nil, &config)
 	r.Handle(err)
 
 	r.Render(http.StatusOK, config)

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package mongodb
+package database
 
 import (
 	"errors"
@@ -24,27 +24,29 @@ import (
 	"time"
 
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	//"gopkg.in/mgo.v2/bson"
 
 	"alexandria/api/configuration"
 	"alexandria/api/models"
 )
 
-var session *MgoSession
-
-type MgoSession struct {
-	*mgo.Session
+type MongoDriver struct {
+	session	*mgo.Session
+	rootDB	*mgo.Database
+	config 	*configuration.Config
 }
 
-func GetConnection() (*MgoSession, error) {
-	// Get app configuration
-	config, err := configuration.GetConfig()
-	if err != nil {
-		return nil, err
-	}
-	dbConfig := &config.Database
-
-	if session == nil {
+func (c *MongoDriver) Connect() error {
+	if c.session == nil {
+		var err error
+		
+		// Get app configuration
+		c.config, err = configuration.GetConfig()
+		if err != nil {
+			return err
+		}
+		dbConfig := &c.config.Database
+		
 		// Establish database connection
 		dialInfo := mgo.DialInfo{
 			Addrs:    dbConfig.Servers,
@@ -54,36 +56,33 @@ func GetConnection() (*MgoSession, error) {
 			Password: dbConfig.Password,
 		}
 
-		mgosession, err := mgo.DialWithInfo(&dialInfo)
+		log.Printf("MongoDB: Connecting to %s (%s)...", dbConfig.Servers, dbConfig.Database)
+		c.session, err = mgo.DialWithInfo(&dialInfo)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		// Validate connection
-		err = mgosession.Ping()
+		log.Printf("MongoDB: Validating connection...")
+		err = c.session.Ping()
 		if err != nil {
-			return nil, err
+			return err
 		}
-
-		session = &MgoSession{mgosession}
+		
+		c.rootDB = c.session.DB(dbConfig.Database)
 	}
 
-	return session, nil
+	return nil
 }
-func (c *MgoSession) IsBootStrapped() (bool, error) {
-	// Get app configuration
-	config, err := configuration.GetConfig()
-	if err != nil {
-		return false, err
-	}
 
-	// Get db connection
-	db, err := GetConnection()
-	if err != nil {
-		return false, err
-	}
+func (c *MongoDriver) Close() error {
+	c.session.Close()
+	return nil
+}
 
-	count, err := db.DB(config.Database.Database).C("config").Find(bson.M{}).Count()
+func (c *MongoDriver) IsBootStrapped() (bool, error) {
+	log.Printf("%#v", c)
+	count, err := c.rootDB.C("config").Find(nil).Count()
 	if err != nil {
 		return false, err
 	}
@@ -95,7 +94,7 @@ func (c *MgoSession) IsBootStrapped() (bool, error) {
 	}
 }
 
-func (c *MgoSession) BootStrap(answers *configuration.Answers) error {
+func (c *MongoDriver) BootStrap(answers *configuration.Answers) error {
 	// Double check we're not bootstrapped
 	booted, err := c.IsBootStrapped()
 	if err != nil {
@@ -104,21 +103,9 @@ func (c *MgoSession) BootStrap(answers *configuration.Answers) error {
 	if booted {
 		return errors.New("database is already bootstrapped")
 	}
-
-	// Get app configuration
-	config, err := configuration.GetConfig()
-	if err != nil {
-		return err
-	}
-
-	// Connect to database
-	session, err := GetConnection()
-	if err != nil {
-		return err
-	}
-
-	db := session.DB(config.Database.Database)
-
+	
+	db:= c.rootDB
+	
 	// Create collections and indexes
 	db.C("config").Create(&mgo.CollectionInfo{})
 
@@ -169,4 +156,24 @@ func (c *MgoSession) BootStrap(answers *configuration.Answers) error {
 	log.Printf("Configuration initialization completed successfully")
 
 	return nil
+}
+
+func (c *MongoDriver) GetAll(collection string, filter M, results interface{}) error {
+	err := c.rootDB.C(collection).Find(filter).All(results)
+	return err
+}
+
+func (c *MongoDriver) GetOne(collection string, filter M, result interface{}) error {
+	err := c.rootDB.C(collection).Find(filter).One(result)
+	return err
+}
+
+func (c *MongoDriver) GetOneById(collection string, id interface{}, result interface{}) error {
+	err := c.rootDB.C(collection).FindId(id).One(result)
+	return err
+}
+
+func (c *MongoDriver) Insert(collection string, items interface{}) error {
+	err := c.rootDB.C(collection).Insert(items)
+	return err
 }
