@@ -74,9 +74,9 @@ func (c *TenantController) GetTenant(context *cli.Context) {
     var res *http.Response
     
     if id == "" {
-        _, res, err = c.ApiRequest(context, "GET", "/tenants", nil)
+        res, err = c.ApiRequest(context, "GET", "/tenants", nil)
     } else {
-        _, res, err = c.ApiRequest(context, "GET", fmt.Sprintf("/tenants/%s", id), nil)
+        res, err = c.ApiRequest(context, "GET", fmt.Sprintf("/tenants/%s", id), nil)
     }
     
     if err != nil {
@@ -94,7 +94,7 @@ func (c *TenantController) AddTenant(context *cli.Context) {
         input = strings.NewReader(context.Args().First())
     }
     
-    _, res, err := c.ApiRequest(context, "POST", "/tenants", input)
+    res, err := c.ApiRequest(context, "POST", "/tenants", input)
     if err != nil { log.Panic(err) }
     defer res.Body.Close()
     

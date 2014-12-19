@@ -61,14 +61,14 @@ func (c *ConfigController) Init(app *cli.App) error {
 }
 
 func (c *ConfigController) GetConfig(context *cli.Context) {
-    _, res, err := c.ApiRequest(context, "GET", "/config", nil)
+    res, err := c.ApiRequest(context, "GET", "/config", nil)
     if err != nil { log.Panic(err) }
     
     c.ApiResult(res)
 }
 
 func (c *ConfigController) InitConfig(context *cli.Context) {    
-    _, res, err := c.ApiRequest(context, "POST", "/config/actions/initialize", nil)
+    res, err := c.ApiRequest(context, "POST", "/config/actions/initialize", nil)
     if err != nil { log.Panic(err) }
     
     switch res.StatusCode {
@@ -85,7 +85,7 @@ func (c *ConfigController) InitConfig(context *cli.Context) {
 }
 
 func (c *ConfigController) ClearConfig(context *cli.Context) {
-    _, res, err := c.ApiRequest(context, "POST", "/config/actions/destroy", nil)
+    res, err := c.ApiRequest(context, "POST", "/config/actions/destroy", nil)
     if err != nil { log.Panic(err) }
     defer res.Body.Close()
     

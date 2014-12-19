@@ -74,9 +74,9 @@ func (c *UserController) GetUser(context *cli.Context) {
     var res *http.Response
     
     if id == "" {
-        _, res, err = c.ApiRequest(context, "GET", "/users", nil)
+        res, err = c.ApiRequest(context, "GET", "/users", nil)
     } else {
-        _, res, err = c.ApiRequest(context, "GET", fmt.Sprintf("/users/%s", id), nil)
+        res, err = c.ApiRequest(context, "GET", fmt.Sprintf("/users/%s", id), nil)
     }
     
     if err != nil {
@@ -94,7 +94,7 @@ func (c *UserController) AddUser(context *cli.Context) {
         input = strings.NewReader(context.Args().First())
     }
     
-    _, res, err := c.ApiRequest(context, "POST", "/users", input)
+    res, err := c.ApiRequest(context, "POST", "/users", input)
     if err != nil { log.Panic(err) }
     defer res.Body.Close()
     

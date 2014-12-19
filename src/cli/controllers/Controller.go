@@ -40,7 +40,7 @@ type controller struct {
     app     *cli.App
 }
 
-func (c *controller) ApiRequest(context *cli.Context, method string, path string, body io.Reader) (*http.Request, *http.Response, error) {
+func (c *controller) ApiRequest(context *cli.Context, method string, path string, body io.Reader) (*http.Response, error) {
     url := context.GlobalString("url")
     apiKey := context.GlobalString("api-key")
     
@@ -63,7 +63,7 @@ func (c *controller) ApiRequest(context *cli.Context, method string, path string
         },
     }
     req, err := http.NewRequest(strings.ToUpper(method), url, body)
-    if err != nil { return req, &http.Response{}, err }
+    if err != nil { return nil, err }
     
     req.Header.Add("Content-type", "application/json")
     req.Header.Add("X-Auth-Token", apiKey)
@@ -72,7 +72,7 @@ func (c *controller) ApiRequest(context *cli.Context, method string, path string
     var res *http.Response
     res, err = client.Do(req)
     
-    return req, res, err
+    return res, err
 }
 
 func (c *controller) ApiResult(res *http.Response) {
