@@ -55,7 +55,7 @@ func (c *TenantController) getTenant(dbdriver database.Driver, r *services.Rende
 
 func (c *TenantController) getTenants(dbdriver database.Driver, r *services.Renderer) {
 	var tenants []models.Tenant
-	err := dbdriver.GetOne("tenants", nil, &tenants)
+	err := dbdriver.GetAll("tenants", nil, &tenants)
 	r.Handle(err)
 
 	r.Render(http.StatusOK, tenants)
