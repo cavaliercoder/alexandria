@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	citype_table string = "_citypes"
+	citype_table string = "ci_types"
 )
 
 type CITypeController struct {

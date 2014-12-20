@@ -1,0 +1,17 @@
+{
+    "name": "Server",
+    "shortname": "server",
+    "description": "Server computer system",
+    "attributes": [
+        {
+            "name": "Host name",
+            "shortname": "hostname",
+            "type": "string"
+        },
+        {
+            "name": "Serial number",
+            "shortname": "serialno",
+            "type": "string"
+        }
+    ]
+}

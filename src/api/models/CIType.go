@@ -18,18 +18,16 @@
  */
 package models
 
-import (
-	"alexandria/api/attributes"
-)
+import ()
 
 type CIType struct {
 	tenantedModel `bson:",inline"`
 
-	ParentId    interface{}
+	InheritFrom    interface{}	`json:"inheritFrom"`
 	Name        string `json:"name" binding:"required"`
-	ShortName   string
-	Description string
-	Attributes  []attributes.Type
+	ShortName   string `json:"shortName"`
+	Description string `json:"description"`
+	Attributes  []CIAttribute `json:"attributes"`
 }
 
 func (c *CIType) Init() {
