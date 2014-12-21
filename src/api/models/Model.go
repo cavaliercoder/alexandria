@@ -35,7 +35,7 @@ type model struct {
 }
 
 type tenantedModel struct {
-	model                `bson:",inline"`
+	model    `bson:",inline"`
 	TenantId interface{} `json:"-"`
 }
 

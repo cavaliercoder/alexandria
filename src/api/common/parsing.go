@@ -24,18 +24,18 @@ import (
 )
 
 func GetShortName(name string) string {
-        short := strings.ToLower(name)
+	short := strings.ToLower(name)
 
-        // replace all spaces with hyphens
-        short = strings.Replace(short, " ", "-", -1)
+	// replace all spaces with hyphens
+	short = strings.Replace(short, " ", "-", -1)
 
-        // remove all non alphanumerics and non hyphens
-        r := regexp.MustCompile(`[^a-z0-9-]+`)
-        short = r.ReplaceAllString(short, "")
+	// remove all non alphanumerics and non hyphens
+	r := regexp.MustCompile(`[^a-z0-9-]+`)
+	short = r.ReplaceAllString(short, "")
 
-        // Replace multiple hyphens
-        r = regexp.MustCompile(`-+`)
-        short = r.ReplaceAllString(short, "-")
-        
-        return short
+	// Replace multiple hyphens
+	r = regexp.MustCompile(`-+`)
+	short = r.ReplaceAllString(short, "-")
+
+	return short
 }

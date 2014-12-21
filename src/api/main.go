@@ -118,10 +118,12 @@ func serve(context *cli.Context) {
 		new(controllers.TenantController),
 		new(controllers.UserController),
 	}
-	
+
 	for _, controller := range controllers {
 		err = controller.Init(m.Router)
-		if err != nil { log.Fatal(err) }
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	// Git'er done

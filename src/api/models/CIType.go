@@ -23,10 +23,10 @@ import ()
 type CIType struct {
 	tenantedModel `bson:",inline"`
 
-	InheritFrom    interface{}	`json:"inheritFrom"`
-	Name        string `json:"name" binding:"required"`
-	ShortName   string `json:"shortName"`
-	Description string `json:"description"`
+	InheritFrom interface{}   `json:"inheritFrom"`
+	Name        string        `json:"name" binding:"required"`
+	ShortName   string        `json:"shortName"`
+	Description string        `json:"description"`
 	Attributes  []CIAttribute `json:"attributes"`
 }
 

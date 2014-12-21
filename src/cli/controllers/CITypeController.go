@@ -50,8 +50,9 @@ func (c *CITypeController) Init(app *cli.App) error {
 					Usage: "update types",
 				},
 				{
-					Name:  "delete",
-					Usage: "delete types",
+					Name:   "delete",
+					Usage:  "delete types",
+					Action: c.DeleteCIType,
 				},
 			},
 		},
@@ -66,4 +67,8 @@ func (c *CITypeController) GetCIType(context *cli.Context) {
 
 func (c *CITypeController) AddCIType(context *cli.Context) {
 	c.addResource(context, "/types", "")
+}
+
+func (c *CITypeController) DeleteCIType(context *cli.Context) {
+	c.deleteResource(context, "/types")
 }

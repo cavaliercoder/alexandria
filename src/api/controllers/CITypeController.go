@@ -72,7 +72,9 @@ func (c *CITypeController) getCITypeByShortName(r *services.ApiContext, params m
 func (c *CITypeController) addCIType(citype models.CIType, r *services.ApiContext) {
 	citype.Init()
 	citype.TenantId = r.AuthUser.TenantId
-	if citype.ShortName == "" { citype.ShortName = common.GetShortName(citype.Name) }
+	if citype.ShortName == "" {
+		citype.ShortName = common.GetShortName(citype.Name)
+	}
 
 	err := r.DB.Insert(citype_table, &citype)
 	if err != nil {

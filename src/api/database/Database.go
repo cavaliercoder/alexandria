@@ -25,11 +25,12 @@ import (
 )
 
 type Driver interface {
-	Connect(*common.DatabaseConfig) error       // Connect to the database
+	Connect(*common.DatabaseConfig) error              // Connect to the database
 	Clone() (Driver, error)                            // Clone a database connection
 	Close() error                                      // Disconnect from the database
+	Use(string) error                                  // Select a database for use
 	IsBootStrapped() (bool, error)                     // Return true is datasbe schema is intialized
-	BootStrap(*common.Answers) error            // Initialize database schema
+	BootStrap(*common.Answers) error                   // Initialize database schema
 	CreateDatabase(string) error                       // Create a new CMDB
 	DeleteDatabase(string) error                       // Delete a CMDB
 	IdToString(interface{}) string                     // Convert a database ID record to string

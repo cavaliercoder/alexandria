@@ -31,9 +31,10 @@ import (
 )
 
 type MongoDriver struct {
-	session *mgo.Session
-	rootDB  *mgo.Database
-	config  *common.DatabaseConfig
+	session   *mgo.Session
+	rootDB    *mgo.Database
+	currentDB *mgo.Database
+	config    *common.DatabaseConfig
 }
 
 func (c *MongoDriver) Connect(config *common.DatabaseConfig) error {
@@ -71,6 +72,7 @@ func (c *MongoDriver) Connect(config *common.DatabaseConfig) error {
 
 		c.config = config
 		c.rootDB = c.session.DB(config.Database)
+		c.currentDB = c.rootDB
 	}
 
 	return nil
@@ -87,6 +89,15 @@ func (c *MongoDriver) Clone() (Driver, error) {
 
 func (c *MongoDriver) Close() error {
 	c.session.Close()
+	return nil
+}
+
+func (c *MongoDriver) Use(database string) error {
+	if database == "" {
+		c.currentDB = c.rootDB
+	} else {
+		c.currentDB = c.session.DB(database)	
+	}
 	return nil
 }
 
@@ -186,17 +197,17 @@ func (c *MongoDriver) DeleteDatabase(database string) error {
 }
 
 func (c *MongoDriver) GetAll(collection string, filter M, results interface{}) error {
-	err := c.rootDB.C(collection).Find(filter).All(results)
+	err := c.currentDB.C(collection).Find(filter).All(results)
 	return err
 }
 
 func (c *MongoDriver) GetOne(collection string, filter M, result interface{}) error {
-	err := c.rootDB.C(collection).Find(filter).One(result)
+	err := c.currentDB.C(collection).Find(filter).One(result)
 	return err
 }
 
 func (c *MongoDriver) GetOneById(collection string, id interface{}, result interface{}) error {
-	err := c.rootDB.C(collection).FindId(id).One(result)
+	err := c.currentDB.C(collection).FindId(id).One(result)
 	return err
 }
 
@@ -205,11 +216,11 @@ func (c *MongoDriver) Insert(collection string, item models.Model) error {
 		item.SetId(bson.NewObjectId())
 	}
 
-	err := c.rootDB.C(collection).Insert(item)
+	err := c.currentDB.C(collection).Insert(item)
 	return err
 }
 
 func (c *MongoDriver) Delete(collection string, filter M) error {
-	err := c.rootDB.C(collection).Remove(filter)
+	err := c.currentDB.C(collection).Remove(filter)
 	return err
 }

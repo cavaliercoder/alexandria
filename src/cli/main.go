@@ -74,10 +74,12 @@ func main() {
 		&controllers.TenantController{},
 		&controllers.UserController{},
 	}
-	
+
 	for _, controller := range controllers {
 		err = controller.Init(app)
-		if err != nil { Die(err) }
+		if err != nil {
+			Die(err)
+		}
 	}
 
 	app.Run(os.Args)
