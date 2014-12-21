@@ -55,6 +55,9 @@ func (c *UserController) getUsers(r *services.ApiContext) {
 }
 
 func (c *UserController) getUserByEmail(r *services.ApiContext, params martini.Params) {
+        // TODO: route the correct database to the controllers
+        // TODO: allow for adding/removing databases from tenants
+        
 	var user models.User
 	err := r.DB.GetOne("users", database.M{"email": params["email"]}, &user)
 	if r.Handle(err) {
@@ -65,7 +68,7 @@ func (c *UserController) getUserByEmail(r *services.ApiContext, params martini.P
 }
 
 func (c *UserController) addUser(user models.User, r *services.ApiContext) {
-	user.Init()
+	user.Init(r.DB.NewId())
 	user.TenantId = r.AuthUser.TenantId
 
 	err := r.DB.Insert("users", &user)

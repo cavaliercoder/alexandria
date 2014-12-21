@@ -37,6 +37,7 @@ type ApiContext struct {
 	context  martini.Context // Martini context
 	DB       database.Driver // Database driver
 	AuthUser *models.User    // Authenticated user
+	AuthTenant *models.Tenant // Authenticated user's tenancy
 }
 
 // Wire the service
@@ -54,16 +55,16 @@ func ApiContextService() martini.Handler {
 		}
 		defer clone.Close()
 
-		// Create context
-		r := &ApiContext{req, res, c, clone, nil}
-
 		// Get authenticated user
-		user, err := r.GetAuthUser()
-		if r.Handle(err) {
+		user, tenant, err := getAuth(req, clone)
+		if err != nil {
+			log.Printf(err.Error())
 			res.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		r.AuthUser = user
+		
+		// Create context
+		r := &ApiContext{req, res, c, clone, user, tenant}
 
 		// Wire it up
 		c.Map(r)
@@ -71,20 +72,29 @@ func ApiContextService() martini.Handler {
 	}
 }
 
-func (c *ApiContext) GetAuthUser() (*models.User, error) {
+func getAuth(req *http.Request, db database.Driver) (*models.User, *models.Tenant, error) {
 	var user models.User
+	var tenant models.Tenant
 
-	apiKey := c.Request.Header.Get("X-Auth-Token")
+	// Get API key from request header
+	apiKey := req.Header.Get("X-Auth-Token")
 	if apiKey == "" {
-		return nil, errors.New("Authentication token not set")
+		return nil, nil, errors.New("Authentication token not set")
 	}
 
-	err := c.DB.GetOne("users", database.M{"apikey": apiKey}, &user)
+	// Get user account
+	err := db.GetOne("users", database.M{"apikey": apiKey}, &user)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	
+	// Get user tenancy
+	err = db.GetOneById("tenants", user.TenantId, &tenant)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return &user, nil
+	return &user, &tenant, nil
 }
 
 func (c *ApiContext) Handle(err error) bool {

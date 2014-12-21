@@ -23,7 +23,7 @@ import (
 )
 
 type Model interface {
-	Init()
+	Init(interface{})
 	GetId() interface{}
 	SetId(interface{})
 }
@@ -48,11 +48,12 @@ func (c *model) SetId(id interface{}) {
 }
 
 func (c *model) SetCreated() {
+	now := time.Now()
 	if c.Created.IsZero() {
-		now := time.Now()
 		c.Created = now
-		c.Modified = now
 	}
+        
+	c.Modified = now
 }
 
 func (c *model) SetModified() {

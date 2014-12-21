@@ -18,21 +18,13 @@
  */
 package models
 
-import (
-	"crypto/sha1"
-	"fmt"
-	"strings"
-)
-
 type Tenant struct {
-	model `bson:",inline"`
-	Name  string `binding:"required"`
-	Code  string
+	model                   `bson:",inline"`
+	Name      string        `binding:"required"`
+        Databases []Database    
 }
 
-func (c *Tenant) Init() {
+func (c *Tenant) Init(id interface{}) {
+        c.Id = id
 	c.SetCreated()
-
-	shaSum := sha1.Sum(c.Id.([]byte))
-	c.Code = strings.ToUpper(fmt.Sprintf("%x-%x-%x", shaSum[0:3], shaSum[3:6], shaSum[7:10]))
 }

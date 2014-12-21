@@ -23,7 +23,6 @@ import (
 	"log"
 	"net/http"
 
-	"alexandria/api/database"
 	"alexandria/api/models"
 	"alexandria/api/services"
 
@@ -45,31 +44,23 @@ func (c *DatabaseController) Init(r martini.Router) error {
 }
 
 func (c *DatabaseController) getDatabases(r *services.ApiContext) {
-	var databases []models.Database
-	err := r.DB.GetAll("databases", database.M{"tenantid": r.AuthUser.TenantId}, &databases)
-	if r.Handle(err) {
-		return
-	}
-
-	r.Render(http.StatusOK, databases)
+	r.Render(http.StatusOK, r.AuthTenant.Databases)
 }
 
 func (c *DatabaseController) getDatabaseByShortName(r *services.ApiContext, params martini.Params) {
-	var db models.Database
-	err := r.DB.GetOne("databases", database.M{"tenantid": r.AuthUser.TenantId, "shortname": params["shortname"]}, &db)
-	if r.Handle(err) {
-		return
+	for _, db := range r.AuthTenant.Databases {
+		if db.ShortName == params["shortname"] {
+			r.Render(http.StatusOK, db)
+			return
+		}
 	}
 
-	r.Render(http.StatusOK, db)
+	r.NotFound()
 }
 
 func (c *DatabaseController) createDatabase(database models.Database, r *services.ApiContext) {
-	database.Init()
+	database.Init(r.DB.NewId())
 	database.TenantId = r.AuthUser.TenantId
-
-	// Create backend database name
-	database.Backend = fmt.Sprintf("cmdb-%s-%s", r.DB.IdToString(r.AuthUser.TenantId), database.ShortName)
 
 	// Create database entry
 	err := r.DB.Insert("databases", &database)

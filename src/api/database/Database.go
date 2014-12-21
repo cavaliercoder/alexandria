@@ -33,6 +33,7 @@ type Driver interface {
 	BootStrap(*common.Answers) error                   // Initialize database schema
 	CreateDatabase(string) error                       // Create a new CMDB
 	DeleteDatabase(string) error                       // Delete a CMDB
+	NewId() interface{}				   // Create a new unique record ID
 	IdToString(interface{}) string                     // Convert a database ID record to string
 	GetAll(string, M, interface{}) error               // Get multiple entities from the database
 	GetOne(string, M, interface{}) error               // Get a single entity from the database

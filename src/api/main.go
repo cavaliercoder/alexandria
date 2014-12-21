@@ -85,7 +85,7 @@ func serve(context *cli.Context) {
 	// Build db schema if required
 	answerFile := context.GlobalString("answers")
 	if booted && answerFile != "" {
-		log.Fatal("An answer file was specified by the database is already initialized")
+		log.Fatal("An answer file was specified but the database is already initialized")
 	}
 
 	if !booted {

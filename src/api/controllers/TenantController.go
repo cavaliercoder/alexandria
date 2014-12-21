@@ -19,7 +19,6 @@
 package controllers
 
 import (
-	"alexandria/api/database"
 	"alexandria/api/models"
 	"alexandria/api/services"
 	"fmt"
@@ -45,8 +44,8 @@ func (c *TenantController) Init(r martini.Router) error {
 
 func (c *TenantController) getTenant(r *services.ApiContext, params martini.Params) {
 	var tenant models.Tenant
-	code := strings.ToUpper(params["id"])
-	err := r.DB.GetOne("tenants", database.M{"code": code}, &tenant)
+	id := strings.ToUpper(params["id"])
+	err := r.DB.GetOneById("tenants", id, &tenant)
 
 	r.Handle(err)
 
@@ -62,12 +61,12 @@ func (c *TenantController) getTenants(r *services.ApiContext) {
 }
 
 func (c *TenantController) addTenant(tenant models.Tenant, r *services.ApiContext) {
-	tenant.Init()
+	tenant.Init(r.DB.NewId())
 	err := r.DB.Insert("tenants", &tenant)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/tenants/%s", tenant.Code))
+	r.ResponseWriter.Header().Set("Location", fmt.Sprintf("/tenants/%s", r.DB.IdToString(tenant.Id)))
 	r.Render(http.StatusCreated, "")
 }

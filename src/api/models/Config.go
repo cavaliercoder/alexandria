@@ -31,6 +31,7 @@ type Config struct {
 	Version string
 }
 
-func (c *Config) Init() {
+func (c *Config) Init(id interface{}) {
+        c.Id = id
 	c.SetCreated()
 }

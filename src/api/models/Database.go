@@ -19,11 +19,12 @@
 package models
 
 import (
+	"fmt"
 	"alexandria/api/common"
 )
 
 type Database struct {
-	model       `json:"-" bson:",inline"`
+	model       		`json:"-" bson:",inline"`
 	TenantId    interface{} `json:"-"`
 	Name        string      `json:"name" binding:"required"`
 	ShortName   string      `json:"shortName"`
@@ -31,9 +32,13 @@ type Database struct {
 	Backend     string      `json:"-"`
 }
 
-func (c *Database) Init() {
+func (c *Database) Init(id interface{}) {
+	c.Id = id
 	c.SetCreated()
+	
 	if c.ShortName == "" {
 		c.ShortName = common.GetShortName(c.Name)
 	}
+	
+	c.Backend = fmt.Sprintf("cmdb_%x", c.Id.([]byte))
 }

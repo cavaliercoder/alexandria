@@ -30,6 +30,7 @@ type CIType struct {
 	Attributes  []CIAttribute `json:"attributes"`
 }
 
-func (c *CIType) Init() {
+func (c *CIType) Init(id interface{}) {
+	c.Id = id
 	c.SetCreated()
 }

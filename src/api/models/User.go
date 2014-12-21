@@ -33,7 +33,8 @@ type User struct {
 	Email     string      `json:"email" binding:"required"`
 }
 
-func (c *User) Init() {
+func (c *User) Init(id interface{}) {
+        c.Id = id
 	c.SetCreated()
 	c.GenerateApiKey()
 }

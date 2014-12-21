@@ -129,22 +129,17 @@ func (c *MongoDriver) BootStrap(answers *common.Answers) error {
 	// Create collections and indexes
 	log.Printf("Creating collections and indexes...")
 	db.C("config").Create(&mgo.CollectionInfo{})
-
 	db.C("tenants").Create(&mgo.CollectionInfo{})
-	db.C("tenants").EnsureIndex(mgo.Index{Key: []string{"code"}, Unique: true})
-
 	db.C("users").Create(&mgo.CollectionInfo{})
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"email"}, Unique: true})
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"apikey"}, Unique: true, Sparse: true})
-
-	db.C("databases").Create(&mgo.CollectionInfo{})
-	db.C("databases").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: false})
+	db.C("users").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: true, Sparse: true})
 
 	// Create default tenant
 	tenant := models.Tenant{
 		Name: answers.Tenant.Name,
 	}
-	tenant.Init()
+	tenant.Init(c.NewId())
 	err = db.C("tenants").Insert(tenant)
 	if err != nil {
 		log.Fatal(err)
@@ -157,7 +152,7 @@ func (c *MongoDriver) BootStrap(answers *common.Answers) error {
 		LastName:  answers.User.LastName,
 		Email:     answers.User.Email,
 	}
-	user.Init()
+	user.Init(c.NewId())
 	user.TenantId = tenant.Id
 
 	err = db.C("users").Insert(user)
@@ -172,7 +167,7 @@ func (c *MongoDriver) BootStrap(answers *common.Answers) error {
 		RootTenant: tenant.Id.(bson.ObjectId),
 		RootUser:   user.Id.(bson.ObjectId),
 	}
-	cfgData.Init()
+	cfgData.Init(c.NewId())
 	err = db.C("config").Insert(cfgData)
 	if err != nil {
 		log.Fatal(err)
@@ -180,6 +175,10 @@ func (c *MongoDriver) BootStrap(answers *common.Answers) error {
 	log.Printf("Configuration initialization completed successfully")
 
 	return nil
+}
+
+func (c *MongoDriver) NewId() interface{} {
+	return bson.NewObjectId()
 }
 
 func (c *MongoDriver) IdToString(id interface{}) string {
