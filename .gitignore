@@ -2,6 +2,4 @@
 *.project
 .DS_Store
 gin-bin
-src/api/api
-src/cli/alex
-puppet/staging/
+api

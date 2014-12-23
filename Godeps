@@ -1,0 +1,3 @@
+github.com/go-martini/martini master
+github.com/martini-contrib/binding master
+gopkg.in/mgo.v2 master
