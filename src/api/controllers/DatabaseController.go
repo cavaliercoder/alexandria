@@ -34,11 +34,14 @@ type DatabaseController struct {
 	controller
 }
 
-func (c *DatabaseController) Init(r martini.Router) error {
-	// Add routes
-	r.Get("/databases", c.getDatabases)
-	r.Get("/databases/:shortname", c.getDatabaseByShortName)
-	r.Post("/databases", binding.Bind(models.Database{}), c.createDatabase)
+func (c *DatabaseController) GetPath() string {
+	return "/databases"
+}
+
+func (c *DatabaseController) InitRoutes(r martini.Router) error {
+	r.Get("/", c.getDatabases)
+	r.Post("/", binding.Bind(models.Database{}), c.createDatabase)
+	r.Get("/:shortname", c.getDatabaseByShortName)
 
 	return nil
 }
@@ -62,6 +65,9 @@ func (c *DatabaseController) createDatabase(database models.Database, r *service
 	database.Init(r.DB.NewId())
 	database.TenantId = r.AuthUser.TenantId
 
+	// TODO: Append the database to a tenant instead of a collection
+	err := r.DB.
+	
 	// Create database entry
 	err := r.DB.Insert("databases", &database)
 	if err != nil {

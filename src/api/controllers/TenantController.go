@@ -33,11 +33,14 @@ type TenantController struct {
 	controller
 }
 
-func (c *TenantController) Init(r martini.Router) error {
-	// Add routes
-	r.Get("/tenants", c.getTenants)
-	r.Get("/tenants/:id", c.getTenant)
-	r.Post("/tenants", binding.Bind(models.Tenant{}), c.addTenant)
+func (c *TenantController) GetPath() string {
+    return "/tenants"
+}
+
+func (c *TenantController) InitRoutes(r martini.Router) error {
+	r.Get("/", c.getTenants)
+	r.Post("/", binding.Bind(models.Tenant{}), c.addTenant)
+	r.Get("/:id", c.getTenant)
 
 	return nil
 }

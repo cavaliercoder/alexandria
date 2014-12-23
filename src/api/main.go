@@ -120,10 +120,12 @@ func serve(context *cli.Context) {
 	}
 
 	for _, controller := range controllers {
-		err = controller.Init(m.Router)
-		if err != nil {
-			log.Fatal(err)
-		}
+		m.Group(controller.GetPath(), func(r martini.Router) {
+			err = controller.InitRoutes(r)
+			if err != nil {
+				log.Fatal(err)
+			}	
+		})
 	}
 
 	// Git'er done

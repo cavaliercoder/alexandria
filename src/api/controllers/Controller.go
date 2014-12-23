@@ -23,7 +23,8 @@ import (
 )
 
 type Controller interface {
-	Init(martini.Router) error
+	GetPath() string
+	InitRoutes(martini.Router) error
 }
 
 type controller struct {

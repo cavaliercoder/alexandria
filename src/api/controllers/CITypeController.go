@@ -40,13 +40,15 @@ type CITypeController struct {
 	controller
 }
 
-func (c *CITypeController) Init(r martini.Router) error {
+func (c *CITypeController) GetPath() string {
+	return "/types"
+}
 
-	// Add routes
-	r.Get("/types", c.getCITypes)
-	r.Get("/types/:shortname", c.getCITypeByShortName)
-	r.Post("/types", binding.Bind(models.CIType{}), c.addCIType)
-	r.Delete("/types/:shortname", c.deleteCITypeByShortName)
+func (c *CITypeController) InitRoutes(r martini.Router) error {
+	r.Get("/", c.getCITypes)
+	r.Post("/", binding.Bind(models.CIType{}), c.addCIType)
+	r.Get("/:shortname", c.getCITypeByShortName)
+	r.Delete("/:shortname", c.deleteCITypeByShortName)
 
 	return nil
 }

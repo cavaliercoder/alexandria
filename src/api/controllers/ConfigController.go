@@ -31,9 +31,12 @@ type ConfigController struct {
 	controller
 }
 
-func (c *ConfigController) Init(r martini.Router) error {
-	// Add routes
-	r.Get("/config", c.getConfig)
+func (c *ConfigController) GetPath() string {
+    return "/config"
+}
+
+func (c *ConfigController) InitRoutes(r martini.Router) error {
+	r.Get("/", c.getConfig)
 	return nil
 }
 

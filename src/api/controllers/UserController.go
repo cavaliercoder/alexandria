@@ -35,13 +35,15 @@ type UserController struct {
 	controller
 }
 
-func (c *UserController) Init(r martini.Router) error {
+func (c *UserController) GetPath() string {
+    return "/users"
+}
 
-	// Add routes
-	r.Get("/users", c.getUsers)
-	r.Get("/users/:email", c.getUserByEmail)
-	r.Post("/users", binding.Bind(models.User{}), c.addUser)
-	r.Delete("/users/:email", c.deleteUserByEmail)
+func (c *UserController) InitRoutes(r martini.Router) error {
+	r.Get("/", c.getUsers)
+	r.Post("/", binding.Bind(models.User{}), c.addUser)
+	r.Get("/:email", c.getUserByEmail)
+	r.Delete("/:email", c.deleteUserByEmail)
 
 	return nil
 }
