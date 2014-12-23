@@ -19,8 +19,8 @@
 package database
 
 import (
-	"alexandria/api/common"
-	"alexandria/api/models"
+	"github.com/cavaliercoder/alexandria/common"
+	"github.com/cavaliercoder/alexandria/models"
 	"fmt"
 )
 

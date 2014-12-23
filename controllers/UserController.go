@@ -23,9 +23,9 @@ import (
 	"log"
 	"net/http"
 
-	"alexandria/api/database"
-	"alexandria/api/models"
-	"alexandria/api/services"
+	"github.com/cavaliercoder/alexandria/database"
+	"github.com/cavaliercoder/alexandria/models"
+	"github.com/cavaliercoder/alexandria/services"
 
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/binding"

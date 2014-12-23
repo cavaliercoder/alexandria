@@ -19,10 +19,10 @@
 package main
 
 import (
-	"alexandria/api/common"
-	"alexandria/api/controllers"
-	"alexandria/api/database"
-	"alexandria/api/services"
+	"github.com/cavaliercoder/alexandria/common"
+	"github.com/cavaliercoder/alexandria/controllers"
+	"github.com/cavaliercoder/alexandria/database"
+	"github.com/cavaliercoder/alexandria/services"
 
 	"github.com/codegangsta/cli"
 	"github.com/go-martini/martini"

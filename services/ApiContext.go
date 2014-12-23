@@ -27,8 +27,8 @@ import (
 
 	"github.com/go-martini/martini"
 
-	"alexandria/api/database"
-	"alexandria/api/models"
+	"github.com/cavaliercoder/alexandria/database"
+	"github.com/cavaliercoder/alexandria/models"
 )
 
 type ApiContext struct {

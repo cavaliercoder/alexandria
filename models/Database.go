@@ -20,7 +20,7 @@ package models
 
 import (
 	"fmt"
-	"alexandria/api/common"
+	"github.com/cavaliercoder/alexandria/common"
 )
 
 type Database struct {

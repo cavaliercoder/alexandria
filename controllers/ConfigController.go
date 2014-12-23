@@ -19,8 +19,8 @@
 package controllers
 
 import (
-	"alexandria/api/models"
-	"alexandria/api/services"
+	"github.com/cavaliercoder/alexandria/models"
+	"github.com/cavaliercoder/alexandria/services"
 
 	"net/http"
 

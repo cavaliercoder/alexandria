@@ -26,8 +26,8 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"alexandria/api/common"
-	"alexandria/api/models"
+	"github.com/cavaliercoder/alexandria/common"
+	"github.com/cavaliercoder/alexandria/models"
 )
 
 type MongoDriver struct {
