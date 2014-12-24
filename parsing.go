@@ -16,36 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-
-package attributes
+package main
 
 import (
-	"errors"
-	"fmt"
+	"regexp"
 	"strings"
 )
 
-type Boolean struct {
-	typ
-}
+func GetShortName(name string) string {
+	short := strings.ToLower(name)
 
-func (c *Boolean) GetName() string {
-	return "Boolean"
-}
+	// replace all spaces with hyphens
+	short = strings.Replace(short, " ", "-", -1)
 
-func (c *Boolean) GetDescription() string {
-	return "True/False binary value"
-}
+	// remove all non alphanumerics and non hyphens
+	r := regexp.MustCompile(`[^a-z0-9-]+`)
+	short = r.ReplaceAllString(short, "")
 
-func (c *Boolean) SetValue(value string) error {
-	switch strings.ToLower(value) {
-	case "true", "1", "yes", "y":
-		c.value = "True"
-	case "false", "0", "no", "n", "null", "nil":
-		c.value = "False"
-	default:
-		return errors.New(fmt.Sprintf("Invalid boolean value: %s", value))
-	}
+	// Replace multiple hyphens
+	r = regexp.MustCompile(`-+`)
+	short = r.ReplaceAllString(short, "-")
 
-	return nil
+	return short
 }

@@ -16,16 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package controllers
+package main
 
 import (
-	"github.com/go-martini/martini"
+	"encoding/json"
+	"os"
 )
 
-type Controller interface {
-	GetPath() string
-	InitRoutes(martini.Router) error
+type Answers struct {
+	Tenant struct {
+		Name string `json:"name"`
+	} `json:"tenant"`
+	User struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		Password  string `json:"password"`
+	} `json:"user"`
 }
 
-type controller struct {
+func LoadAnswers(filePath string) (*Answers, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	answers := &Answers{}
+
+	parser := json.NewDecoder(file)
+	if err = parser.Decode(answers); err != nil {
+		return nil, err
+	}
+
+	return answers, nil
 }

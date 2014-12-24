@@ -16,93 +16,76 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package database
+package main
 
 import (
 	"errors"
 	"log"
 	"time"
-
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-
-	"github.com/cavaliercoder/alexandria/common"
-	"github.com/cavaliercoder/alexandria/models"
 )
 
-type MongoDriver struct {
-	session   *mgo.Session
-	rootDB    *mgo.Database
-	currentDB *mgo.Database
-	config    *common.DatabaseConfig
-}
+type M map[string]interface{}
 
-func (c *MongoDriver) Connect(config *common.DatabaseConfig) error {
-	if c.session == nil || c.config != config {
-		if c.session != nil {
-			c.session.Close()
-		}
+var dbSession *mgo.Session
 
-		var err error
+func DbConnect() *mgo.Session {
+	if dbSession == nil {
+		config, err := GetConfig()
+                if err != nil {
+                    log.Panic(err)
+                }
 
 		// Establish database connection
 		dialInfo := mgo.DialInfo{
-			Addrs:    config.Servers,
-			Database: config.Database,
-			Timeout:  time.Duration(config.Timeout * 1000000000),
-			Username: config.Username,
-			Password: config.Password,
+			Addrs:    config.Database.Servers,
+			Database: config.Database.Database,
+			Timeout:  time.Duration(config.Database.Timeout * 1000000000),
+			Username: config.Database.Username,
+			Password: config.Database.Password,
 		}
 
-		log.Printf("MongoDB: Connecting to %s (%s)...", config.Servers, config.Database)
-		c.session, err = mgo.DialWithInfo(&dialInfo)
+		log.Printf("MongoDB: Connecting to %s (%s)...", config.Database.Servers, config.Database.Database)
+		dbSession, err = mgo.DialWithInfo(&dialInfo)
 		if err != nil {
-			return err
+			log.Panic(err)
 		}
 
 		// enable error checking
-		c.session.SetSafe(&mgo.Safe{})
+		dbSession.SetSafe(&mgo.Safe{})
 
 		// Validate connection
 		log.Printf("MongoDB: Validating connection...")
-		err = c.session.Ping()
+		err = dbSession.Ping()
 		if err != nil {
-			return err
+			log.Panic(err)
 		}
-
-		c.config = config
-		c.rootDB = c.session.DB(config.Database)
-		c.currentDB = c.rootDB
 	}
 
-	return nil
+	return dbSession.Clone()
 }
 
-func (c *MongoDriver) Clone() (Driver, error) {
-	clone := new(MongoDriver)
-	clone.session = c.session.Clone()
-	clone.config = c.config
-	clone.rootDB = clone.session.DB(c.config.Database)
-
-	return clone, nil
+func Db(name string) *mgo.Database {
+	session := DbConnect()
+	return session.DB(name)
 }
 
-func (c *MongoDriver) Close() error {
-	c.session.Close()
-	return nil
-}
-
-func (c *MongoDriver) Use(database string) error {
-	if database == "" {
-		c.currentDB = c.rootDB
-	} else {
-		c.currentDB = c.session.DB(database)	
+func RootDb() *mgo.Database {
+	config, err := GetConfig()
+	if err != nil {
+		log.Panic(err)
 	}
-	return nil
+	
+	session := DbConnect()
+	return session.DB(config.Database.Database)
 }
 
-func (c *MongoDriver) IsBootStrapped() (bool, error) {
-	count, err := c.rootDB.C("config").Find(nil).Count()
+func IsBootStrapped() (bool, error) {
+        config, err := GetConfig()
+        if err != nil { return false, err }
+        
+	count, err := dbSession.DB(config.Database.Database).C("config").Find(nil).Count()
 	if err != nil {
 		return false, err
 	}
@@ -114,17 +97,21 @@ func (c *MongoDriver) IsBootStrapped() (bool, error) {
 	}
 }
 
-func (c *MongoDriver) BootStrap(answers *common.Answers) error {
+func BootStrap(answers *Answers) error {
 	// Double check we're not bootstrapped
-	booted, err := c.IsBootStrapped()
+	booted, err := IsBootStrapped()
 	if err != nil {
 		return err
 	}
 	if booted {
 		return errors.New("database is already bootstrapped")
 	}
+        
+        // Load configuration
+        config, err := GetConfig()
+        if err != nil { return err }
 
-	db := c.rootDB
+	db := dbSession.DB(config.Database.Database)
 
 	// Create collections and indexes
 	log.Printf("Creating collections and indexes...")
@@ -136,6 +123,7 @@ func (c *MongoDriver) BootStrap(answers *common.Answers) error {
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: true, Sparse: true})
 
 	// Create default tenant
+        /*
 	tenant := models.Tenant{
 		Name: answers.Tenant.Name,
 	}
@@ -172,54 +160,26 @@ func (c *MongoDriver) BootStrap(answers *common.Answers) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	*/
 	log.Printf("Configuration initialization completed successfully")
 
 	return nil
 }
 
-func (c *MongoDriver) NewId() interface{} {
+func NewId() interface{} {
 	return bson.NewObjectId()
 }
 
-func (c *MongoDriver) IdToString(id interface{}) string {
+func IdToString(id interface{}) string {
 	return id.(bson.ObjectId).Hex()
 }
 
-func (c *MongoDriver) CreateDatabase(database string) error {
+func CreateDatabase(database string) error {
 	return nil
 }
 
-func (c *MongoDriver) DeleteDatabase(database string) error {
-	err := c.session.DB(database).DropDatabase()
+func DeleteDatabase(database string) error {
+	err := dbSession.DB(database).DropDatabase()
 
-	return err
-}
-
-func (c *MongoDriver) GetAll(collection string, filter M, results interface{}) error {
-	err := c.currentDB.C(collection).Find(filter).All(results)
-	return err
-}
-
-func (c *MongoDriver) GetOne(collection string, filter M, result interface{}) error {
-	err := c.currentDB.C(collection).Find(filter).One(result)
-	return err
-}
-
-func (c *MongoDriver) GetOneById(collection string, id interface{}, result interface{}) error {
-	err := c.currentDB.C(collection).FindId(id).One(result)
-	return err
-}
-
-func (c *MongoDriver) Insert(collection string, item models.Model) error {
-	if item.GetId() == nil || c.IdToString(item.GetId()) == "" {
-		item.SetId(bson.NewObjectId())
-	}
-
-	err := c.currentDB.C(collection).Insert(item)
-	return err
-}
-
-func (c *MongoDriver) Delete(collection string, filter M) error {
-	err := c.currentDB.C(collection).Remove(filter)
 	return err
 }

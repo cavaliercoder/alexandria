@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package common
+package main
 
 import (
 	"encoding/json"
@@ -46,7 +46,7 @@ var config *Config
 
 func GetConfigFromFile(path string) (*Config, error) {
 	if config != nil {
-		return nil, errors.New("a common.file was specified but common.is already loaded")
+		return nil, errors.New("a configuration file was specified but configuration is already loaded")
 	}
 
 	confFilePath = path
@@ -63,7 +63,7 @@ func GetConfig() (*Config, error) {
 			} else if _, err := os.Stat("/etc/alexandria/config.json"); err == nil {
 				confFilePath = "/etc/alexandria/config.json"
 			} else {
-				return nil, errors.New("no common.file was found")
+				return nil, errors.New("no configuration file was found")
 			}
 		}
 

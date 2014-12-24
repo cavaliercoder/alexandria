@@ -16,29 +16,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package models
+package main
 
 import (
-	"fmt"
-	"github.com/cavaliercoder/alexandria/common"
+	"time"
+	"labix.org/v2/mgo/bson"
 )
 
-type Database struct {
-	model       		`json:"-" bson:",inline"`
-	TenantId    interface{} `json:"-"`
-	Name        string      `json:"name" binding:"required"`
-	ShortName   string      `json:"shortName"`
-	Description string      `json:"description"`
-	Backend     string      `json:"-"`
+type Model interface {
+	InitModel()
+	SetModified()
 }
 
-func (c *Database) Init(id interface{}) {
-	c.Id = id
-	c.SetCreated()
-	
-	if c.ShortName == "" {
-		c.ShortName = common.GetShortName(c.Name)
+type model struct {
+	Id       interface{} `json:"-" bson:"_id,omitempty"`
+	Created  time.Time   `json:"-" bson:"created"`
+	Modified time.Time   `json:"-" bson:"modified"`
+}
+
+type tenantedModel struct {
+	model    `bson:",inline"`
+	TenantId interface{} `json:"-"`
+}
+
+func (c *model) InitModel() {
+	now := time.Now()
+	if c.Created.IsZero() {
+		c.Created = now
 	}
+        
+	c.Modified = now
 	
-	c.Backend = fmt.Sprintf("cmdb_%x", c.Id.([]byte))
+	if c.Id == nil {
+		c.Id = bson.NewObjectId()
+	}
+}
+
+func (c *model) SetModified() {
+	c.Modified = time.Now()
 }

@@ -1,3 +1,5 @@
-github.com/go-martini/martini master
-github.com/martini-contrib/binding master
-gopkg.in/mgo.v2 master
+github.com/codegangsta/negroni master
+github.com/gorilla/mux master
+
+labix.org/v2/mgo master
+labix.org/v2/mgo/bson master

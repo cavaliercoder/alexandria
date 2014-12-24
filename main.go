@@ -19,15 +19,14 @@
 package main
 
 import (
-	"github.com/cavaliercoder/alexandria/common"
-	"github.com/cavaliercoder/alexandria/controllers"
-	"github.com/cavaliercoder/alexandria/database"
-	"github.com/cavaliercoder/alexandria/services"
-
 	"github.com/codegangsta/cli"
-	"github.com/go-martini/martini"
-
+	"github.com/codegangsta/negroni"
+	"github.com/gorilla/mux"
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -62,73 +61,94 @@ func serve(context *cli.Context) {
 	// Load configuration
 	confFile := context.GlobalString("config")
 	if confFile != "" {
-		_, err = common.GetConfigFromFile(confFile)
+		_, err = GetConfigFromFile(confFile)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
+	
+	// Init Mux routes
+	router := mux.NewRouter()
+	router.HandleFunc("/users", GetUsers).Methods("GET")
+	router.HandleFunc("/users", AddUser).Methods("POST")
+	router.HandleFunc("/users/{email}", GetUserByEmail).Methods("GET")
 
-	// Establish db connection
-	log.Printf("Initializing database connection...")
-	db, err := database.Connect()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Check is db schema is initialized
-	log.Printf("Checking database schema...")
-	booted, err := db.IsBootStrapped()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Build db schema if required
-	answerFile := context.GlobalString("answers")
-	if booted && answerFile != "" {
-		log.Fatal("An answer file was specified but the database is already initialized")
-	}
-
-	if !booted {
-		if answerFile == "" {
-			log.Fatal("Database is not initialized but no answer file was specified.")
-		}
-
-		log.Print("Bootstrapping database schema...")
-		answers, err := common.LoadAnswers(answerFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = db.BootStrap(answers)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	// Initialize Martini
-	log.Printf("Starting HTTP handlers...")
-	m := martini.Classic()
-	m.Use(services.ApiContextService())
-
-	// Initialize controllers
-	controllers := []controllers.Controller{
-		new(controllers.CITypeController),
-		new(controllers.ConfigController),
-		new(controllers.DatabaseController),
-		new(controllers.TenantController),
-		new(controllers.UserController),
-	}
-
-	for _, controller := range controllers {
-		m.Group(controller.GetPath(), func(r martini.Router) {
-			err = controller.InitRoutes(r)
-			if err != nil {
-				log.Fatal(err)
-			}	
-		})
-	}
-
+		
+	// Init Negroni      
+	n := negroni.Classic()
+	n.UseHandler(router)
+	n.Run(":3000")
+	
 	// Git'er done
 	log.Printf("Initialization complete")
-	m.Run()
+}
+
+func Handle(err error) bool {
+	if err != nil {
+		log.Panic(err)
+		return true
+	}
+	
+	return false
+}
+
+func Render(res http.ResponseWriter, req *http.Request, status int, v interface{}) {
+	format := req.URL.Query().Get("format")
+	if format == "" {
+		format = "json"
+	}
+
+	switch format {
+	case "json":
+		RenderJson(res, req, status, v)
+
+	default:
+		log.Panic(fmt.Sprintf("Unsupported output format: %s", format))
+	}
+}
+
+func RenderJson(res http.ResponseWriter, req *http.Request, status int, v interface{}) {
+	if v == nil {
+		v = new(struct{})
+	}
+
+	var err error
+	var data []byte
+	if req.URL.Query().Get("pretty") == "true" {
+		data, err = json.MarshalIndent(v, "", "    ")
+	} else {
+		data, err = json.Marshal(v)
+	}
+	if err != nil {
+		log.Panic(err)
+	}
+
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(status)
+	res.Write(data)
+}
+
+func Bind(req *http.Request, v interface{}) error {
+	if req.Body != nil {
+		defer req.Body.Close()
+		
+		err := json.NewDecoder(req.Body).Decode(v)
+		
+		if err != nil && err != io.EOF {
+			return err
+		}
+	}
+	
+	return nil
+}
+
+func GetPathVar(req *http.Request, name string) string {
+	vars := mux.Vars(req)
+	result := vars[name]
+	
+	if name == "" {
+		log.Panic(fmt.Sprintf("No such variable declared: %s", name))
+	}
+	
+	return result
 }
