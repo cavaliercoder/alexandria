@@ -1,4 +1,7 @@
 {
+	"server": {
+		"listenOn": ":3000"
+	},
     "database": {
         "driver": "mongodb",
         "servers": [ "localhost" ],

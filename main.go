@@ -19,11 +19,11 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/codegangsta/cli"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
-	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -50,37 +50,52 @@ func main() {
 		},
 	}
 
-	app.Action = serve
+	app.Action = func(context *cli.Context) {
+		var err error
+
+		// Load configuration
+		confFile := context.GlobalString("config")
+		if confFile != "" {
+			_, err = GetConfigFromFile(confFile)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		// Start web server
+		Serve()
+
+		// Git'er done
+		log.Printf("Initialization complete")
+	}
 	app.Run(os.Args)
 
 }
 
-func serve(context *cli.Context) {
-	var err error
-
-	// Load configuration
-	confFile := context.GlobalString("config")
-	if confFile != "" {
-		_, err = GetConfigFromFile(confFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	
+func GetServer() *negroni.Negroni {
 	// Init Mux routes
 	router := mux.NewRouter()
 	router.HandleFunc("/users", GetUsers).Methods("GET")
 	router.HandleFunc("/users", AddUser).Methods("POST")
 	router.HandleFunc("/users/{email}", GetUserByEmail).Methods("GET")
+	router.HandleFunc("/users/{email}", DeleteUserByEmail).Methods("DELETE")
 
-		
-	// Init Negroni      
-	n := negroni.Classic()
+	// Init Negroni
+	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
 	n.UseHandler(router)
-	n.Run(":3000")
-	
-	// Git'er done
-	log.Printf("Initialization complete")
+
+	return n
+}
+
+func Serve() {
+	// Get configuration
+	config, err := GetConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	n := GetServer()
+	n.Run(config.Server.ListenOn)
 }
 
 func Handle(err error) bool {
@@ -88,7 +103,7 @@ func Handle(err error) bool {
 		log.Panic(err)
 		return true
 	}
-	
+
 	return false
 }
 
@@ -131,24 +146,24 @@ func RenderJson(res http.ResponseWriter, req *http.Request, status int, v interf
 func Bind(req *http.Request, v interface{}) error {
 	if req.Body != nil {
 		defer req.Body.Close()
-		
+
 		err := json.NewDecoder(req.Body).Decode(v)
-		
+
 		if err != nil && err != io.EOF {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
 func GetPathVar(req *http.Request, name string) string {
 	vars := mux.Vars(req)
 	result := vars[name]
-	
+
 	if name == "" {
 		log.Panic(fmt.Sprintf("No such variable declared: %s", name))
 	}
-	
+
 	return result
 }

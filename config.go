@@ -26,7 +26,12 @@ import (
 )
 
 type Config struct {
+	Server   ServerConfig   `json:"server"`
 	Database DatabaseConfig `json:"database"`
+}
+
+type ServerConfig struct {
+	ListenOn string `json:"listenOn"`
 }
 
 type DatabaseConfig struct {

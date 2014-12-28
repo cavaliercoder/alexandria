@@ -46,6 +46,7 @@ func (c *model) InitModel() {
 	}
         
 	c.Modified = now
+
 	
 	if c.Id == nil {
 		c.Id = bson.NewObjectId()
