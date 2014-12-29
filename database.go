@@ -24,6 +24,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
+	"os"
 	"reflect"
 	"time"
 )
@@ -118,35 +119,34 @@ func BootStrap(answers *Answers) error {
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: true})
 
 	// Create default tenant
-	/*
-		tenant := models.Tenant{
-			Name: answers.Tenant.Name,
-		}
-		tenant.Init(c.NewId())
-		err = db.C("tenants").Insert(tenant)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("Created detault tenant '%s' with ID %s", tenant.Name, tenant.Id.(bson.ObjectId).Hex())
+	tenant := Tenant{
+		Name: answers.Tenant.Name,
+	}
+	tenant.InitModel()
+	err = db.C("tenants").Insert(tenant)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Created detault tenant '%s' with code %s", tenant.Name, tenant.Code)
 
-		// Create root user
-		user := models.User{
-			FirstName: answers.User.FirstName,
-			LastName:  answers.User.LastName,
-			Email:     answers.User.Email,
-		}
-		user.Init(c.NewId())
-		user.TenantId = tenant.Id
+	// Create root user
+	user := User{
+		FirstName: answers.User.FirstName,
+		LastName:  answers.User.LastName,
+		Email:     answers.User.Email,
+	}
+	user.InitModel()
+	user.TenantId = tenant.Id
 
-		err = db.C("users").Insert(user)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("Created root user '%s %s <%s>' with ID %s", user.FirstName, user.LastName, user.Email, user.Id.(bson.ObjectId).Hex())
-	*/
+	err = db.C("users").Insert(user)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Created root user '%s %s <%s>'", user.FirstName, user.LastName, user.Email)
+
 	// Create common.entry
 	apiInfo := M{
-		"Version":     "1.0.0",
+		"version":     "1.0.0",
 		"installDate": time.Now(),
 	}
 	err = db.C("config").Insert(apiInfo)
@@ -154,7 +154,19 @@ func BootStrap(answers *Answers) error {
 		log.Fatal(err)
 	}
 
-	log.Fatal("Configuration initialization completed successfully")
+	// Write config to rc file
+	rcfile := ExpandPath("~/.alexrc")
+	file, err := os.Create(rcfile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	file.WriteString(fmt.Sprintf("ALEX_API_URL=http://localhost:%d\nALEX_API_KEY=%s\n", 3000, user.ApiKey))
+	file.Sync()
+	log.Printf("Saved Alexandria CMDB configuration to %s", rcfile)
+
+	log.Print("Configuration initialization completed successfully")
+	os.Exit(0)
 
 	return nil
 }

@@ -19,11 +19,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/codegangsta/cli"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
 	"log"
 	"os"
+	"os/user"
 )
 
 func main() {
@@ -130,4 +132,13 @@ func Serve() {
 
 	n := GetServer()
 	n.Run(config.Server.ListenOn)
+}
+
+func ExpandPath(path string) string {
+	if path[:1] == "~" {
+		usr, _ := user.Current()
+		path = fmt.Sprintf("%s%s", usr.HomeDir, path[1:])
+	}
+
+	return path
 }
