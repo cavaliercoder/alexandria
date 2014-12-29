@@ -121,7 +121,7 @@ func BootStrap(answers *Answers) error {
 	db.C("users").Create(&mgo.CollectionInfo{})
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"email"}, Unique: true})
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"apikey"}, Unique: true})
-	db.C("users").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: true})
+	db.C("users").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: false})
 
 	// Create default tenant
 	tenant := Tenant{

@@ -54,18 +54,21 @@ func (c *User) GenerateApiKey() string {
 }
 
 func GetUsers(res http.ResponseWriter, req *http.Request) {
+	authUser := GetApiUser(req)
+
 	var users []User
-	err := RootDb().C("users").Find(nil).All(&users)
+	err := RootDb().C("users").Find(M{"tenantid": authUser.TenantId}).All(&users)
 	Handle(res, req, err)
 
 	Render(res, req, http.StatusOK, users)
 }
 
 func GetUserByEmail(res http.ResponseWriter, req *http.Request) {
+	authUser := GetApiUser(req)
 	email := GetPathVar(req, "email")
 
 	var user User
-	err := RootDb().C("users").Find(M{"email": email}).One(&user)
+	err := RootDb().C("users").Find(M{"tenantid": authUser.TenantId, "email": email}).One(&user)
 	if Handle(res, req, err) {
 		return
 	}
@@ -74,6 +77,7 @@ func GetUserByEmail(res http.ResponseWriter, req *http.Request) {
 }
 
 func AddUser(res http.ResponseWriter, req *http.Request) {
+	authUser := GetApiUser(req)
 	var user User
 	err := Bind(req, &user)
 	if Handle(res, req, err) {
@@ -81,7 +85,7 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 	}
 
 	user.InitModel()
-	//user.TenantId = r.AuthUser.TenantId
+	user.TenantId = authUser.TenantId
 
 	err = RootDb().C("users").Insert(&user)
 	if Handle(res, req, err) {
@@ -92,10 +96,11 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 }
 
 func DeleteUserByEmail(res http.ResponseWriter, req *http.Request) {
+	authUser := GetApiUser(req)
 	email := GetPathVar(req, "email")
 
 	// TODO: Ensure only users for current tenant can be deleted
-	err := RootDb().C("users").Remove(M{"email": email})
+	err := RootDb().C("users").Remove(M{"tenantid": authUser.TenantId, "email": email})
 	if Handle(res, req, err) {
 		return
 	}
