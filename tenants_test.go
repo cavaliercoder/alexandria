@@ -55,6 +55,12 @@ func TestAddTenant(t *testing.T) {
 		req = Delete(location)
 		n.ServeHTTP(res, req)
 		expect(t, res.Code, http.StatusNoContent)
+
+		// Test GET missing tenant
+		res = httptest.NewRecorder()
+		req = Get(location)
+		n.ServeHTTP(res, req)
+		expect(t, res.Code, http.StatusNotFound)
 	}
 }
 
