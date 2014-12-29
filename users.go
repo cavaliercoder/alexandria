@@ -65,10 +65,7 @@ func GetUserByEmail(res http.ResponseWriter, req *http.Request) {
 
 	var user User
 	err := RootDb().C("users").Find(M{"email": email}).One(&user)
-	if err != nil && err.Error() == "not found" {
-		NotFound(res, req)
-		return
-	} else if Handle(res, req, err) {
+	if Handle(res, req, err) {
 		return
 	}
 
@@ -90,8 +87,7 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	res.Header().Set("Location", fmt.Sprintf("/users/%s", user.Email))
-	Render(res, req, http.StatusCreated, "")
+	RenderCreated(res, req, fmt.Sprintf("/users/%s", user.Email))
 }
 
 func DeleteUserByEmail(res http.ResponseWriter, req *http.Request) {

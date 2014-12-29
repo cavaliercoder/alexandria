@@ -82,6 +82,17 @@ func TestAddUser(t *testing.T) {
 	n.ServeHTTP(res, req)
 	expect(t, res.Code, http.StatusCreated)
 
+	// Test returned location header
+	location := res.HeaderMap.Get("Location")
+	if location == "" {
+		t.Errorf("No location header was set for a created user resource:\n%#v", res.HeaderMap)
+	} else {
+		res = httptest.NewRecorder()
+		req = Get(location)
+		n.ServeHTTP(res, req)
+		expect(t, res.Code, http.StatusOK)
+	}
+
 	// Make sure duplicates cant be created
 	res = httptest.NewRecorder()
 	req = Post("/users", reqBody)
