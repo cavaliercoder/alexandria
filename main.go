@@ -28,6 +28,10 @@ import (
 	"os/user"
 )
 
+const (
+	ApiV1Prefix = "/api/v1"
+)
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "Alexandria CMDB API Server Daemon"
@@ -102,7 +106,8 @@ func main() {
 
 func GetServer() *negroni.Negroni {
 	// Init Mux routes
-	router := mux.NewRouter()
+	rootRouter := mux.NewRouter()
+	router := rootRouter.PathPrefix(ApiV1Prefix).Subrouter()
 	router.HandleFunc("/info", GetApiInfo).Methods("GET")
 
 	// User routes

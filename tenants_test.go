@@ -20,8 +20,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
@@ -30,46 +28,12 @@ const (
 )
 
 func TestAddTenant(t *testing.T) {
-	n := GetServer()
-	res := httptest.NewRecorder()
-
 	// Test POST /users
 	reqBody := fmt.Sprintf(`{"name":"%s"}`, testTenant)
-	req := Post("/tenants", reqBody)
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusCreated)
-
-	// Test returned location header
-	location := res.HeaderMap.Get("Location")
-	if location == "" {
-		t.Errorf("No location header was set for a created tenant resource:\n%#v", res.HeaderMap)
-	} else {
-		// Test GET tenant by code
-		res = httptest.NewRecorder()
-		req = Get(location)
-		n.ServeHTTP(res, req)
-		expect(t, res.Code, http.StatusOK)
-
-		// Test DELETE tenant by code
-		res = httptest.NewRecorder()
-		req = Delete(location)
-		n.ServeHTTP(res, req)
-		expect(t, res.Code, http.StatusNoContent)
-
-		// Test GET missing tenant
-		res = httptest.NewRecorder()
-		req = Get(location)
-		n.ServeHTTP(res, req)
-		expect(t, res.Code, http.StatusNotFound)
-	}
+	Post(t, fmt.Sprintf("%s/tenants", ApiV1Prefix), reqBody, false)
 }
 
 func TestGetTenants(t *testing.T) {
-	n := GetServer()
-	res := httptest.NewRecorder()
-
 	// Test GET /users
-	req := Get("/tenants")
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusOK)
+	Get(t, fmt.Sprintf("%s/tenants", ApiV1Prefix))
 }

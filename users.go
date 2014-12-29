@@ -87,7 +87,7 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	RenderCreated(res, req, fmt.Sprintf("/users/%s", user.Email))
+	RenderCreated(res, req, fmt.Sprintf("%s/users/%s", ApiV1Prefix, user.Email))
 }
 
 func DeleteUserByEmail(res http.ResponseWriter, req *http.Request) {

@@ -20,11 +20,6 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -34,105 +29,14 @@ const (
 	testLastName  = "User"
 )
 
-func expect(t *testing.T, a interface{}, b interface{}) {
-	if a != b {
-		t.Errorf("Expected %v (type %v) - Got %v (type %v)", b, reflect.TypeOf(b), a, reflect.TypeOf(a))
-	}
-}
-
-func Get(uri string) *http.Request {
-	req, err := http.NewRequest("GET", uri, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	return req
-}
-
-func Post(uri string, body string) *http.Request {
-	var reader io.Reader = nil
-
-	if body != "" {
-		reader = strings.NewReader(body)
-	}
-	req, err := http.NewRequest("POST", uri, reader)
-	if err != nil {
-		panic(err)
-	}
-
-	return req
-}
-
-func Delete(uri string) *http.Request {
-	req, err := http.NewRequest("DELETE", uri, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	return req
-}
-
 func TestAddUser(t *testing.T) {
-	n := GetServer()
-	res := httptest.NewRecorder()
-
 	// Test POST /users
-	reqBody := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s"}`, testEmail, testFirstName, testLastName)
-	req := Post("/users", reqBody)
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusCreated)
-
-	// Test returned location header
-	location := res.HeaderMap.Get("Location")
-	if location == "" {
-		t.Errorf("No location header was set for a created user resource:\n%#v", res.HeaderMap)
-	} else {
-		res = httptest.NewRecorder()
-		req = Get(location)
-		n.ServeHTTP(res, req)
-		expect(t, res.Code, http.StatusOK)
-	}
-
-	// Make sure duplicates cant be created
-	res = httptest.NewRecorder()
-	req = Post("/users", reqBody)
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusConflict)
+	uri := fmt.Sprintf("%s/users", ApiV1Prefix)
+	body := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s"}`, testEmail, testFirstName, testLastName)
+	Post(t, uri, body, true)
 }
 
 func TestGetUsers(t *testing.T) {
-	n := GetServer()
-	res := httptest.NewRecorder()
-
 	// Test GET /users
-	req := Get("/users")
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusOK)
-
-	// Test GET /users/:email
-	req = Get(fmt.Sprintf("/users/%s", testEmail))
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusOK)
-
-	// Test GET /users/:missing
-	res = httptest.NewRecorder()
-	req = Get("/users/i_dont_exist")
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusNotFound)
-}
-
-func TestDeleteUser(t *testing.T) {
-	n := GetServer()
-	res := httptest.NewRecorder()
-
-	// Test DELETE /users/:email
-	req := Delete(fmt.Sprintf("/users/%s", testEmail))
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusNoContent)
-
-	// Test DELETE /users/:missing
-	res = httptest.NewRecorder()
-	req = Delete("/users/i_dont_exist")
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusNotFound)
+	Get(t, fmt.Sprintf("%s/users", ApiV1Prefix))
 }

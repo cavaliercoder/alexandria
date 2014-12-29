@@ -19,17 +19,10 @@
 package main
 
 import (
-	"net/http"
-	"net/http/httptest"
+	"fmt"
 	"testing"
 )
 
 func TestGetApiInfo(t *testing.T) {
-	n := GetServer()
-	res := httptest.NewRecorder()
-
-	// Test GET /users
-	req := Get("/info")
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusOK)
+	Get(t, fmt.Sprintf("%s/info", ApiV1Prefix))
 }
