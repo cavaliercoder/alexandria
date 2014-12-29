@@ -20,8 +20,6 @@ This project is in infancy and not ready for deployment. It aims to achieve the 
 
 * Multitenanted, cloud or on-premise
 
-* Modular and pluggable
-
 * ITIL compliant
 
 ## License
@@ -42,17 +40,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
     
-## Requirements
+## Libraries
+* [Negroni](http://negroni.codegangsta.io/)
 
-* [Google Go](https://code.google.com/p/go/) | [Documentation](https://golang.org/doc/)
-  
-  * [Martini](http://martini.codegangsta.io/) | [Documentation](http://godoc.org/github.com/go-martini/martini)
-  
-  * [Martini Binding](https://github.com/martini-contrib/binding/)
-
-  * [mgo.v2](https://labix.org/mgo) | [Documentation](http://godoc.org/gopkg.in/mgo.v2)
-  
-  * [gin](https://github.com/codegangsta/gin) (For development)
+* [mgo.v2](https://labix.org/mgo)
 
 ## RESTful API Spec
 
