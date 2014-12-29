@@ -16,41 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
+package main
 
-package attributes
+import (
+	"fmt"
+	"testing"
+)
 
-type Type interface {
-	GetName() string
-	GetDescription() string
-	GetValue() string
-	SetValue(string) error
-}
-
-type typ struct {
-	value string
-}
-
-func (c *typ) GetValue() string {
-	return c.value
-}
-
-func (c *typ) SetValue(value string) error {
-	c.value = value
-	return nil
-}
-
-type TypeMap map[string]Type
-
-var types TypeMap
-
-func GetAttributeTypes() TypeMap {
-	if len(types) == 0 {
-		typs := []Type{&String{}}
-
-		for _, typ := range typs {
-			types[typ.GetName()] = typ
-		}
-	}
-
-	return types
+func TestGetApiInfo(t *testing.T) {
+	Get(t, fmt.Sprintf("%s/info", ApiV1Prefix))
 }

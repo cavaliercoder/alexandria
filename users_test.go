@@ -16,16 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package controllers
+package main
 
 import (
-	"github.com/go-martini/martini"
+	"fmt"
+	"testing"
 )
 
-type Controller interface {
-	GetPath() string
-	InitRoutes(martini.Router) error
+const (
+	testEmail     = "test.user@cavaliercoder.com"
+	testFirstName = "Test"
+	testLastName  = "User"
+)
+
+func TestAddUser(t *testing.T) {
+	// Test POST /users
+	uri := fmt.Sprintf("%s/users", ApiV1Prefix)
+	body := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s"}`, testEmail, testFirstName, testLastName)
+	Post(t, uri, body, true)
+
+	// TODO: Add a test to ensure invalid user creation fails (i.e field validation)
 }
 
-type controller struct {
+func TestGetUsers(t *testing.T) {
+	// Test GET /users
+	Get(t, fmt.Sprintf("%s/users", ApiV1Prefix))
 }

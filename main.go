@@ -19,16 +19,17 @@
 package main
 
 import (
-	"github.com/cavaliercoder/alexandria/common"
-	"github.com/cavaliercoder/alexandria/controllers"
-	"github.com/cavaliercoder/alexandria/database"
-	"github.com/cavaliercoder/alexandria/services"
-
+	"fmt"
 	"github.com/codegangsta/cli"
-	"github.com/go-martini/martini"
-
+	"github.com/codegangsta/negroni"
+	"github.com/gorilla/mux"
 	"log"
 	"os"
+	"os/user"
+)
+
+const (
+	ApiV1Prefix = "/api/v1"
 )
 
 func main() {
@@ -51,84 +52,105 @@ func main() {
 		},
 	}
 
-	app.Action = serve
+	app.Action = func(context *cli.Context) {
+		var err error
+
+		// Load configuration
+		confFile := context.GlobalString("config")
+		if confFile != "" {
+			_, err = GetConfigFromFile(confFile)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		// Check is db schema is initialized
+		log.Printf("Checking database schema...")
+		booted, err := IsBootStrapped()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Build db schema if required
+		answerFile := context.GlobalString("answers")
+		if booted && answerFile != "" {
+			log.Fatal("An answer file was specified but the database is already initialized")
+		}
+
+		if !booted {
+			if answerFile == "" {
+				log.Fatal("Database is not initialized but no answer file was specified.")
+			}
+
+			log.Print("Bootstrapping database schema...")
+			answers, err := LoadAnswers(answerFile)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			err = BootStrap(answers)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		// Start web server
+		Serve()
+
+		// Git'er done
+		log.Printf("Initialization complete")
+	}
 	app.Run(os.Args)
 
 }
 
-func serve(context *cli.Context) {
-	var err error
+func GetServer() *negroni.Negroni {
+	// Init Mux routes
+	rootRouter := mux.NewRouter()
+	router := rootRouter.PathPrefix(ApiV1Prefix).Subrouter()
+	router.HandleFunc("/info", GetApiInfo).Methods("GET")
 
-	// Load configuration
-	confFile := context.GlobalString("config")
-	if confFile != "" {
-		_, err = common.GetConfigFromFile(confFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	// User routes
+	router.HandleFunc("/users", GetUsers).Methods("GET")
+	router.HandleFunc("/users", AddUser).Methods("POST")
+	router.HandleFunc("/users/{email}", GetUserByEmail).Methods("GET")
+	router.HandleFunc("/users/{email}", DeleteUserByEmail).Methods("DELETE")
 
-	// Establish db connection
-	log.Printf("Initializing database connection...")
-	db, err := database.Connect()
+	// Tenant routes
+	router.HandleFunc("/tenants", GetTenants).Methods("GET")
+	router.HandleFunc("/tenants", AddTenant).Methods("POST")
+	router.HandleFunc("/tenants/{code}", GetTenantByCode).Methods("GET")
+	router.HandleFunc("/tenants/{code}", DeleteTenantByCode).Methods("DELETE")
+
+	// CMDB routes
+	router.HandleFunc("/cmdbs", GetCmdbs).Methods("GET")
+	router.HandleFunc("/cmdbs", AddCmdb).Methods("POST")
+	router.HandleFunc("/cmdbs/{name}", GetCmdbByName).Methods("GET")
+	router.HandleFunc("/cmdbs/{name}", DeleteCmdbByName).Methods("DELETE")
+
+	// Init Negroni
+	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger(), NewAuthHandler())
+	n.UseHandler(router)
+
+	return n
+}
+
+func Serve() {
+	// Get configuration
+	config, err := GetConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Check is db schema is initialized
-	log.Printf("Checking database schema...")
-	booted, err := db.IsBootStrapped()
-	if err != nil {
-		log.Fatal(err)
+	n := GetServer()
+	n.Run(fmt.Sprintf("%s:%d", config.Server.ListenOn, config.Server.ListenPort))
+}
+
+func ExpandPath(path string) string {
+	if path[:1] == "~" {
+		usr, _ := user.Current()
+		path = fmt.Sprintf("%s%s", usr.HomeDir, path[1:])
 	}
 
-	// Build db schema if required
-	answerFile := context.GlobalString("answers")
-	if booted && answerFile != "" {
-		log.Fatal("An answer file was specified but the database is already initialized")
-	}
-
-	if !booted {
-		if answerFile == "" {
-			log.Fatal("Database is not initialized but no answer file was specified.")
-		}
-
-		log.Print("Bootstrapping database schema...")
-		answers, err := common.LoadAnswers(answerFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = db.BootStrap(answers)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	// Initialize Martini
-	log.Printf("Starting HTTP handlers...")
-	m := martini.Classic()
-	m.Use(services.ApiContextService())
-
-	// Initialize controllers
-	controllers := []controllers.Controller{
-		new(controllers.CITypeController),
-		new(controllers.ConfigController),
-		new(controllers.DatabaseController),
-		new(controllers.TenantController),
-		new(controllers.UserController),
-	}
-
-	for _, controller := range controllers {
-		m.Group(controller.GetPath(), func(r martini.Router) {
-			err = controller.InitRoutes(r)
-			if err != nil {
-				log.Fatal(err)
-			}	
-		})
-	}
-
-	// Git'er done
-	log.Printf("Initialization complete")
-	m.Run()
+	return path
 }

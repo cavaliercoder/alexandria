@@ -16,46 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package models
+package main
 
 import (
-	"time"
+	"regexp"
+	"strings"
 )
 
-type Model interface {
-	Init(interface{})
-	GetId() interface{}
-	SetId(interface{})
-}
+func GetShortName(name string) string {
+	short := strings.ToLower(name)
 
-type model struct {
-	Id       interface{} `json:"-" bson:"_id,omitempty"`
-	Created  time.Time   `json:"-" bson:"created"`
-	Modified time.Time   `json:"-" bson:"modified"`
-}
+	// replace all spaces with hyphens
+	short = strings.Replace(short, " ", "-", -1)
 
-type tenantedModel struct {
-	model    `bson:",inline"`
-	TenantId interface{} `json:"-"`
-}
+	// remove all non alphanumerics and non hyphens
+	r := regexp.MustCompile(`[^a-z0-9-]+`)
+	short = r.ReplaceAllString(short, "")
 
-func (c *model) GetId() interface{} {
-	return c.Id
-}
+	// Replace multiple hyphens
+	r = regexp.MustCompile(`-+`)
+	short = r.ReplaceAllString(short, "-")
 
-func (c *model) SetId(id interface{}) {
-	c.Id = id
-}
-
-func (c *model) SetCreated() {
-	now := time.Now()
-	if c.Created.IsZero() {
-		c.Created = now
-	}
-        
-	c.Modified = now
-}
-
-func (c *model) SetModified() {
-	c.Modified = time.Now()
+	return short
 }

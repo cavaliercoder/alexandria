@@ -16,36 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-
-package attributes
+package main
 
 import (
-	"errors"
 	"fmt"
-	"strings"
+	"testing"
 )
 
-type Boolean struct {
-	typ
+const (
+	cmdbName        = "Test CMDB"
+	cmdbShortName   = "test"
+	cmdbDescription = "A temporary test CMDB"
+)
+
+func TestAddCmdb(t *testing.T) {
+	// Test POST /cmdbs
+	uri := fmt.Sprintf("%s/cmdbs", ApiV1Prefix)
+	body := fmt.Sprintf(`{"name":"%s","shortName":"%s","description":"%s"}`, cmdbName, cmdbShortName, cmdbDescription)
+	Post(t, uri, body, true)
+
+	// TODO: Add a test to ensure invalid cmdb creation fails (i.e field validation)
 }
 
-func (c *Boolean) GetName() string {
-	return "Boolean"
-}
-
-func (c *Boolean) GetDescription() string {
-	return "True/False binary value"
-}
-
-func (c *Boolean) SetValue(value string) error {
-	switch strings.ToLower(value) {
-	case "true", "1", "yes", "y":
-		c.value = "True"
-	case "false", "0", "no", "n", "null", "nil":
-		c.value = "False"
-	default:
-		return errors.New(fmt.Sprintf("Invalid boolean value: %s", value))
-	}
-
-	return nil
+func TestGetCmdbs(t *testing.T) {
+	// Test GET /cmdbs
+	Get(t, fmt.Sprintf("%s/cmdbs", ApiV1Prefix))
 }

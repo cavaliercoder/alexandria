@@ -16,29 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package models
+package main
 
 import (
 	"fmt"
-	"github.com/cavaliercoder/alexandria/common"
+	"testing"
 )
 
-type Database struct {
-	model       		`json:"-" bson:",inline"`
-	TenantId    interface{} `json:"-"`
-	Name        string      `json:"name" binding:"required"`
-	ShortName   string      `json:"shortName"`
-	Description string      `json:"description"`
-	Backend     string      `json:"-"`
+const (
+	testTenant = "Test tenant"
+)
+
+func TestAddTenant(t *testing.T) {
+	// Test POST /users
+	reqBody := fmt.Sprintf(`{"name":"%s"}`, testTenant)
+	Post(t, fmt.Sprintf("%s/tenants", ApiV1Prefix), reqBody, false)
 }
 
-func (c *Database) Init(id interface{}) {
-	c.Id = id
-	c.SetCreated()
-	
-	if c.ShortName == "" {
-		c.ShortName = common.GetShortName(c.Name)
-	}
-	
-	c.Backend = fmt.Sprintf("cmdb_%x", c.Id.([]byte))
+func TestGetTenants(t *testing.T) {
+	// Test GET /users
+	Get(t, fmt.Sprintf("%s/tenants", ApiV1Prefix))
 }

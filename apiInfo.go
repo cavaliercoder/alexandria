@@ -1,5 +1,5 @@
 /*
- * Alexandria CMDB - Open source common.management database
+ * Alexandria CMDB - Open source config management database
  * Copyright (C) 2014  Ryan Armstrong <ryan@cavaliercoder.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,38 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package common
+package main
 
 import (
-	"encoding/json"
-	"os"
+	"net/http"
+	"time"
 )
 
-type Answers struct {
-	Tenant struct {
-		Name string `json:"name"`
-	} `json:"tenant"`
-	User struct {
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
-		Email     string `json:"email"`
-		Password  string `json:"password"`
-	} `json:"user"`
+type ApiInfo struct {
+	Version     string
+	InstallDate time.Time   `json:"-"`
+	RootUserId  interface{} `json:"-"`
 }
 
-func LoadAnswers(filePath string) (*Answers, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
+func GetApiInfo(res http.ResponseWriter, req *http.Request) {
+	var apiInfo ApiInfo
+	err := RootDb().C("apiInfo").Find(nil).One(&apiInfo)
+	Handle(res, req, err)
 
-	answers := &Answers{}
-
-	parser := json.NewDecoder(file)
-	if err = parser.Decode(answers); err != nil {
-		return nil, err
-	}
-
-	return answers, nil
+	Render(res, req, http.StatusOK, apiInfo)
 }

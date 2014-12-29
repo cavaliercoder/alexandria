@@ -16,15 +16,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * package controllers
  */
-package models
+package main
 
-type Tenant struct {
-	model                   `bson:",inline"`
-	Name      string        `binding:"required"`
-        Databases []Database    
+import (
+	"time"
+)
+
+type Model interface {
+	InitModel()
+	SetModified()
+	Validate() bool
 }
 
-func (c *Tenant) Init(id interface{}) {
-        c.Id = id
-	c.SetCreated()
+type model struct {
+	Id       interface{} `json:"-" bson:"_id,omitempty"`
+	Created  time.Time   `json:"-" bson:"created"`
+	Modified time.Time   `json:"-" bson:"modified"`
+}
+
+type tenantedModel struct {
+	model    `bson:",inline"`
+	TenantId interface{} `json:"-"`
+}
+
+func (c *model) InitModel() {
+	now := time.Now()
+	if c.Created.IsZero() {
+		c.Created = now
+	}
+
+	c.Modified = now
+
+	if c.Id == nil {
+		c.Id = NewId()
+	}
+}
+
+func (c *model) SetModified() {
+	c.Modified = time.Now()
 }
