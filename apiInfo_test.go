@@ -1,5 +1,5 @@
 /*
- * Alexandria CMDB - Open source config management database
+ * Alexandria CMDB - Open source common.management database
  * Copyright (C) 2014  Ryan Armstrong <ryan@cavaliercoder.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,19 +20,16 @@ package main
 
 import (
 	"net/http"
-	"time"
+	"net/http/httptest"
+	"testing"
 )
 
-type ApiInfo struct {
-	Version     string
-	InstallDate time.Time   `json:"-"`
-	RootUserId  interface{} `json:"-"`
-}
+func TestGetApiInfo(t *testing.T) {
+	n := GetServer()
+	res := httptest.NewRecorder()
 
-func GetApiInfo(res http.ResponseWriter, req *http.Request) {
-	var apiInfo ApiInfo
-	err := RootDb().C("apiInfo").Find(nil).One(&apiInfo)
-	Handle(res, req, err)
-
-	Render(res, req, http.StatusOK, apiInfo)
+	// Test GET /users
+	req := Get("/info")
+	n.ServeHTTP(res, req)
+	expect(t, res.Code, http.StatusOK)
 }

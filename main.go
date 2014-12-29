@@ -103,6 +103,7 @@ func main() {
 func GetServer() *negroni.Negroni {
 	// Init Mux routes
 	router := mux.NewRouter()
+	router.HandleFunc("/info", GetApiInfo).Methods("GET")
 
 	// User routes
 	router.HandleFunc("/users", GetUsers).Methods("GET")
