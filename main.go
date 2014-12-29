@@ -107,6 +107,11 @@ func Handle(err error) bool {
 	return false
 }
 
+func NotFound(res http.ResponseWriter, req *http.Request) {
+	res.WriteHeader(http.StatusNotFound)
+	res.Write([]byte("404 Resource not found"))
+}
+
 func Render(res http.ResponseWriter, req *http.Request, status int, v interface{}) {
 	format := req.URL.Query().Get("format")
 	if format == "" {

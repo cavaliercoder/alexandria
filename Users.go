@@ -22,8 +22,7 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-        "net/http"
-        
+	"net/http"
 )
 
 type User struct {
@@ -36,7 +35,7 @@ type User struct {
 }
 
 func (c *User) InitModel() {
-        c.model.InitModel()
+	c.model.InitModel()
 	c.GenerateApiKey()
 }
 
@@ -62,14 +61,14 @@ func GetUsers(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetUserByEmail(res http.ResponseWriter, req *http.Request) {
-        // TODO: route the correct database to the controllers
-        // TODO: allow for adding/removing databases from tenants
-        
-        email := GetPathVar(req, "email")
-        
+	email := GetPathVar(req, "email")
+
 	var user User
 	err := RootDb().C("users").Find(M{"email": email}).One(&user)
-	if Handle(err) {
+	if err != nil && err.Error() == "not found" {
+		NotFound(res, req)
+		return
+	} else if Handle(err) {
 		return
 	}
 
@@ -77,12 +76,12 @@ func GetUserByEmail(res http.ResponseWriter, req *http.Request) {
 }
 
 func AddUser(res http.ResponseWriter, req *http.Request) {
-        var user User
-        err := Bind(req, &user)
-        if Handle(err) {
-            return
-        }
-        
+	var user User
+	err := Bind(req, &user)
+	if Handle(err) {
+		return
+	}
+
 	user.InitModel()
 	//user.TenantId = r.AuthUser.TenantId
 
@@ -96,11 +95,14 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 }
 
 func DeleteUserByEmail(res http.ResponseWriter, req *http.Request) {
-        email := GetPathVar(req, "email")
-        
-        // TODO: Ensure only users for current tenant can be deleted
+	email := GetPathVar(req, "email")
+
+	// TODO: Ensure only users for current tenant can be deleted
 	err := RootDb().C("users").Remove(M{"email": email})
-	if Handle(err) {
+	if err != nil && err.Error() == "not found" {
+		NotFound(res, req)
+		return
+	} else if Handle(err) {
 		return
 	}
 

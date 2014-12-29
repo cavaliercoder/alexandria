@@ -40,13 +40,8 @@ func expect(t *testing.T, a interface{}, b interface{}) {
 	}
 }
 
-func Get(uri string, body string) *http.Request {
-	var reader io.Reader = nil
-
-	if body != "" {
-		reader = strings.NewReader(body)
-	}
-	req, err := http.NewRequest("GET", uri, reader)
+func Get(uri string) *http.Request {
+	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -98,17 +93,18 @@ func TestGetUsers(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	// Test GET /users
-	req := Get("/users", "")
+	req := Get("/users")
 	n.ServeHTTP(res, req)
 	expect(t, res.Code, http.StatusOK)
 
 	// Test GET /users/:email
-	req = Get("/users/testuser@alexandria.org", "")
+	req = Get(fmt.Sprintf("/users/%s", testEmail))
 	n.ServeHTTP(res, req)
 	expect(t, res.Code, http.StatusOK)
 
 	// Test GET /users/:missing
-	req = Get("/users/i_dont_exist", "")
+	res = httptest.NewRecorder()
+	req = Get("/users/i_dont_exist")
 	n.ServeHTTP(res, req)
 	expect(t, res.Code, http.StatusNotFound)
 }
@@ -118,7 +114,7 @@ func TestDeleteUser(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	// Test POST /users
-	req := Delete("/users/testuser@alexandria.org")
+	req := Delete(fmt.Sprintf("/users/%s", testEmail))
 	n.ServeHTTP(res, req)
 	expect(t, res.Code, http.StatusNoContent)
 }
