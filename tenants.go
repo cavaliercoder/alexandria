@@ -28,8 +28,9 @@ import (
 
 type Tenant struct {
 	model `json:"-" bson:",inline"`
-	Code  string `json:"code"`
-	Name  string `json:"name"`
+	Code  string          `json:"code"`
+	Name  string          `json:"name"`
+	Cmdbs map[string]Cmdb `json:"-"`
 }
 
 func (c *Tenant) InitModel() {

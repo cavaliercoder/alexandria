@@ -50,24 +50,23 @@ func (c *Cmdb) GetBackendName() string {
 }
 
 func GetCmdbs(res http.ResponseWriter, req *http.Request) {
-	authUser := GetApiUser(req)
+	auth := GetAuthContext(req)
 
-	var cmdbs []Cmdb
-	err := RootDb().C("cmdbs").Find(M{"tenantid": authUser.TenantId}).All(&cmdbs)
-	if Handle(res, req, err) {
-		return
+	v := make([]Cmdb, 0, len(auth.Tenant.Cmdbs))
+	for _, value := range auth.Tenant.Cmdbs {
+		v = append(v, value)
 	}
 
-	Render(res, req, http.StatusOK, cmdbs)
+	Render(res, req, http.StatusOK, v)
 }
 
 func GetCmdbByName(res http.ResponseWriter, req *http.Request) {
-	authUser := GetApiUser(req)
+	auth := GetAuthContext(req)
 	name := GetPathVar(req, "name")
 
-	var cmdb Cmdb
-	err := RootDb().C("cmdbs").Find(M{"tenantid": authUser.TenantId, "shortname": name}).One(&cmdb)
-	if Handle(res, req, err) {
+	cmdb, ok := auth.Tenant.Cmdbs[name]
+	if !ok {
+		ErrNotFound(res, req)
 		return
 	}
 
@@ -75,7 +74,9 @@ func GetCmdbByName(res http.ResponseWriter, req *http.Request) {
 }
 
 func AddCmdb(res http.ResponseWriter, req *http.Request) {
-	authUser := GetApiUser(req)
+	auth := GetAuthContext(req)
+
+	// Parse request and bind to Cmdb{}
 	var cmdb Cmdb
 	err := Bind(req, &cmdb)
 	if Handle(res, req, err) {
@@ -83,7 +84,7 @@ func AddCmdb(res http.ResponseWriter, req *http.Request) {
 	}
 
 	cmdb.InitModel()
-	cmdb.TenantId = authUser.TenantId
+	cmdb.TenantId = auth.User.TenantId
 
 	// Validate
 	err = cmdb.Validate()
@@ -92,8 +93,17 @@ func AddCmdb(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = RootDb().C("cmdbs").Insert(&cmdb)
-	if Handle(res, req, err) {
+	// Prevent duplicates
+	_, ok := auth.Tenant.Cmdbs[cmdb.ShortName]
+	if ok {
+		ErrConflict(res, req)
+		return
+	}
+
+	// Insert in database
+	field := fmt.Sprintf("cmdbs.%s", cmdb.ShortName)
+	mgoErr := RootDb().C("tenants").Update(M{"_id": auth.User.TenantId}, M{"$set": M{field: &cmdb}})
+	if Handle(res, req, mgoErr) {
 		return
 	}
 
@@ -101,11 +111,18 @@ func AddCmdb(res http.ResponseWriter, req *http.Request) {
 }
 
 func DeleteCmdbByName(res http.ResponseWriter, req *http.Request) {
-	authUser := GetApiUser(req)
+	auth := GetAuthContext(req)
 	name := GetPathVar(req, "name")
 
-	err := RootDb().C("cmdbs").Remove(M{"tenantid": authUser.TenantId, "shortname": name})
-	if Handle(res, req, err) {
+	cmdb, ok := auth.Tenant.Cmdbs[name]
+	if !ok {
+		ErrNotFound(res, req)
+		return
+	}
+
+	field := fmt.Sprintf("cmdbs.%s", cmdb.ShortName)
+	mgoErr := RootDb().C("tenants").Update(M{"_id": auth.User.TenantId}, M{"$unset": M{field: ""}})
+	if Handle(res, req, mgoErr) {
 		return
 	}
 

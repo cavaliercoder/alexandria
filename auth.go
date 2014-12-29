@@ -24,10 +24,15 @@ import (
 	"net/http"
 )
 
-type AuthMap map[*http.Request]*User
-
 type AuthHandler struct {
 }
+
+type AuthContext struct {
+	User   *User
+	Tenant *Tenant
+}
+
+type AuthMap map[*http.Request]*AuthContext
 
 func NewAuthHandler() *AuthHandler {
 	return &AuthHandler{}
@@ -41,9 +46,9 @@ func (c *AuthHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next
 		c.fail(res, req)
 		return
 	} else {
-		user := GetApiUser(req)
-		if user == nil {
-			log.Printf("No user found with API Key: %s", apiKey)
+		context := GetAuthContext(req)
+		if context == nil {
+			log.Printf("No user or tenancy found with API Key: %s", apiKey)
 			c.fail(res, req)
 			return
 		}
@@ -53,7 +58,7 @@ func (c *AuthHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next
 	next(res, req)
 
 	// Remove the user from the request cache
-	delete(sessionUsers, req)
+	delete(authCache, req)
 }
 
 func (c *AuthHandler) fail(res http.ResponseWriter, req *http.Request) {
@@ -61,18 +66,18 @@ func (c *AuthHandler) fail(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte("401 Unauthorized"))
 }
 
-var sessionUsers AuthMap
+var authCache AuthMap
 
-func GetApiUser(req *http.Request) *User {
+func GetAuthContext(req *http.Request) *AuthContext {
 	// Initialize the context cache
-	if sessionUsers == nil {
-		sessionUsers = AuthMap{}
+	if authCache == nil {
+		authCache = AuthMap{}
 	}
 
 	// Is the user cached already?
-	user, ok := sessionUsers[req]
+	context, ok := authCache[req]
 	if ok {
-		return user
+		return context
 	}
 
 	// Get API key from request header
@@ -81,9 +86,8 @@ func GetApiUser(req *http.Request) *User {
 		return nil
 	} else {
 		// Find the user
-		var userStruct User
-		user = &userStruct
-		err := RootDb().C("users").Find(M{"apikey": apiKey}).One(user)
+		var user User
+		err := RootDb().C("users").Find(M{"apikey": apiKey}).One(&user)
 		if err == mgo.ErrNotFound {
 			return nil
 		} else if err != nil {
@@ -91,8 +95,19 @@ func GetApiUser(req *http.Request) *User {
 			return nil
 		}
 
-		// Add the user to the cache
-		sessionUsers[req] = user
-		return user
+		// Find the tenant
+		var tenant Tenant
+		err = RootDb().C("tenants").FindId(user.TenantId).One(&tenant)
+		if err == mgo.ErrNotFound {
+			return nil
+		} else if err != nil {
+			log.Printf("Error retrieving API tenant from the database: %s", err.Error())
+			return nil
+		}
+
+		// Add the conext to the cache
+		context = &AuthContext{&user, &tenant}
+		authCache[req] = context
+		return context
 	}
 }
