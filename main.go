@@ -101,10 +101,18 @@ func main() {
 func GetServer() *negroni.Negroni {
 	// Init Mux routes
 	router := mux.NewRouter()
+
+	// User routes
 	router.HandleFunc("/users", GetUsers).Methods("GET")
 	router.HandleFunc("/users", AddUser).Methods("POST")
 	router.HandleFunc("/users/{email}", GetUserByEmail).Methods("GET")
 	router.HandleFunc("/users/{email}", DeleteUserByEmail).Methods("DELETE")
+
+	// Tenant routes
+	router.HandleFunc("/tenants", GetTenants).Methods("GET")
+	router.HandleFunc("/tenants", AddTenant).Methods("POST")
+	router.HandleFunc("/tenants/{code}", GetTenantByCode).Methods("GET")
+	router.HandleFunc("/tenants/{code}", DeleteTenantByCode).Methods("DELETE")
 
 	// Init Negroni
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())

@@ -20,9 +20,11 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
+	"reflect"
 	"time"
 )
 
@@ -109,10 +111,11 @@ func BootStrap(answers *Answers) error {
 	log.Printf("Creating collections and indexes...")
 	db.C("config").Create(&mgo.CollectionInfo{})
 	db.C("tenants").Create(&mgo.CollectionInfo{})
+	db.C("tenants").EnsureIndex(mgo.Index{Key: []string{"code"}, Unique: true})
 	db.C("users").Create(&mgo.CollectionInfo{})
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"email"}, Unique: true})
-	db.C("users").EnsureIndex(mgo.Index{Key: []string{"apikey"}, Unique: true, Sparse: true})
-	db.C("users").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: true, Sparse: true})
+	db.C("users").EnsureIndex(mgo.Index{Key: []string{"apikey"}, Unique: true})
+	db.C("users").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: true})
 
 	// Create default tenant
 	/*
@@ -161,7 +164,13 @@ func NewId() interface{} {
 }
 
 func IdToString(id interface{}) string {
-	return id.(bson.ObjectId).Hex()
+	oid, ok := id.(bson.ObjectId)
+
+	if ok {
+		return oid.Hex()
+	}
+
+	panic(fmt.Sprintf("Unknown ID format (%s)", reflect.TypeOf(id)))
 }
 
 func CreateDatabase(database string) error {

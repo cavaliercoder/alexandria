@@ -20,7 +20,6 @@ package main
 
 import (
 	"time"
-	"labix.org/v2/mgo/bson"
 )
 
 type Model interface {
@@ -44,12 +43,11 @@ func (c *model) InitModel() {
 	if c.Created.IsZero() {
 		c.Created = now
 	}
-        
+
 	c.Modified = now
 
-	
 	if c.Id == nil {
-		c.Id = bson.NewObjectId()
+		c.Id = NewId()
 	}
 }
 
