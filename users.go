@@ -71,7 +71,9 @@ func GetUsers(res http.ResponseWriter, req *http.Request) {
 
 	var users []User
 	err := RootDb().C("users").Find(M{"tenantid": authUser.TenantId}).All(&users)
-	Handle(res, req, err)
+	if Handle(res, req, err) {
+		return
+	}
 
 	Render(res, req, http.StatusOK, users)
 }

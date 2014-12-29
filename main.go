@@ -122,6 +122,12 @@ func GetServer() *negroni.Negroni {
 	router.HandleFunc("/tenants/{code}", GetTenantByCode).Methods("GET")
 	router.HandleFunc("/tenants/{code}", DeleteTenantByCode).Methods("DELETE")
 
+	// CMDB routes
+	router.HandleFunc("/cmdbs", GetCmdbs).Methods("GET")
+	router.HandleFunc("/cmdbs", AddCmdb).Methods("POST")
+	router.HandleFunc("/cmdbs/{name}", GetCmdbByName).Methods("GET")
+	router.HandleFunc("/cmdbs/{name}", DeleteCmdbByName).Methods("DELETE")
+
 	// Init Negroni
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger(), NewAuthHandler())
 	n.UseHandler(router)
