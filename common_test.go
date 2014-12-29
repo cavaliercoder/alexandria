@@ -20,6 +20,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -27,20 +28,46 @@ import (
 	"testing"
 )
 
-func expect(t *testing.T, a interface{}, b interface{}) {
+func areEqual(t *testing.T, a interface{}, b interface{}) bool {
 	if a != b {
 		t.Errorf("Expected %v (type %v) - Got %v (type %v)", b, reflect.TypeOf(b), a, reflect.TypeOf(a))
+		return false
 	}
+
+	return true
+}
+
+func NewRequest(method string, uri string, body io.Reader) *http.Request {
+	req, err := http.NewRequest(method, uri, body)
+	if err != nil {
+		panic(err)
+	}
+
+	// Get apiInfo
+	var apiInfo ApiInfo
+	err = RootDb().C("apiInfo").Find(nil).One(&apiInfo)
+	if err != nil {
+		panic(err)
+	}
+
+	var user User
+	err = RootDb().C("users").FindId(apiInfo.RootUserId).One(&user)
+	if err != nil {
+		panic(err)
+	}
+
+	req.Header.Add("Content-type", "application/json")
+	req.Header.Add("X-Auth-Token", user.ApiKey)
+	req.Header.Add("User-Agent", "Alexandria CMDB Tests")
+
+	return req
 }
 
 func get(t *testing.T, uri string, code int) {
 	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
 
 	// Create request
-	req, err := http.NewRequest("GET", uri, nil)
-	if err != nil {
-		panic(err)
-	}
+	req := NewRequest("GET", uri, nil)
 
 	// Create response recorder
 	res := httptest.NewRecorder()
@@ -50,7 +77,7 @@ func get(t *testing.T, uri string, code int) {
 	n.ServeHTTP(res, req)
 
 	// Validate response
-	expect(t, res.Code, code)
+	areEqual(t, res.Code, code)
 }
 
 func Get(t *testing.T, uri string) {
@@ -66,10 +93,7 @@ func post(t *testing.T, uri string, body string, code int) string {
 
 	// Create request
 	reader := strings.NewReader(body)
-	req, err := http.NewRequest("POST", uri, reader)
-	if err != nil {
-		panic(err)
-	}
+	req := NewRequest("POST", uri, reader)
 
 	// Create response recorder
 	res := httptest.NewRecorder()
@@ -79,7 +103,7 @@ func post(t *testing.T, uri string, body string, code int) string {
 	n.ServeHTTP(res, req)
 
 	// Validate response
-	expect(t, res.Code, code)
+	areEqual(t, res.Code, code)
 
 	return res.HeaderMap.Get("Location")
 }
@@ -94,6 +118,7 @@ func Post(t *testing.T, uri string, body string, testDuplicates bool) {
 		// Retrieve the new resource
 		Get(t, location)
 
+		// Make sure duplicates can't be created
 		if testDuplicates {
 			post(t, uri, body, http.StatusConflict)
 		}
@@ -110,10 +135,7 @@ func Delete(t *testing.T, uri string) {
 	fmt.Printf("[TEST] DELETE %s...\n", uri)
 
 	// Create request
-	req, err := http.NewRequest("DELETE", uri, nil)
-	if err != nil {
-		panic(err)
-	}
+	req := NewRequest("DELETE", uri, nil)
 
 	// Create response recorder
 	res := httptest.NewRecorder()
@@ -123,5 +145,5 @@ func Delete(t *testing.T, uri string) {
 	n.ServeHTTP(res, req)
 
 	// Validate response
-	expect(t, res.Code, http.StatusNoContent)
+	areEqual(t, res.Code, http.StatusNoContent)
 }

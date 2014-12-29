@@ -123,7 +123,7 @@ func GetServer() *negroni.Negroni {
 	router.HandleFunc("/tenants/{code}", DeleteTenantByCode).Methods("DELETE")
 
 	// Init Negroni
-	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
+	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger(), NewAuthHandler())
 	n.UseHandler(router)
 
 	return n
