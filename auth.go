@@ -24,6 +24,8 @@ import (
 	"net/http"
 )
 
+type AuthMap map[*http.Request]*User
+
 type AuthHandler struct {
 }
 
@@ -47,7 +49,11 @@ func (c *AuthHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next
 		}
 	}
 
+	// Process request chain
 	next(res, req)
+
+	// Remove the user from the request cache
+	delete(sessionUsers, req)
 }
 
 func (c *AuthHandler) fail(res http.ResponseWriter, req *http.Request) {
@@ -55,19 +61,38 @@ func (c *AuthHandler) fail(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte("401 Unauthorized"))
 }
 
+var sessionUsers AuthMap
+
 func GetApiUser(req *http.Request) *User {
+	// Initialize the context cache
+	if sessionUsers == nil {
+		sessionUsers = AuthMap{}
+	}
+
+	// Is the user cached already?
+	user, ok := sessionUsers[req]
+	if ok {
+		return user
+	}
+
 	// Get API key from request header
 	apiKey := req.Header.Get("X-Auth-Token")
 	if apiKey == "" {
 		return nil
 	} else {
 		// Find the user
-		var user User
-		err := RootDb().C("users").Find(M{"apikey": apiKey}).One(&user)
+		var userStruct User
+		user = &userStruct
+		err := RootDb().C("users").Find(M{"apikey": apiKey}).One(user)
 		if err == mgo.ErrNotFound {
+			return nil
+		} else if err != nil {
+			log.Printf("Error retrieving API user from the database: %s", err.Error())
 			return nil
 		}
 
-		return &user
+		// Add the user to the cache
+		sessionUsers[req] = user
+		return user
 	}
 }
