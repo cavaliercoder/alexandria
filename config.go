@@ -1,5 +1,5 @@
 /*
- * Alexandria CMDB - Open source common.management database
+ * Alexandria CMDB - Open source config management database
  * Copyright (C) 2014  Ryan Armstrong <ryan@cavaliercoder.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -43,10 +43,10 @@ type DatabaseConfig struct {
 	Password string   `json:"password"`
 }
 
-// default common.file path
+// default config file path
 var confFilePath string = ""
 
-// global, singleton common.struct
+// global, singleton config struct
 var config *Config
 
 func GetConfigFromFile(path string) (*Config, error) {
@@ -58,10 +58,10 @@ func GetConfigFromFile(path string) (*Config, error) {
 	return GetConfig()
 }
 
-// GetConfig returns a pointer to a singleton common.structure.
+// GetConfig returns a pointer to a singleton config structure.
 func GetConfig() (*Config, error) {
 	if config == nil {
-		// Select a common.file
+		// Select a config file
 		if confFilePath == "" {
 			if _, err := os.Stat("./config.json"); err == nil {
 				confFilePath = "./config.json"
@@ -72,7 +72,7 @@ func GetConfig() (*Config, error) {
 			}
 		}
 
-		// Open common.file
+		// Open config file
 		confFile, err := os.Open(confFilePath)
 		if err != nil {
 			return nil, err
@@ -95,7 +95,7 @@ func GetConfig() (*Config, error) {
 			return nil, err
 		}
 
-		log.Printf("Loaded common.from %s", confFilePath)
+		log.Printf("Loaded config from %s", confFilePath)
 	}
 
 	return config, nil

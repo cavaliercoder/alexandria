@@ -83,6 +83,7 @@ func TestAddUser(t *testing.T) {
 	expect(t, res.Code, http.StatusCreated)
 
 	// Make sure duplicates cant be created
+	res = httptest.NewRecorder()
 	req = Post("/users", reqBody)
 	n.ServeHTTP(res, req)
 	expect(t, res.Code, http.StatusConflict)
@@ -113,8 +114,14 @@ func TestDeleteUser(t *testing.T) {
 	n := GetServer()
 	res := httptest.NewRecorder()
 
-	// Test POST /users
+	// Test DELETE /users/:email
 	req := Delete(fmt.Sprintf("/users/%s", testEmail))
 	n.ServeHTTP(res, req)
 	expect(t, res.Code, http.StatusNoContent)
+
+	// Test DELETE /users/:missing
+	res = httptest.NewRecorder()
+	req = Delete("/users/i_dont_exist")
+	n.ServeHTTP(res, req)
+	expect(t, res.Code, http.StatusNotFound)
 }

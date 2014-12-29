@@ -20,10 +20,10 @@ package main
 
 import (
 	"errors"
-	"log"
-	"time"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"log"
+	"time"
 )
 
 type M map[string]interface{}
@@ -33,9 +33,9 @@ var dbSession *mgo.Session
 func DbConnect() *mgo.Session {
 	if dbSession == nil {
 		config, err := GetConfig()
-                if err != nil {
-                    log.Panic(err)
-                }
+		if err != nil {
+			log.Panic(err)
+		}
 
 		// Establish database connection
 		dialInfo := mgo.DialInfo{
@@ -76,16 +76,13 @@ func RootDb() *mgo.Database {
 	if err != nil {
 		log.Panic(err)
 	}
-	
+
 	session := DbConnect()
 	return session.DB(config.Database.Database)
 }
 
 func IsBootStrapped() (bool, error) {
-        config, err := GetConfig()
-        if err != nil { return false, err }
-        
-	count, err := dbSession.DB(config.Database.Database).C("config").Find(nil).Count()
+	count, err := RootDb().C("config").Find(nil).Count()
 	if err != nil {
 		return false, err
 	}
@@ -106,14 +103,9 @@ func BootStrap(answers *Answers) error {
 	if booted {
 		return errors.New("database is already bootstrapped")
 	}
-        
-        // Load configuration
-        config, err := GetConfig()
-        if err != nil { return err }
-
-	db := dbSession.DB(config.Database.Database)
 
 	// Create collections and indexes
+	db := RootDb()
 	log.Printf("Creating collections and indexes...")
 	db.C("config").Create(&mgo.CollectionInfo{})
 	db.C("tenants").Create(&mgo.CollectionInfo{})
@@ -123,45 +115,43 @@ func BootStrap(answers *Answers) error {
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"tenantid"}, Unique: true, Sparse: true})
 
 	// Create default tenant
-        /*
-	tenant := models.Tenant{
-		Name: answers.Tenant.Name,
-	}
-	tenant.Init(c.NewId())
-	err = db.C("tenants").Insert(tenant)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Created detault tenant '%s' with ID %s", tenant.Name, tenant.Id.(bson.ObjectId).Hex())
+	/*
+		tenant := models.Tenant{
+			Name: answers.Tenant.Name,
+		}
+		tenant.Init(c.NewId())
+		err = db.C("tenants").Insert(tenant)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Created detault tenant '%s' with ID %s", tenant.Name, tenant.Id.(bson.ObjectId).Hex())
 
-	// Create root user
-	user := models.User{
-		FirstName: answers.User.FirstName,
-		LastName:  answers.User.LastName,
-		Email:     answers.User.Email,
-	}
-	user.Init(c.NewId())
-	user.TenantId = tenant.Id
+		// Create root user
+		user := models.User{
+			FirstName: answers.User.FirstName,
+			LastName:  answers.User.LastName,
+			Email:     answers.User.Email,
+		}
+		user.Init(c.NewId())
+		user.TenantId = tenant.Id
 
-	err = db.C("users").Insert(user)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Created root user '%s %s <%s>' with ID %s", user.FirstName, user.LastName, user.Email, user.Id.(bson.ObjectId).Hex())
-
-	// Create common.entry
-	cfgData := models.Config{
-		Version:    "1.0.0",
-		RootTenant: tenant.Id.(bson.ObjectId),
-		RootUser:   user.Id.(bson.ObjectId),
-	}
-	cfgData.Init(c.NewId())
-	err = db.C("config").Insert(cfgData)
-	if err != nil {
-		log.Fatal(err)
-	}
+		err = db.C("users").Insert(user)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Created root user '%s %s <%s>' with ID %s", user.FirstName, user.LastName, user.Email, user.Id.(bson.ObjectId).Hex())
 	*/
-	log.Printf("Configuration initialization completed successfully")
+	// Create common.entry
+	apiInfo := M{
+		"Version":     "1.0.0",
+		"installDate": time.Now(),
+	}
+	err = db.C("config").Insert(apiInfo)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Fatal("Configuration initialization completed successfully")
 
 	return nil
 }

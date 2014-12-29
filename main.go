@@ -24,6 +24,7 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2"
 	"io"
 	"log"
 	"net/http"
@@ -57,6 +58,36 @@ func main() {
 		confFile := context.GlobalString("config")
 		if confFile != "" {
 			_, err = GetConfigFromFile(confFile)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		// Check is db schema is initialized
+		log.Printf("Checking database schema...")
+		booted, err := IsBootStrapped()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Build db schema if required
+		answerFile := context.GlobalString("answers")
+		if booted && answerFile != "" {
+			log.Fatal("An answer file was specified but the database is already initialized")
+		}
+
+		if !booted {
+			if answerFile == "" {
+				log.Fatal("Database is not initialized but no answer file was specified.")
+			}
+
+			log.Print("Bootstrapping database schema...")
+			answers, err := LoadAnswers(answerFile)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			err = BootStrap(answers)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -98,7 +129,27 @@ func Serve() {
 	n.Run(config.Server.ListenOn)
 }
 
-func Handle(err error) bool {
+func Handle(res http.ResponseWriter, req *http.Request, err error) bool {
+	// Is this a generic Mongo Not Found error?
+	if err == mgo.ErrNotFound {
+		NotFound(res, req)
+		return true
+	}
+
+	// Is this a Mongo error?
+	mgoErr, ok := err.(*mgo.LastError)
+	if ok {
+		switch mgoErr.Code {
+		case 11000: // Duplicate key insertion
+			res.WriteHeader(http.StatusConflict)
+			res.Write([]byte("409 Conflict"))
+			return true
+		default:
+			log.Printf("%#v", mgoErr)
+		}
+	}
+
+	// Unknown error
 	if err != nil {
 		log.Panic(err)
 		return true

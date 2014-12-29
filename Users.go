@@ -55,7 +55,7 @@ func (c *User) GenerateApiKey() string {
 func GetUsers(res http.ResponseWriter, req *http.Request) {
 	var users []User
 	err := RootDb().C("users").Find(nil).All(&users)
-	Handle(err)
+	Handle(res, req, err)
 
 	Render(res, req, http.StatusOK, users)
 }
@@ -68,7 +68,7 @@ func GetUserByEmail(res http.ResponseWriter, req *http.Request) {
 	if err != nil && err.Error() == "not found" {
 		NotFound(res, req)
 		return
-	} else if Handle(err) {
+	} else if Handle(res, req, err) {
 		return
 	}
 
@@ -78,7 +78,7 @@ func GetUserByEmail(res http.ResponseWriter, req *http.Request) {
 func AddUser(res http.ResponseWriter, req *http.Request) {
 	var user User
 	err := Bind(req, &user)
-	if Handle(err) {
+	if Handle(res, req, err) {
 		return
 	}
 
@@ -86,7 +86,7 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 	//user.TenantId = r.AuthUser.TenantId
 
 	err = RootDb().C("users").Insert(&user)
-	if Handle(err) {
+	if Handle(res, req, err) {
 		return
 	}
 
@@ -99,10 +99,7 @@ func DeleteUserByEmail(res http.ResponseWriter, req *http.Request) {
 
 	// TODO: Ensure only users for current tenant can be deleted
 	err := RootDb().C("users").Remove(M{"email": email})
-	if err != nil && err.Error() == "not found" {
-		NotFound(res, req)
-		return
-	} else if Handle(err) {
+	if Handle(res, req, err) {
 		return
 	}
 
