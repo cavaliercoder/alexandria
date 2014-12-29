@@ -85,7 +85,7 @@ func RootDb() *mgo.Database {
 }
 
 func IsBootStrapped() (bool, error) {
-	count, err := RootDb().C("config").Find(nil).Count()
+	count, err := RootDb().C("apiInfo").Find(nil).Count()
 	if err != nil {
 		return false, err
 	}
@@ -115,7 +115,7 @@ func BootStrap(answers *Answers) error {
 	// Create collections and indexes
 	db := RootDb()
 	log.Printf("Creating collections and indexes...")
-	db.C("config").Create(&mgo.CollectionInfo{})
+	db.C("apiInfo").Create(&mgo.CollectionInfo{})
 	db.C("tenants").Create(&mgo.CollectionInfo{})
 	db.C("tenants").EnsureIndex(mgo.Index{Key: []string{"code"}, Unique: true})
 	db.C("users").Create(&mgo.CollectionInfo{})
@@ -149,12 +149,13 @@ func BootStrap(answers *Answers) error {
 	}
 	log.Printf("Created root user '%s %s <%s>'", user.FirstName, user.LastName, user.Email)
 
-	// Create common.entry
-	apiInfo := M{
-		"version":     "1.0.0",
-		"installDate": time.Now(),
+	// Create config entry
+	apiInfo := ApiInfo{
+		Version:     "1.0.0",
+		InstallDate: time.Now(),
+		RootUserId:  user.Id,
 	}
-	err = db.C("config").Insert(apiInfo)
+	err = db.C("apiInfo").Insert(apiInfo)
 	if err != nil {
 		log.Fatal(err)
 	}
