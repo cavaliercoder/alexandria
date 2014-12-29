@@ -31,7 +31,7 @@ import (
 func Handle(res http.ResponseWriter, req *http.Request, err error) bool {
 	// Is this a generic Mongo Not Found error?
 	if err == mgo.ErrNotFound {
-		NotFound(res, req)
+		ErrNotFound(res, req)
 		return true
 	}
 
@@ -40,26 +40,39 @@ func Handle(res http.ResponseWriter, req *http.Request, err error) bool {
 	if ok {
 		switch mgoErr.Code {
 		case 11000: // Duplicate key insertion
-			res.WriteHeader(http.StatusConflict)
-			res.Write([]byte("409 Conflict"))
+			ErrConflict(res, req)
 			return true
-		default:
-			log.Printf("%#v", mgoErr)
 		}
 	}
 
 	// Unknown error
 	if err != nil {
-		log.Panic(err)
+		ErrUnknown(res, req, err)
 		return true
 	}
 
 	return false
 }
 
-func NotFound(res http.ResponseWriter, req *http.Request) {
+func ErrUnknown(res http.ResponseWriter, req *http.Request, err error) {
+	log.Printf("ERROR: %#v", err)
+	res.WriteHeader(http.StatusInternalServerError)
+	res.Write([]byte("500 Internal server error"))
+}
+
+func ErrNotFound(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusNotFound)
 	res.Write([]byte("404 Resource not found"))
+}
+
+func ErrConflict(res http.ResponseWriter, req *http.Request) {
+	res.WriteHeader(http.StatusConflict)
+	res.Write([]byte("409 Conflict"))
+}
+
+func RenderCreated(res http.ResponseWriter, req *http.Request, url string) {
+	res.Header().Set("Location", url)
+	Render(res, req, http.StatusCreated, "")
 }
 
 func Render(res http.ResponseWriter, req *http.Request, status int, v interface{}) {
