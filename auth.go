@@ -37,14 +37,13 @@ func (c *AuthHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next
 	if apiKey == "" {
 		log.Printf("X-Auth-Token header not set")
 		c.fail(res, req)
+		return
 	} else {
-
-		// Find the user
-		var user User
-		err := RootDb().C("users").Find(M{"apikey": apiKey}).One(&user)
-		if err == mgo.ErrNotFound {
-			log.Printf("No user found with API Key %s", apiKey)
+		user := GetApiUser(req)
+		if user == nil {
+			log.Printf("No user found with API Key: %s", apiKey)
 			c.fail(res, req)
+			return
 		}
 	}
 
@@ -54,4 +53,21 @@ func (c *AuthHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next
 func (c *AuthHandler) fail(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusUnauthorized)
 	res.Write([]byte("401 Unauthorized"))
+}
+
+func GetApiUser(req *http.Request) *User {
+	// Get API key from request header
+	apiKey := req.Header.Get("X-Auth-Token")
+	if apiKey == "" {
+		return nil
+	} else {
+		// Find the user
+		var user User
+		err := RootDb().C("users").Find(M{"apikey": apiKey}).One(&user)
+		if err == mgo.ErrNotFound {
+			return nil
+		}
+
+		return &user
+	}
 }

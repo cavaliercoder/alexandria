@@ -37,24 +37,30 @@ func areEqual(t *testing.T, a interface{}, b interface{}) bool {
 	return true
 }
 
+func GetRootUser() *User {
+	// Get apiInfo
+	var apiInfo ApiInfo
+	err := RootDb().C("apiInfo").Find(nil).One(&apiInfo)
+	if err != nil {
+		return nil
+	}
+
+	var user User
+	err = RootDb().C("users").FindId(apiInfo.RootUserId).One(&user)
+	if err != nil {
+		return nil
+	}
+
+	return &user
+}
+
 func NewRequest(method string, uri string, body io.Reader) *http.Request {
 	req, err := http.NewRequest(method, uri, body)
 	if err != nil {
 		panic(err)
 	}
 
-	// Get apiInfo
-	var apiInfo ApiInfo
-	err = RootDb().C("apiInfo").Find(nil).One(&apiInfo)
-	if err != nil {
-		panic(err)
-	}
-
-	var user User
-	err = RootDb().C("users").FindId(apiInfo.RootUserId).One(&user)
-	if err != nil {
-		panic(err)
-	}
+	user := GetRootUser()
 
 	req.Header.Add("Content-type", "application/json")
 	req.Header.Add("X-Auth-Token", user.ApiKey)
