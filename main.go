@@ -131,7 +131,7 @@ func Serve() {
 	}
 
 	n := GetServer()
-	n.Run(config.Server.ListenOn)
+	n.Run(fmt.Sprintf("%s:%d", config.Server.ListenOn, config.Server.ListenPort))
 }
 
 func ExpandPath(path string) string {

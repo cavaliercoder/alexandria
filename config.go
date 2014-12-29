@@ -31,7 +31,8 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	ListenOn string `json:"listenOn"`
+	ListenOn   string `json:"listenOn"`
+	ListenPort int    `json:"listenPort"`
 }
 
 type DatabaseConfig struct {

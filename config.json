@@ -1,6 +1,6 @@
 {
 	"server": {
-		"listenOn": ":3000"
+		"listenPort": 3000
 	},
     "database": {
         "driver": "mongodb",

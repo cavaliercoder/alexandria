@@ -107,6 +107,11 @@ func BootStrap(answers *Answers) error {
 		return errors.New("database is already bootstrapped")
 	}
 
+	config, err := GetConfig()
+	if err != nil {
+		return err
+	}
+
 	// Create collections and indexes
 	db := RootDb()
 	log.Printf("Creating collections and indexes...")
@@ -161,7 +166,7 @@ func BootStrap(answers *Answers) error {
 		log.Fatal(err)
 	}
 	defer file.Close()
-	file.WriteString(fmt.Sprintf("ALEX_API_URL=http://localhost:%d\nALEX_API_KEY=%s\n", 3000, user.ApiKey))
+	file.WriteString(fmt.Sprintf("ALEX_API_URL=http://localhost:%d\nALEX_API_KEY=%s\n", config.Server.ListenPort, user.ApiKey))
 	file.Sync()
 	log.Printf("Saved Alexandria CMDB configuration to %s", rcfile)
 
