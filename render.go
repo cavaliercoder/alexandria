@@ -70,6 +70,12 @@ func ErrConflict(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte("409 Conflict"))
 }
 
+func ErrBadRequest(res http.ResponseWriter, req *http.Request, err error) {
+	log.Printf("Bad request: %s", err.Error())
+	res.WriteHeader(http.StatusBadRequest)
+	res.Write([]byte(fmt.Sprintf("400 Bad request\n%s", err.Error())))
+}
+
 func RenderCreated(res http.ResponseWriter, req *http.Request, url string) {
 	res.Header().Set("Location", url)
 	Render(res, req, http.StatusCreated, "")

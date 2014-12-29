@@ -25,6 +25,7 @@ import (
 type Model interface {
 	InitModel()
 	SetModified()
+	Validate() bool
 }
 
 type model struct {

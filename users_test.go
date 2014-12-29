@@ -34,6 +34,8 @@ func TestAddUser(t *testing.T) {
 	uri := fmt.Sprintf("%s/users", ApiV1Prefix)
 	body := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s"}`, testEmail, testFirstName, testLastName)
 	Post(t, uri, body, true)
+
+	// TODO: Add a test to ensure invalid user creation fails (i.e field validation)
 }
 
 func TestGetUsers(t *testing.T) {

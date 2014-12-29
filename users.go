@@ -21,6 +21,7 @@ package main
 import (
 	"crypto/sha1"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -51,6 +52,18 @@ func (c *User) GenerateApiKey() string {
 	c.ApiKey = fmt.Sprintf("%x", shaSum)
 
 	return c.ApiKey
+}
+
+func (c *User) Validate() error {
+	if c.Email == "" {
+		return errors.New("No email address specified")
+	}
+
+	if c.TenantId == nil {
+		return errors.New("No tenancy code specified")
+	}
+
+	return nil
 }
 
 func GetUsers(res http.ResponseWriter, req *http.Request) {
@@ -86,6 +99,13 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 
 	user.InitModel()
 	user.TenantId = authUser.TenantId
+
+	// Validate
+	err = user.Validate()
+	if err != nil {
+		ErrBadRequest(res, req, err)
+		return
+	}
 
 	err = RootDb().C("users").Insert(&user)
 	if Handle(res, req, err) {

@@ -20,8 +20,10 @@ package main
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 )
 
 type Tenant struct {
@@ -36,6 +38,23 @@ func (c *Tenant) InitModel() {
 	// Create the code by hashing the database ID
 	hash := sha256.Sum256([]byte(IdToString(c.Id)))
 	c.Code = fmt.Sprintf("%x-%x-%x", hash[0:2], hash[3:6], hash[7:10])
+}
+
+func (c *Tenant) Validate() error {
+	if c.Code == "" {
+		return errors.New("No tenancy code specified")
+	}
+
+	matched, _ := regexp.MatchString("^[a-f0-9]{4}-[a-f0-9]{6}-[a-f0-9]{6}$", c.Code)
+	if !matched {
+		return errors.New(fmt.Sprintf("Invalid tenancy code: %s", c.Code))
+	}
+
+	if c.Name == "" {
+		return errors.New("No tenant name specified")
+	}
+
+	return nil
 }
 
 func GetTenants(res http.ResponseWriter, req *http.Request) {
@@ -65,6 +84,12 @@ func AddTenant(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	tenant.InitModel()
+
+	err = tenant.Validate()
+	if err != nil {
+		ErrBadRequest(res, req, err)
+		return
+	}
 
 	err = RootDb().C("tenants").Insert(&tenant)
 	if Handle(res, req, err) {
