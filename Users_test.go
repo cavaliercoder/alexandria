@@ -19,11 +19,19 @@
 package main
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
+)
+
+const (
+	testEmail     = "test.user@cavaliercoder.com"
+	testFirstName = "Test"
+	testLastName  = "User"
 )
 
 func expect(t *testing.T, a interface{}, b interface{}) {
@@ -32,14 +40,41 @@ func expect(t *testing.T, a interface{}, b interface{}) {
 	}
 }
 
-func TestGetUsers(t *testing.T) {
-	n := GetServer()
-	res := httptest.NewRecorder()
+func Get(uri string, body string) *http.Request {
+	var reader io.Reader = nil
 
-	// Test GET /users
-	req, _ := http.NewRequest("GET", "/users", nil)
-	n.ServeHTTP(res, req)
-	expect(t, res.Code, http.StatusOK)
+	if body != "" {
+		reader = strings.NewReader(body)
+	}
+	req, err := http.NewRequest("GET", uri, reader)
+	if err != nil {
+		panic(err)
+	}
+
+	return req
+}
+
+func Post(uri string, body string) *http.Request {
+	var reader io.Reader = nil
+
+	if body != "" {
+		reader = strings.NewReader(body)
+	}
+	req, err := http.NewRequest("POST", uri, reader)
+	if err != nil {
+		panic(err)
+	}
+
+	return req
+}
+
+func Delete(uri string) *http.Request {
+	req, err := http.NewRequest("DELETE", uri, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	return req
 }
 
 func TestAddUser(t *testing.T) {
@@ -47,11 +82,35 @@ func TestAddUser(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	// Test POST /users
-	reqBody := `{"email":"testuser@alexandria.org"}`
-	reader := strings.NewReader(reqBody)
-	req, _ := http.NewRequest("POST", "/users", reader)
+	reqBody := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s"}`, testEmail, testFirstName, testLastName)
+	req := Post("/users", reqBody)
 	n.ServeHTTP(res, req)
 	expect(t, res.Code, http.StatusCreated)
+
+	// Make sure duplicates cant be created
+	req = Post("/users", reqBody)
+	n.ServeHTTP(res, req)
+	expect(t, res.Code, http.StatusConflict)
+}
+
+func TestGetUsers(t *testing.T) {
+	n := GetServer()
+	res := httptest.NewRecorder()
+
+	// Test GET /users
+	req := Get("/users", "")
+	n.ServeHTTP(res, req)
+	expect(t, res.Code, http.StatusOK)
+
+	// Test GET /users/:email
+	req = Get("/users/testuser@alexandria.org", "")
+	n.ServeHTTP(res, req)
+	expect(t, res.Code, http.StatusOK)
+
+	// Test GET /users/:missing
+	req = Get("/users/i_dont_exist", "")
+	n.ServeHTTP(res, req)
+	expect(t, res.Code, http.StatusNotFound)
 }
 
 func TestDeleteUser(t *testing.T) {
@@ -59,7 +118,7 @@ func TestDeleteUser(t *testing.T) {
 	res := httptest.NewRecorder()
 
 	// Test POST /users
-	req, _ := http.NewRequest("DELETE", "/users/testuser@alexandria.org", nil)
+	req := Delete("/users/testuser@alexandria.org")
 	n.ServeHTTP(res, req)
 	expect(t, res.Code, http.StatusNoContent)
 }
