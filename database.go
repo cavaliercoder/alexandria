@@ -177,6 +177,22 @@ func BootStrap(answers *Answers) error {
 	return nil
 }
 
+func CreateCmdb(name string) error {
+	session := DbConnect()
+	db := session.DB(name)
+	err := db.C("types").Create(&mgo.CollectionInfo{})
+
+	return err
+}
+
+func DropCmdb(name string) error {
+	session := DbConnect()
+	db := session.DB(name)
+	err := db.DropDatabase()
+
+	return err
+}
+
 func NewId() interface{} {
 	return bson.NewObjectId()
 }

@@ -26,6 +26,7 @@ import (
 	"log"
 	"os"
 	"os/user"
+	"regexp"
 )
 
 const (
@@ -153,4 +154,12 @@ func ExpandPath(path string) string {
 	}
 
 	return path
+}
+
+func IsValidShortName(name string) bool {
+	match, err := regexp.MatchString("^[a-zA-Z0-9-_]+$", name)
+	if err != nil {
+		log.Panic(err)
+	}
+	return match
 }

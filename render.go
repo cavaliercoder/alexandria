@@ -141,3 +141,25 @@ func GetPathVar(req *http.Request, name string) string {
 
 	return result
 }
+
+func GetCmdbBackend(req *http.Request) *mgo.Database {
+	// Get authentication context
+	auth := GetAuthContext(req)
+	if auth == nil {
+		log.Panic("A CMDB was requested without valid authentication")
+		return nil
+	}
+
+	// Get requested CMDB name
+	name := GetPathVar(req, "cmdb")
+
+	// Get the CMDB details
+	cmdb, ok := auth.Tenant.Cmdbs[name]
+	if !ok {
+		return nil
+	}
+
+	// Return the backend database
+	db := DbConnect()
+	return db.DB(cmdb.GetBackendName())
+}

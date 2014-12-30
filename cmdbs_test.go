@@ -24,15 +24,14 @@ import (
 )
 
 const (
-	cmdbName        = "Test CMDB"
-	cmdbShortName   = "test"
+	cmdbName        = "TestCMDB"
 	cmdbDescription = "A temporary test CMDB"
 )
 
 func TestAddCmdb(t *testing.T) {
 	// Test POST /cmdbs
 	uri := fmt.Sprintf("%s/cmdbs", ApiV1Prefix)
-	body := fmt.Sprintf(`{"name":"%s","shortName":"%s","description":"%s"}`, cmdbName, cmdbShortName, cmdbDescription)
+	body := fmt.Sprintf(`{"name":"%s","description":"%s"}`, cmdbName, cmdbDescription)
 	Post(t, uri, body, true)
 
 	// TODO: Add a test to ensure invalid cmdb creation fails (i.e field validation)

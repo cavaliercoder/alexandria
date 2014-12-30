@@ -22,20 +22,18 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"regexp"
 )
 
 type Cmdb struct {
 	model       `json:"-" bson:",inline"`
 	TenantId    interface{} `json:"-"`
 	Name        string      `json:"name"`
-	ShortName   string      `json:"shortName"`
 	Description string      `json:"description"`
 }
 
 func (c *Cmdb) Validate() error {
-	if match, _ := regexp.MatchString("^[a-zA-Z0-9-_]+$", c.ShortName); !match {
-		return errors.New("Invalid short name")
+	if !IsValidShortName(c.Name) {
+		return errors.New("Invalid characters in CMDB name")
 	}
 
 	if c.TenantId == nil {
@@ -94,20 +92,27 @@ func AddCmdb(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Prevent duplicates
-	_, ok := auth.Tenant.Cmdbs[cmdb.ShortName]
+	_, ok := auth.Tenant.Cmdbs[cmdb.Name]
 	if ok {
 		ErrConflict(res, req)
 		return
 	}
 
 	// Insert in database
-	field := fmt.Sprintf("cmdbs.%s", cmdb.ShortName)
+	field := fmt.Sprintf("cmdbs.%s", cmdb.Name)
 	mgoErr := RootDb().C("tenants").Update(M{"_id": auth.User.TenantId}, M{"$set": M{field: &cmdb}})
 	if Handle(res, req, mgoErr) {
 		return
 	}
 
-	RenderCreated(res, req, fmt.Sprintf("%s/cmdbs/%s", ApiV1Prefix, cmdb.ShortName))
+	// Create backend
+	err = CreateCmdb(cmdb.GetBackendName())
+	if Handle(res, req, err) {
+		return
+	}
+
+	// Tell the world
+	RenderCreated(res, req, fmt.Sprintf("%s/cmdbs/%s", ApiV1Prefix, cmdb.Name))
 }
 
 func DeleteCmdbByName(res http.ResponseWriter, req *http.Request) {
@@ -120,9 +125,15 @@ func DeleteCmdbByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	field := fmt.Sprintf("cmdbs.%s", cmdb.ShortName)
+	field := fmt.Sprintf("cmdbs.%s", cmdb.Name)
 	mgoErr := RootDb().C("tenants").Update(M{"_id": auth.User.TenantId}, M{"$unset": M{field: ""}})
 	if Handle(res, req, mgoErr) {
+		return
+	}
+
+	// Drop backend
+	err := DropCmdb(cmdb.GetBackendName())
+	if Handle(res, req, err) {
 		return
 	}
 
