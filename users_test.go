@@ -33,7 +33,7 @@ func TestAddUser(t *testing.T) {
 	// Test POST /users
 	uri := V1Uri("/users")
 	body := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s"}`, testEmail, testFirstName, testLastName)
-	Post(t, uri, body, true)
+	Crud(t, uri, body, true)
 
 	// Prevent missing email addresses
 	body = `{"firstName":"No","lastName":"Email"}`

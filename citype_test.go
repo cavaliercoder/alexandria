@@ -20,7 +20,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"testing"
 )
 
@@ -34,13 +33,13 @@ func TestCITypes(t *testing.T) {
 	// Create a cmdb
 	uri := V1Uri("/cmdbs")
 	body := fmt.Sprintf(`{"name":"%s"}`, ciTypeDB)
-	dburl := post(t, uri, body, http.StatusCreated)
+	dburl := Post(t, uri, body)
 	defer Delete(t, dburl)
 
 	// Test POST /cmdbs
 	uri = V1Uri(fmt.Sprintf("/cmdbs/%s/citypes", ciTypeDB))
 	body = fmt.Sprintf(`{"name":"%s","description":"%s"}`, ciTypeName, ciTypeDescription)
-	Post(t, uri, body, true)
+	Crud(t, uri, body, true)
 
 	body = `{"name":"Invalid Name!"}`
 	PostInvalid(t, uri, body)

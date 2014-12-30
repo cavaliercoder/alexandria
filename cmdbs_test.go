@@ -32,7 +32,7 @@ func TestAddCmdb(t *testing.T) {
 	// Test POST /cmdbs
 	uri := V1Uri("/cmdbs")
 	body := fmt.Sprintf(`{"name":"%s","description":"%s"}`, cmdbName, cmdbDescription)
-	Post(t, uri, body, true)
+	Crud(t, uri, body, true)
 
 	body = `{"name":"Invalid Name!"}`
 	PostInvalid(t, uri, body)

@@ -30,7 +30,7 @@ const (
 func TestAddTenant(t *testing.T) {
 	// Test POST /users
 	reqBody := fmt.Sprintf(`{"name":"%s"}`, testTenant)
-	Post(t, V1Uri("/tenants"), reqBody, false)
+	Crud(t, V1Uri("/tenants"), reqBody, false)
 }
 
 func TestGetTenants(t *testing.T) {

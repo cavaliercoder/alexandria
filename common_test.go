@@ -37,7 +37,7 @@ func areEqual(t *testing.T, a interface{}, b interface{}) bool {
 	return true
 }
 
-func GetRootUser() *User {
+func getRootUser() *User {
 	// Get apiInfo
 	var apiInfo ApiInfo
 	err := RootDb().C("apiInfo").Find(nil).One(&apiInfo)
@@ -60,38 +60,13 @@ func NewRequest(method string, uri string, body io.Reader) *http.Request {
 		panic(err)
 	}
 
-	user := GetRootUser()
+	user := getRootUser()
 
 	req.Header.Add("Content-type", "application/json")
 	req.Header.Add("X-Auth-Token", user.ApiKey)
 	req.Header.Add("User-Agent", "Alexandria CMDB Tests")
 
 	return req
-}
-
-func get(t *testing.T, uri string, code int) {
-	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
-
-	// Create request
-	req := NewRequest("GET", uri, nil)
-
-	// Create response recorder
-	res := httptest.NewRecorder()
-
-	// Start web server
-	n := GetServer()
-	n.ServeHTTP(res, req)
-
-	// Validate response
-	areEqual(t, res.Code, code)
-}
-
-func Get(t *testing.T, uri string) {
-	get(t, uri, http.StatusOK)
-}
-
-func GetMissing(t *testing.T, uri string) {
-	get(t, uri, http.StatusNotFound)
 }
 
 func post(t *testing.T, uri string, body string, code int) string {
@@ -114,9 +89,67 @@ func post(t *testing.T, uri string, body string, code int) string {
 	return res.HeaderMap.Get("Location")
 }
 
-func Post(t *testing.T, uri string, body string, testDuplicates bool) {
+// Post posts the specified resource and expects a 201 Created response
+func Post(t *testing.T, uri string, body string) string {
+	return post(t, uri, body, http.StatusCreated)
+}
+
+// Post posts the specified invalid resource and expects a 400 Bad request response
+func PostInvalid(t *testing.T, uri string, body string) {
+	post(t, uri, body, http.StatusBadRequest)
+}
+
+func get(t *testing.T, uri string, code int) {
+	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
+
+	// Create request
+	req := NewRequest("GET", uri, nil)
+
+	// Create response recorder
+	res := httptest.NewRecorder()
+
+	// Start web server
+	n := GetServer()
+	n.ServeHTTP(res, req)
+
+	// Validate response
+	areEqual(t, res.Code, code)
+}
+
+// Get retrieves a resource and expects a 200 Ok response
+func Get(t *testing.T, uri string) {
+	get(t, uri, http.StatusOK)
+}
+
+// Get retrieves a nonexistant resource and expects a 404 Not found response
+func GetMissing(t *testing.T, uri string) {
+	get(t, uri, http.StatusNotFound)
+}
+
+// Delete deletes a resource and expects a 204 No content response
+func Delete(t *testing.T, uri string) {
+	fmt.Printf("[TEST] DELETE %s...\n", uri)
+
+	// Create request
+	req := NewRequest("DELETE", uri, nil)
+
+	// Create response recorder
+	res := httptest.NewRecorder()
+
+	// Start web server
+	n := GetServer()
+	n.ServeHTTP(res, req)
+
+	// Validate response
+	areEqual(t, res.Code, http.StatusNoContent)
+}
+
+// Crud tests the creation, retrieval, update and deletion of an api resource.
+// If testDuplicates is true, Crud attempts to create a duplicate resource and
+// expects a 409 Conflict response.
+func Crud(t *testing.T, uri string, body string, testDuplicates bool) {
 	// Create a new resource
-	location := post(t, uri, body, http.StatusCreated)
+	location := Post(t, uri, body)
 
 	if location == "" {
 		t.Errorf("No location header was returned for new resource in: %s", uri)
@@ -135,25 +168,4 @@ func Post(t *testing.T, uri string, body string, testDuplicates bool) {
 		// Ensure it is missing
 		GetMissing(t, location)
 	}
-}
-
-func PostInvalid(t *testing.T, uri string, body string) {
-	post(t, uri, body, http.StatusBadRequest)
-}
-
-func Delete(t *testing.T, uri string) {
-	fmt.Printf("[TEST] DELETE %s...\n", uri)
-
-	// Create request
-	req := NewRequest("DELETE", uri, nil)
-
-	// Create response recorder
-	res := httptest.NewRecorder()
-
-	// Start web server
-	n := GetServer()
-	n.ServeHTTP(res, req)
-
-	// Validate response
-	areEqual(t, res.Code, http.StatusNoContent)
 }
