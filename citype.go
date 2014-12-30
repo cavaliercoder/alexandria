@@ -31,23 +31,33 @@ const (
 type CIType struct {
 	model `json:"_" bson:",inline"`
 
-	InheritFrom string            `json:"inheritFrom"`
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Attributes  []CITypeAttribute `json:"attributes"`
+	InheritFrom string              `json:"inheritFrom"`
+	Name        string              `json:"name"`
+	Description string              `json:"description"`
+	Attributes  CITypeAttributeList `json:"attributes"`
 }
 
 type CITypeAttribute struct {
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Type        string            `json:"type"`
-	MinValues   int               `json:"minValues"`
-	MaxValues   int               `json:"maxValues"`
-	Filter      string            `json:"filter"`
-	Children    []CITypeAttribute `json:"children"`
+	Name        string              `json:"name"`
+	Description string              `json:"description"`
+	Type        string              `json:"type"`
+	MinValues   int                 `json:"minValues"`
+	MaxValues   int                 `json:"maxValues"`
+	Filter      string              `json:"filter"`
+	Children    CITypeAttributeList `json:"children"`
 }
 
-type CITypeAttributeOptions map[string]string
+type CITypeAttributeList []CITypeAttribute
+
+func (c *CITypeAttributeList) Get(name string) *CITypeAttribute {
+	for _, att := range *c {
+		if att.Name == name {
+			return &att
+		}
+	}
+
+	return nil
+}
 
 func (c *CIType) Validate() error {
 	if !IsValidShortName(c.Name) {

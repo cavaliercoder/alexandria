@@ -40,7 +40,34 @@ func TestCI(t *testing.T) {
 	body = `{
 		"name":"TestCIType",
 		"description": "A test CI Type",
-		"attributes": []
+		"attributes": [
+			{
+				"name":"alphanumeric",
+				"type":"string",
+				"filter":"^[A-Za-z0-9]+$"
+			},
+			{
+				"name":"group",
+				"type":"group",
+				"children":[
+					{
+						"name":"allCaps",
+						"type":"string",
+						"filter":"^[A-Z]+$"
+					},
+					{
+						"name":"grandchildren",
+						"type":"group",
+						"children":[
+							{
+								"name":"grandchild",
+								"type":"string"
+							}
+						]
+					}
+				]
+			}
+		]
 		}`
 	typUrl := Post(t, uri, body)
 	defer Delete(t, typUrl)
@@ -48,7 +75,25 @@ func TestCI(t *testing.T) {
 	// Test POST ../CI
 	uri = V1Uri(fmt.Sprintf("/cmdbs/%s/%s", ciDB, ciType))
 	body = `{
-		"firstAttribute":"String value"
+		"alphanumeric":"StringValue123",
+		"group":{
+			"allCaps":"ABC",
+			"grandchildren":{
+				"grandchild":"Some value"
+			}
+		}
 	}`
 	Crud(t, uri, body, false)
+
+	// test POST invalid CI schema
+	body = `{
+		"badAttribute":"some value"
+	}`
+	PostInvalid(t, uri, body)
+
+	// test POST invalid CI value
+	body = `{
+		"alphanumeric":"Not!"
+	}`
+	PostInvalid(t, uri, body)
 }

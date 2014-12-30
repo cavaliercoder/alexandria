@@ -39,6 +39,9 @@ func (c *CI) Validate() error {
 }
 
 func AddCI(res http.ResponseWriter, req *http.Request) {
+	cmdb := GetPathVar(req, "cmdb")
+	citype := GetPathVar(req, "citype")
+
 	// Parse request into CIType
 	var ci CI
 	err := Bind(req, &ci.Value)
@@ -47,30 +50,80 @@ func AddCI(res http.ResponseWriter, req *http.Request) {
 	}
 	ci.InitModel()
 
-	// Validate
-	// TODO: Validate CI against CI Type schema
-	err = ci.Validate()
-	if err != nil {
-		ErrBadRequest(res, req, err)
-		return
-	}
-
 	// Get CMDB details
-	cmdb := GetPathVar(req, "cmdb")
 	db := GetCmdbBackend(req, cmdb)
 	if db == nil {
 		ErrNotFound(res, req)
 		return
 	}
 
+	// Get CI Type schema
+	var typ CIType
+	err = db.C("citypes").Find(M{"name": citype}).One(&typ)
+	if Handle(res, req, err) {
+		return
+	}
+
+	// Validate parser
+	err = ci.Validate()
+	if err != nil {
+		ErrBadRequest(res, req, err)
+		return
+	}
+
+	// Validate against schema
+	err = validateFields(ci.Value, &typ.Attributes, "")
+	if err != nil {
+		ErrBadRequest(res, req, err)
+		return
+	}
+
 	// Insert new CI
-	citype := GetPathVar(req, "citype")
 	err = db.C(citype).Insert(&ci)
 	if Handle(res, req, err) {
 		return
 	}
 
 	RenderCreated(res, req, V1Uri(fmt.Sprintf("/cmdbs/%s/%s/%s", cmdb, citype, IdToString(ci.Id))))
+}
+
+func validateFields(fields map[string]interface{}, schema *CITypeAttributeList, path string) error {
+	for key, val := range fields {
+		fullPath := fmt.Sprintf("%s.%s", path, key)
+
+		// Does this key exist in the schema?
+		att := schema.Get(key)
+		if att == nil {
+			return errors.New(fmt.Sprintf("No schema definition found for field '%s'", fullPath))
+		}
+
+		// Does the format exist?
+		format := GetAttributeFormat(att.Type)
+		if format == nil {
+			return errors.New(fmt.Sprintf("No format parser found for type '%s' in field '%s'", att.Type, fullPath))
+		}
+
+		// Is the value valid?
+		err := format.Validate(att, val)
+		if err != nil {
+			return err
+		}
+
+		// Process children?
+		if len(att.Children) > 0 {
+			childFields, ok := val.(map[string]interface{})
+			if !ok {
+				return errors.New(fmt.Sprintf("Expected '%s' to be a valid JSON object", fullPath))
+			}
+
+			err = validateFields(childFields, &att.Children, fullPath)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func GetCIs(res http.ResponseWriter, req *http.Request) {

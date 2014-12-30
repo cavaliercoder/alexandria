@@ -46,7 +46,7 @@ func (c *StringFormat) Validate(att *CITypeAttribute, val interface{}) error {
 			return err
 		}
 		if !match {
-			return errors.New(fmt.Sprintf("Value for '%s' does not match the required filter: %s", att.Name, att.Filter))
+			return errors.New(fmt.Sprintf("Value for '%s' does not match the required filter: /%s/", att.Name, att.Filter))
 		}
 	}
 
