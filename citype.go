@@ -27,18 +27,23 @@ import (
 type CIType struct {
 	model `json:"_" bson:",inline"`
 
-	InheritFrom string        `json:"inheritFrom"`
-	Name        string        `json:"name"`
-	Description string        `json:"description"`
-	Attributes  []CIAttribute `json:"attributes"`
+	InheritFrom string            `json:"inheritFrom"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Attributes  []CITypeAttribute `json:"attributes"`
 }
 
-type CIAttribute struct {
-	Name        string        `json:"name"`
-	Description string        `json:"description"`
-	Type        string        `json:"type"`
-	Children    []CIAttribute `json:"children"`
+type CITypeAttribute struct {
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Type        string            `json:"type"`
+	MinValues   int               `json:"minValues"`
+	MaxValues   int               `json:"maxValues"`
+	Filter      string            `json:"filter"`
+	Children    []CITypeAttribute `json:"children"`
 }
+
+type CITypeAttributeOptions map[string]string
 
 func (c *CIType) Validate() error {
 	if !IsValidShortName(c.Name) {
@@ -54,7 +59,7 @@ func (c *CIType) Validate() error {
 	return nil
 }
 
-func (c *CIType) validateAttributes(atts []CIAttribute, path string) error {
+func (c *CIType) validateAttributes(atts []CITypeAttribute, path string) error {
 	for _, att := range atts {
 		if !IsValidShortName(att.Name) {
 			return errors.New(fmt.Sprintf("Invalid characters in CI Attribute '%s%s'", path, att.Name))
@@ -62,6 +67,10 @@ func (c *CIType) validateAttributes(atts []CIAttribute, path string) error {
 
 		if att.Type == "" {
 			return errors.New(fmt.Sprintf("No type specified for CI Attribute '%s%s'", path, att.Name))
+		}
+
+		if GetAttributeFormat(att.Type) == nil {
+			return errors.New(fmt.Sprintf("Unsupported attribute format '%s' for CI Attribute '%s%s'", att.Type, path, att.Name))
 		}
 
 		if att.Type == "group" {
