@@ -30,6 +30,10 @@ func (c *GroupFormat) GetName() string {
 }
 
 func (c *GroupFormat) Validate(att *CITypeAttribute, val interface{}) error {
+	if att.Type != c.GetName() {
+		return errors.New(fmt.Sprintf("Attribute '%s' is not the correct type", att.Name))
+	}
+
 	_, ok := val.(map[string]interface{})
 	if !ok {
 		return errors.New(fmt.Sprintf("Value for '%s' is not an attribute group", att.Name))

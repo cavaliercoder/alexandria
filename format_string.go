@@ -31,6 +31,10 @@ func (c *StringFormat) GetName() string {
 }
 
 func (c *StringFormat) Validate(att *CITypeAttribute, val interface{}) error {
+	if att.Type != c.GetName() {
+		return errors.New(fmt.Sprintf("Attribute '%s' is not the correct type", att.Name))
+	}
+
 	valStr, ok := val.(string)
 	if !ok {
 		return errors.New(fmt.Sprintf("Value for '%s' is not a string", att.Name))
@@ -42,7 +46,7 @@ func (c *StringFormat) Validate(att *CITypeAttribute, val interface{}) error {
 			return err
 		}
 		if !match {
-			return errors.New(fmt.Sprintf("Value for '%s' does not match the required filter", att.Name))
+			return errors.New(fmt.Sprintf("Value for '%s' does not match the required filter: %s", att.Name, att.Filter))
 		}
 	}
 
