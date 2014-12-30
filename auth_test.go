@@ -27,7 +27,7 @@ import (
 
 func TestNoAuthHeader(t *testing.T) {
 	code := http.StatusUnauthorized
-	uri := fmt.Sprintf("%s/auth", ApiV1Prefix)
+	uri := V1Uri("/auth")
 
 	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
 
@@ -47,7 +47,7 @@ func TestNoAuthHeader(t *testing.T) {
 
 func TestBadAuthHeader(t *testing.T) {
 	code := http.StatusUnauthorized
-	uri := fmt.Sprintf("%s/auth", ApiV1Prefix)
+	uri := V1Uri("/auth")
 
 	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
 
@@ -67,5 +67,5 @@ func TestBadAuthHeader(t *testing.T) {
 }
 
 func TestGoodAuthHeader(t *testing.T) {
-	GetMissing(t, fmt.Sprintf("%s/auth", ApiV1Prefix))
+	GetMissing(t, V1Uri("/auth"))
 }

@@ -97,7 +97,7 @@ func AddTenant(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	RenderCreated(res, req, fmt.Sprintf("%s/tenants/%s", ApiV1Prefix, tenant.Code))
+	RenderCreated(res, req, V1Uri(fmt.Sprintf("/tenants/%s", tenant.Code)))
 }
 
 func DeleteTenantByCode(res http.ResponseWriter, req *http.Request) {

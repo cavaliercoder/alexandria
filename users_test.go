@@ -31,18 +31,20 @@ const (
 
 func TestAddUser(t *testing.T) {
 	// Test POST /users
-	uri := fmt.Sprintf("%s/users", ApiV1Prefix)
+	uri := V1Uri("/users")
 	body := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s"}`, testEmail, testFirstName, testLastName)
 	Post(t, uri, body, true)
 
+	// Prevent missing email addresses
 	body = `{"firstName":"No","lastName":"Email"}`
 	PostInvalid(t, uri, body)
 
+	// Prevent invalid email addresses
 	body = `{"email":"not valid email address"}`
 	PostInvalid(t, uri, body)
 }
 
 func TestGetUsers(t *testing.T) {
 	// Test GET /users
-	Get(t, fmt.Sprintf("%s/users", ApiV1Prefix))
+	Get(t, V1Uri("/users"))
 }

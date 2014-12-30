@@ -30,7 +30,7 @@ const (
 
 func TestAddCmdb(t *testing.T) {
 	// Test POST /cmdbs
-	uri := fmt.Sprintf("%s/cmdbs", ApiV1Prefix)
+	uri := V1Uri("/cmdbs")
 	body := fmt.Sprintf(`{"name":"%s","description":"%s"}`, cmdbName, cmdbDescription)
 	Post(t, uri, body, true)
 
@@ -40,5 +40,5 @@ func TestAddCmdb(t *testing.T) {
 
 func TestGetCmdbs(t *testing.T) {
 	// Test GET /cmdbs
-	Get(t, fmt.Sprintf("%s/cmdbs", ApiV1Prefix))
+	Get(t, V1Uri("/cmdbs"))
 }

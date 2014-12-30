@@ -30,10 +30,10 @@ const (
 func TestAddTenant(t *testing.T) {
 	// Test POST /users
 	reqBody := fmt.Sprintf(`{"name":"%s"}`, testTenant)
-	Post(t, fmt.Sprintf("%s/tenants", ApiV1Prefix), reqBody, false)
+	Post(t, V1Uri("/tenants"), reqBody, false)
 }
 
 func TestGetTenants(t *testing.T) {
 	// Test GET /users
-	Get(t, fmt.Sprintf("%s/tenants", ApiV1Prefix))
+	Get(t, V1Uri("/tenants"))
 }

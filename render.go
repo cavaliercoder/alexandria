@@ -28,6 +28,14 @@ import (
 	"net/http"
 )
 
+const (
+	ApiV1Prefix = "/api/v1"
+)
+
+func V1Uri(uri string) string {
+	return fmt.Sprintf("%s%s", ApiV1Prefix, uri)
+}
+
 func Handle(res http.ResponseWriter, req *http.Request, err error) bool {
 	// Is this a generic Mongo Not Found error?
 	if err == mgo.ErrNotFound {

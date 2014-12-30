@@ -112,7 +112,7 @@ func AddCmdb(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Tell the world
-	RenderCreated(res, req, fmt.Sprintf("%s/cmdbs/%s", ApiV1Prefix, cmdb.Name))
+	RenderCreated(res, req, V1Uri(fmt.Sprintf("/cmdbs/%s", cmdb.Name)))
 }
 
 func DeleteCmdbByName(res http.ResponseWriter, req *http.Request) {

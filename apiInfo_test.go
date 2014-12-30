@@ -19,10 +19,9 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 )
 
 func TestGetApiInfo(t *testing.T) {
-	Get(t, fmt.Sprintf("%s/info", ApiV1Prefix))
+	Get(t, V1Uri("/info"))
 }

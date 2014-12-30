@@ -29,10 +29,6 @@ import (
 	"regexp"
 )
 
-const (
-	ApiV1Prefix = "/api/v1"
-)
-
 func main() {
 	app := cli.NewApp()
 	app.Name = "Alexandria CMDB API Server Daemon"
