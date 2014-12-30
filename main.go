@@ -125,6 +125,12 @@ func GetServer() *negroni.Negroni {
 	router.HandleFunc("/cmdbs/{name}", GetCmdbByName).Methods("GET")
 	router.HandleFunc("/cmdbs/{name}", DeleteCmdbByName).Methods("DELETE")
 
+	// CI Type routes
+	router.HandleFunc("/cmdbs/{cmdb}/citypes", GetCITypes).Methods("GET")
+	router.HandleFunc("/cmdbs/{cmdb}/citypes", AddCIType).Methods("POST")
+	router.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", GetCITypeByName).Methods("GET")
+	router.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", DeleteCITypeByName).Methods("DELETE")
+
 	// Init Negroni
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger(), NewAuthHandler())
 	n.UseHandler(router)

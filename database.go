@@ -180,7 +180,16 @@ func BootStrap(answers *Answers) error {
 func CreateCmdb(name string) error {
 	session := DbConnect()
 	db := session.DB(name)
-	err := db.C("types").Create(&mgo.CollectionInfo{})
+
+	// Create CI Types collection
+	err := db.C("citypes").Create(&mgo.CollectionInfo{})
+	if err != nil {
+		return err
+	}
+	err = db.C("citypes").EnsureIndex(mgo.Index{Key: []string{"name"}, Unique: true})
+	if err != nil {
+		return err
+	}
 
 	return err
 }

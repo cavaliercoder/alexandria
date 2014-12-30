@@ -127,7 +127,6 @@ func DeleteUserByEmail(res http.ResponseWriter, req *http.Request) {
 	auth := GetAuthContext(req)
 	email := GetPathVar(req, "email")
 
-	// TODO: Ensure only users for current tenant can be deleted
 	err := RootDb().C("users").Remove(M{"tenantid": auth.User.TenantId, "email": email})
 	if Handle(res, req, err) {
 		return
