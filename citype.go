@@ -27,7 +27,7 @@ import (
 type CIType struct {
 	model `json:"_" bson:",inline"`
 
-	InheritFrom interface{}   `json:"inheritFrom"`
+	InheritFrom string        `json:"inheritFrom"`
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
 	Attributes  []CIAttribute `json:"attributes"`
@@ -64,10 +64,14 @@ func (c *CIType) validateAttributes(atts []CIAttribute, path string) error {
 			return errors.New(fmt.Sprintf("No type specified for CI Attribute '%s%s'", path, att.Name))
 		}
 
-		// Validate children
-		err := c.validateAttributes(att.Children, fmt.Sprintf("%s.", att.Name))
-		if err != nil {
-			return err
+		if att.Type == "group" {
+			// Validate children
+			err := c.validateAttributes(att.Children, fmt.Sprintf("%s.", att.Name))
+			if err != nil {
+				return err
+			}
+		} else if len(att.Children) > 0 {
+			return errors.New(fmt.Sprintf("CI Attribute '%s%s' has children but is not a group attribute", path, att.Name))
 		}
 	}
 
