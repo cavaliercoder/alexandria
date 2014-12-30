@@ -34,7 +34,8 @@ func TestAddCmdb(t *testing.T) {
 	body := fmt.Sprintf(`{"name":"%s","description":"%s"}`, cmdbName, cmdbDescription)
 	Post(t, uri, body, true)
 
-	// TODO: Add a test to ensure invalid cmdb creation fails (i.e field validation)
+	body = `{"name":"Invalid Name!"}`
+	PostInvalid(t, uri, body)
 }
 
 func TestGetCmdbs(t *testing.T) {

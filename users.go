@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 )
 
 type User struct {
@@ -57,6 +58,11 @@ func (c *User) GenerateApiKey() string {
 func (c *User) Validate() error {
 	if c.Email == "" {
 		return errors.New("No email address specified")
+	}
+
+	// Regex courtesy: http://www.regular-expressions.info/email.html
+	if match, _ := regexp.MatchString(`(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}$`, c.Email); !match {
+		return errors.New("Invalid email address specified")
 	}
 
 	if c.TenantId == nil {

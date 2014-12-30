@@ -137,6 +137,10 @@ func Post(t *testing.T, uri string, body string, testDuplicates bool) {
 	}
 }
 
+func PostInvalid(t *testing.T, uri string, body string) {
+	post(t, uri, body, http.StatusBadRequest)
+}
+
 func Delete(t *testing.T, uri string) {
 	fmt.Printf("[TEST] DELETE %s...\n", uri)
 
