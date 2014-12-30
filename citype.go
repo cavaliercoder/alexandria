@@ -24,6 +24,10 @@ import (
 	"net/http"
 )
 
+const (
+	ciTypeCollection = "citypes"
+)
+
 type CIType struct {
 	model `json:"_" bson:",inline"`
 
@@ -97,7 +101,7 @@ func GetCITypes(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var citypes []CIType
-	err := db.C("citypes").Find(nil).All(&citypes)
+	err := db.C(ciTypeCollection).Find(nil).All(&citypes)
 	if Handle(res, req, err) {
 		return
 	}
@@ -117,7 +121,7 @@ func GetCITypeByName(res http.ResponseWriter, req *http.Request) {
 	// Get the type
 	var citype CIType
 	name := GetPathVar(req, "name")
-	err := db.C("citypes").Find(M{"name": name}).One(&citype)
+	err := db.C(ciTypeCollection).Find(M{"name": name}).One(&citype)
 	if Handle(res, req, err) {
 		return
 	}
@@ -150,7 +154,7 @@ func AddCIType(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Insert new type
-	err = db.C("citypes").Insert(&citype)
+	err = db.C(ciTypeCollection).Insert(&citype)
 	if Handle(res, req, err) {
 		return
 	}
@@ -169,7 +173,7 @@ func DeleteCITypeByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := db.C("citypes").Remove(M{"name": name})
+	err := db.C(ciTypeCollection).Remove(M{"name": name})
 	if Handle(res, req, err) {
 		return
 	}

@@ -216,6 +216,14 @@ func IdToString(id interface{}) string {
 	panic(fmt.Sprintf("Unknown ID format (%s)", reflect.TypeOf(id)))
 }
 
+func IdFromString(id string) (bson.ObjectId, error) {
+	if !bson.IsObjectIdHex(id) {
+		return "", errors.New(fmt.Sprintf("Invalid ID: %s", id))
+	}
+
+	return bson.ObjectIdHex(id), nil
+}
+
 func CreateDatabase(database string) error {
 	return nil
 }
