@@ -65,13 +65,24 @@ func TestCITypes(t *testing.T) {
 	body = `{"name":"Invalid Name!"}`
 	PostInvalid(t, uri, body)
 
-	// Test POST .../citypes with invalid attributes
+	// Test POST .../citypes with invalid attribute name
 	body = `{
 		"name":"BadAttributeName",
 		"attributes":[
 			{
 				"name":"This is a bad name!",
 				"type":"string"
+			}
+		]}`
+	PostInvalid(t, uri, body)
+
+	// Test POST .../citypes with invalid attribute type
+	body = `{
+		"name":"BadAttributeName",
+		"attributes":[
+			{
+				"name":"FirstAttribute",
+				"type":"some_bad_type"
 			}
 		]}`
 	PostInvalid(t, uri, body)

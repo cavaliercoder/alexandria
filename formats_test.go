@@ -22,6 +22,12 @@ import (
 	"testing"
 )
 
+func TestFormatFactory(t *testing.T) {
+	if format := GetAttributeFormat("i_dont_exist"); format != nil {
+		t.Errorf("Expected nil when requesting nonexistant Attribute Format but got: %#v", format)
+	}
+}
+
 func TestStringFormat(t *testing.T) {
 	format := GetAttributeFormat("string")
 	if format == nil {

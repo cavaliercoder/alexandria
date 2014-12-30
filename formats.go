@@ -18,8 +18,6 @@
  */
 package main
 
-import ()
-
 type AttributeFormat interface {
 	GetName() string
 	Validate(*CITypeAttribute, interface{}) error
@@ -41,10 +39,5 @@ func GetAttributeFormat(name string) AttributeFormat {
 		}
 	}
 
-	format, ok := formatMap[name]
-	if ok {
-		return format
-	} else {
-		return nil
-	}
+	return formatMap[name]
 }
