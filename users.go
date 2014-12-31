@@ -26,13 +26,14 @@ import (
 )
 
 type User struct {
-	model     `json:"-" bson:",inline"`
-	TenantId  interface{} `json:"-"`
-	ApiKey    string      `json:"-"`
-	FirstName string      `json:"firstName"`
-	LastName  string      `json:"lastName"`
-	Email     string      `json:"email"`
-	Password  string      `json:"-"`
+	model        `json:"-" bson:",inline"`
+	TenantId     interface{} `json:"-"`
+	ApiKey       string      `json:"-"`
+	FirstName    string      `json:"firstName"`
+	LastName     string      `json:"lastName"`
+	Email        string      `json:"email"`
+	Password     string      `json:"password,omitempty" bson:"-"`
+	PasswordHash string      `json:"-" bson:"password"`
 }
 
 func (c *User) InitModel() {
@@ -47,11 +48,15 @@ func (c *User) Validate() error {
 
 	// Regex courtesy: http://www.regular-expressions.info/email.html
 	if match, _ := regexp.MatchString(`(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}$`, c.Email); !match {
-		return errors.New("Invalid email address specified")
+		return errors.New(fmt.Sprintf("Invalid email address specified: %s", c.Email))
 	}
 
 	if c.TenantId == nil {
 		return errors.New("No tenancy code specified")
+	}
+
+	if c.PasswordHash == "" {
+		return errors.New("No password specified")
 	}
 
 	return nil
@@ -96,6 +101,7 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 	}
 	user.InitModel()
 	user.TenantId = auth.User.TenantId
+	user.PasswordHash = HashPassword(user.Password)
 
 	// Validate
 	err = user.Validate()

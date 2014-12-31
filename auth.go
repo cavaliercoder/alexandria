@@ -136,7 +136,7 @@ func GetApiKey(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Validate the password
-	if !CheckPassword(user.Password, body["password"]) {
+	if !CheckPassword(user.PasswordHash, body["password"]) {
 		ErrUnauthorized(res, req)
 		return
 	}

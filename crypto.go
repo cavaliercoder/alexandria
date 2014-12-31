@@ -26,6 +26,10 @@ import (
 )
 
 func GenerateApiKey(user User) string {
+	if user.Email == "" {
+		return ""
+	}
+
 	// Create API key
 	hash := HashPassword(user.Email)
 	r := regexp.MustCompile("[^a-zA-Z0-9]+")
@@ -59,12 +63,16 @@ func HashPasswordWithSalt(password string, salt []byte) string {
 }
 
 func HashPassword(password string) string {
+	if password == "" {
+		return ""
+	}
+
 	salt := RandomSalt()
 	return HashPasswordWithSalt(password, salt)
 }
 
 func CheckPassword(hash string, password string) bool {
-	if password == "" {
+	if password == "" || hash == "" {
 		return false
 	}
 
@@ -75,5 +83,7 @@ func CheckPassword(hash string, password string) bool {
 	}
 
 	// Compare
-	return hash == HashPasswordWithSalt(password, b[32:])
+	checkHash := HashPasswordWithSalt(password, b[32:])
+
+	return hash == checkHash
 }

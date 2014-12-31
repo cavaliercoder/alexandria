@@ -29,40 +29,41 @@ const (
 	testEmail     = "test.user@cavaliercoder.com"
 	testFirstName = "Test"
 	testLastName  = "User"
+	testPassword  = "Password1"
 )
 
 func TestAddUser(t *testing.T) {
 	// Test POST /users
 	uri := V1Uri("/users")
-	body := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s"}`, testEmail, testFirstName, testLastName)
+	body := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s","password":"%s"}`, testEmail, testFirstName, testLastName, testPassword)
 	Crud(t, uri, body, true)
 
 	// Prevent missing email addresses
-	body = `{"firstName":"No","lastName":"Email"}`
+	body = `{"firstName":"No","lastName":"Email","password":"Password1"}`
 	PostInvalid(t, uri, body)
 
 	// Prevent invalid email addresses
-	body = `{"email":"not valid email address"}`
+	body = `{"email":"not valid email address","password":"Password1"}`
 	PostInvalid(t, uri, body)
 }
 
 func TestUserPassword(t *testing.T) {
 	// Create a temporary user
 	uri := V1Uri("/users")
-	body := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s"}`, testEmail, testFirstName, testLastName)
+	body := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s","password":"%s"}`, testEmail, testFirstName, testLastName, testPassword)
 	userurl := Post(t, uri, body)
 	defer Delete(t, userurl)
 
 	// Update the password
 	uri = fmt.Sprintf("%s/password", userurl)
-	password := `{"password":"Password1"}`
+	password := fmt.Sprintf(`{"password":"%s"}`, testPassword)
 	Patch(t, uri, password)
 
 	password = `{"invalid":true}`
 	PatchInvalid(t, uri, password)
 
 	// Test login
-	testLogin(t, testEmail, "Password1", http.StatusOK)
+	testLogin(t, testEmail, testPassword, http.StatusOK)
 	testLogin(t, testEmail, "BadPassword", http.StatusUnauthorized)
 	testLogin(t, "i_dont_exist", "AnyPassword", http.StatusUnauthorized)
 }
