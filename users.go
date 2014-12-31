@@ -19,8 +19,6 @@
 package main
 
 import (
-	"crypto/sha1"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -39,20 +37,7 @@ type User struct {
 
 func (c *User) InitModel() {
 	c.model.InitModel()
-	c.GenerateApiKey()
-}
-
-func (c *User) GenerateApiKey() string {
-	// Create API key
-	jsonHash, err := json.Marshal(c)
-	if err != nil {
-		panic(err)
-	}
-
-	shaSum := sha1.Sum(jsonHash)
-	c.ApiKey = fmt.Sprintf("%x", shaSum)
-
-	return c.ApiKey
+	c.ApiKey = GenerateApiKey(*c)
 }
 
 func (c *User) Validate() error {
