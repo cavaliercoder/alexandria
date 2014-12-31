@@ -29,7 +29,7 @@ const (
 )
 
 type CIType struct {
-	model `json:"_" bson:",inline"`
+	model `json:"-" bson:",inline"`
 
 	InheritFrom string              `json:"inheritFrom"`
 	Name        string              `json:"name"`
