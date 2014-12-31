@@ -97,6 +97,11 @@ func GetUserByEmail(res http.ResponseWriter, req *http.Request) {
 	Render(res, req, http.StatusOK, user)
 }
 
+func GetCurrentUser(res http.ResponseWriter, req *http.Request) {
+	auth := GetAuthContext(req)
+	Render(res, req, http.StatusOK, auth.User)
+}
+
 func AddUser(res http.ResponseWriter, req *http.Request) {
 	auth := GetAuthContext(req)
 	var user User

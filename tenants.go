@@ -78,6 +78,11 @@ func GetTenantByCode(res http.ResponseWriter, req *http.Request) {
 	Render(res, req, http.StatusOK, tenant)
 }
 
+func GetCurrentTenant(res http.ResponseWriter, req *http.Request) {
+	auth := GetAuthContext(req)
+	Render(res, req, http.StatusOK, auth.Tenant)
+}
+
 func AddTenant(res http.ResponseWriter, req *http.Request) {
 	var tenant Tenant
 	err := Bind(req, &tenant)

@@ -116,8 +116,10 @@ func BootStrap(answers *Answers) error {
 	db := RootDb()
 	log.Printf("Creating collections and indexes...")
 	db.C("apiInfo").Create(&mgo.CollectionInfo{})
+
 	db.C("tenants").Create(&mgo.CollectionInfo{})
 	db.C("tenants").EnsureIndex(mgo.Index{Key: []string{"code"}, Unique: true})
+
 	db.C("users").Create(&mgo.CollectionInfo{})
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"email"}, Unique: true})
 	db.C("users").EnsureIndex(mgo.Index{Key: []string{"apikey"}, Unique: true})
@@ -186,6 +188,7 @@ func CreateCmdb(name string) error {
 	if err != nil {
 		return err
 	}
+
 	err = db.C("citypes").EnsureIndex(mgo.Index{Key: []string{"name"}, Unique: true})
 	if err != nil {
 		return err

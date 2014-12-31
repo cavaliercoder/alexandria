@@ -47,4 +47,6 @@ func TestAddUser(t *testing.T) {
 func TestGetUsers(t *testing.T) {
 	// Test GET /users
 	Get(t, V1Uri("/users"))
+
+	Get(t, V1Uri("/users/current"))
 }

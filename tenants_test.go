@@ -36,4 +36,6 @@ func TestAddTenant(t *testing.T) {
 func TestGetTenants(t *testing.T) {
 	// Test GET /users
 	Get(t, V1Uri("/tenants"))
+
+	Get(t, V1Uri("/tenants/current"))
 }
