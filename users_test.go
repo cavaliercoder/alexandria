@@ -69,11 +69,12 @@ func TestUserPassword(t *testing.T) {
 
 func testLogin(t *testing.T, username string, password string, code int) {
 	uri := V1Uri("/apikey")
-	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
+	fmt.Printf("[TEST] POST %s (expecting %d)...\n", uri, code)
 
 	// Create request
 	body := fmt.Sprintf(`{"username":"%s","password":"%s"}`, username, password)
-	req := NewRequest("GET", uri, strings.NewReader(body))
+	req := NewRequest("POST", uri, strings.NewReader(body))
+	req.Header.Del("X-Auth-Token") // Ensure the route works without API key auth
 	res := httptest.NewRecorder()
 
 	// Start web server

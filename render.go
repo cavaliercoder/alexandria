@@ -19,6 +19,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2"
@@ -78,9 +79,9 @@ func ErrConflict(res http.ResponseWriter, req *http.Request) {
 }
 
 func ErrBadRequest(res http.ResponseWriter, req *http.Request, err error) {
-	log.Printf("Bad request: %s", err.Error())
+	log.Printf("Bad request: %s", err)
 	res.WriteHeader(http.StatusBadRequest)
-	res.Write([]byte(fmt.Sprintf("400 Bad request\n%s", err.Error())))
+	res.Write([]byte(fmt.Sprintf("400 Bad request\n%s", err)))
 }
 
 func ErrUnauthorized(res http.ResponseWriter, req *http.Request) {
@@ -130,14 +131,19 @@ func RenderJson(res http.ResponseWriter, req *http.Request, status int, v interf
 }
 
 func Bind(req *http.Request, v interface{}) error {
-	if req.Body != nil {
-		defer req.Body.Close()
+	if req.Body == nil {
+		return errors.New("Request body is empty")
+	}
+	defer req.Body.Close()
 
-		err := json.NewDecoder(req.Body).Decode(v)
+	if ctype := req.Header.Get("Content-Type"); ctype != "application/json" {
+		return errors.New(fmt.Sprintf("Invalid content type: %s", ctype))
+	}
 
-		if err != nil && err != io.EOF {
-			return err
-		}
+	err := json.NewDecoder(req.Body).Decode(v)
+
+	if err != nil && err != io.EOF {
+		return err
 	}
 
 	return nil

@@ -18,6 +18,7 @@
 package main
 
 import (
+	"errors"
 	"gopkg.in/mgo.v2"
 	"log"
 	"net/http"
@@ -116,7 +117,12 @@ func GetApiKey(res http.ResponseWriter, req *http.Request) {
 	// }
 	body := make(map[string]string)
 	err := Bind(req, &body)
-	if err != nil || body["username"] == "" || body["password"] == "" {
+	if err != nil {
+		ErrBadRequest(res, req, err)
+		return
+	}
+	if body["username"] == "" || body["password"] == "" {
+		err = errors.New("Username or password not specified")
 		ErrBadRequest(res, req, err)
 		return
 	}

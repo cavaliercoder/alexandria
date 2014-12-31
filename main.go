@@ -101,50 +101,49 @@ func main() {
 }
 
 func GetServer() *negroni.Negroni {
-	// Init Mux routes
-	rootRouter := mux.NewRouter()
-	router := rootRouter.PathPrefix(ApiV1Prefix).Subrouter()
+	// Init mux routes
+	r := mux.NewRouter().PathPrefix(ApiV1Prefix).Subrouter()
 
 	// Generic routes
-	router.HandleFunc("/info", GetApiInfo).Methods("GET")
-	router.HandleFunc("/apikey", GetApiKey).Methods("GET")
+	r.HandleFunc("/info", GetApiInfo).Methods("GET")
+	r.HandleFunc("/apikey", GetApiKey).Methods("POST")
 
 	// User routes
-	router.HandleFunc("/users", GetUsers).Methods("GET")
-	router.HandleFunc("/users", AddUser).Methods("POST")
-	router.HandleFunc("/users/current", GetCurrentUser).Methods("GET")
-	router.HandleFunc("/users/{email}", GetUserByEmail).Methods("GET")
-	router.HandleFunc("/users/{email}", DeleteUserByEmail).Methods("DELETE")
-	router.HandleFunc("/users/{email}/password", SetUserPassword).Methods("PATCH")
+	r.HandleFunc("/users", GetUsers).Methods("GET")
+	r.HandleFunc("/users", AddUser).Methods("POST")
+	r.HandleFunc("/users/current", GetCurrentUser).Methods("GET")
+	r.HandleFunc("/users/{email}", GetUserByEmail).Methods("GET")
+	r.HandleFunc("/users/{email}", DeleteUserByEmail).Methods("DELETE")
+	r.HandleFunc("/users/{email}/password", SetUserPassword).Methods("PATCH")
 
 	// Tenant routes
-	router.HandleFunc("/tenants", GetTenants).Methods("GET")
-	router.HandleFunc("/tenants", AddTenant).Methods("POST")
-	router.HandleFunc("/tenants/current", GetCurrentTenant).Methods("GET")
-	router.HandleFunc("/tenants/{code}", GetTenantByCode).Methods("GET")
-	router.HandleFunc("/tenants/{code}", DeleteTenantByCode).Methods("DELETE")
+	r.HandleFunc("/tenants", GetTenants).Methods("GET")
+	r.HandleFunc("/tenants", AddTenant).Methods("POST")
+	r.HandleFunc("/tenants/current", GetCurrentTenant).Methods("GET")
+	r.HandleFunc("/tenants/{code}", GetTenantByCode).Methods("GET")
+	r.HandleFunc("/tenants/{code}", DeleteTenantByCode).Methods("DELETE")
 
 	// CMDB routes
-	router.HandleFunc("/cmdbs", GetCmdbs).Methods("GET")
-	router.HandleFunc("/cmdbs", AddCmdb).Methods("POST")
-	router.HandleFunc("/cmdbs/{name}", GetCmdbByName).Methods("GET")
-	router.HandleFunc("/cmdbs/{name}", DeleteCmdbByName).Methods("DELETE")
+	r.HandleFunc("/cmdbs", GetCmdbs).Methods("GET")
+	r.HandleFunc("/cmdbs", AddCmdb).Methods("POST")
+	r.HandleFunc("/cmdbs/{name}", GetCmdbByName).Methods("GET")
+	r.HandleFunc("/cmdbs/{name}", DeleteCmdbByName).Methods("DELETE")
 
 	// CI Type routes
-	router.HandleFunc("/cmdbs/{cmdb}/citypes", GetCITypes).Methods("GET")
-	router.HandleFunc("/cmdbs/{cmdb}/citypes", AddCIType).Methods("POST")
-	router.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", GetCITypeByName).Methods("GET")
-	router.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", DeleteCITypeByName).Methods("DELETE")
+	r.HandleFunc("/cmdbs/{cmdb}/citypes", GetCITypes).Methods("GET")
+	r.HandleFunc("/cmdbs/{cmdb}/citypes", AddCIType).Methods("POST")
+	r.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", GetCITypeByName).Methods("GET")
+	r.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", DeleteCITypeByName).Methods("DELETE")
 
 	// CI routes
-	router.HandleFunc("/cmdbs/{cmdb}/{citype}", GetCIs).Methods("GET")
-	router.HandleFunc("/cmdbs/{cmdb}/{citype}", AddCI).Methods("POST")
-	router.HandleFunc("/cmdbs/{cmdb}/{citype}/{id}", GetCIById).Methods("GET")
-	router.HandleFunc("/cmdbs/{cmdb}/{citype}/{id}", DeleteCIById).Methods("DELETE")
+	r.HandleFunc("/cmdbs/{cmdb}/{citype}", GetCIs).Methods("GET")
+	r.HandleFunc("/cmdbs/{cmdb}/{citype}", AddCI).Methods("POST")
+	r.HandleFunc("/cmdbs/{cmdb}/{citype}/{id}", GetCIById).Methods("GET")
+	r.HandleFunc("/cmdbs/{cmdb}/{citype}/{id}", DeleteCIById).Methods("DELETE")
 
 	// Init Negroni
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger(), NewAuthHandler())
-	n.UseHandler(router)
+	n.UseHandler(r)
 
 	return n
 }

@@ -24,9 +24,14 @@ import (
 	"testing"
 )
 
+const (
+	// A URI that requires X-AUTH-TOKEN header
+	authTestUri = "/cmdbs"
+)
+
 func TestNoAuthHeader(t *testing.T) {
 	code := http.StatusUnauthorized
-	uri := V1Uri("/auth")
+	uri := V1Uri(authTestUri)
 
 	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
 
@@ -46,7 +51,7 @@ func TestNoAuthHeader(t *testing.T) {
 
 func TestBadAuthHeader(t *testing.T) {
 	code := http.StatusUnauthorized
-	uri := V1Uri("/auth")
+	uri := V1Uri(authTestUri)
 
 	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
 
@@ -66,5 +71,5 @@ func TestBadAuthHeader(t *testing.T) {
 }
 
 func TestGoodAuthHeader(t *testing.T) {
-	GetMissing(t, V1Uri("/auth"))
+	Get(t, V1Uri(authTestUri))
 }
