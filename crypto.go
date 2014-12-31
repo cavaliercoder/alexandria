@@ -20,23 +20,18 @@ package main
 
 import (
 	"crypto/rand"
-	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
-	"fmt"
 	"log"
+	"regexp"
 )
 
 func GenerateApiKey(user User) string {
 	// Create API key
-	jsonHash, err := json.Marshal(&user)
-	if err != nil {
-		panic(err)
-	}
-
-	shaSum := sha1.Sum(jsonHash)
-	return fmt.Sprintf("%x", shaSum)
+	hash := HashPassword(user.Email)
+	r := regexp.MustCompile("[^a-zA-Z0-9]+")
+	hash = r.ReplaceAllString(hash, "")
+	return hash[:32]
 }
 
 func RandomSalt() []byte {

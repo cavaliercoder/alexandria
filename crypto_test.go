@@ -19,6 +19,7 @@
 package main
 
 import (
+	"regexp"
 	"testing"
 )
 
@@ -35,5 +36,16 @@ func TestPasswordHashing(t *testing.T) {
 
 	if CheckPassword(hash, "WrongP4ssw0RD!") {
 		t.Error("Expected incorrect password to fail validation but it passed")
+	}
+}
+
+func TestApiKeyGeneration(t *testing.T) {
+	user := User{Email: "test@email.address"}
+	key := GenerateApiKey(user)
+
+	r := regexp.MustCompile("^[a-zA-Z0-9]{32}$")
+
+	if match := r.MatchString(key); !match {
+		t.Errorf("Expected 32 character, alphanumeric key - Got %s", key)
 	}
 }
