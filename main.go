@@ -101,50 +101,62 @@ func main() {
 }
 
 func GetServer() *negroni.Negroni {
-	// Init mux routes
-	r := mux.NewRouter().PathPrefix(ApiV1Prefix).Subrouter()
 
-	// Generic routes
-	r.HandleFunc("/info", GetApiInfo).Methods("GET")
-	r.HandleFunc("/apikey", GetApiKey).Methods("POST")
+	// Initr public routes
+	pub := mux.NewRouter().PathPrefix(ApiV1Prefix).Subrouter()
+	pub.HandleFunc("/info", GetApiInfo).Methods("GET")
+	pub.HandleFunc("/apikey", GetApiKey).Methods("POST")
+
+	// Init private routes
+	priv := mux.NewRouter().PathPrefix(ApiV1Prefix).Subrouter()
 
 	// User routes
-	r.HandleFunc("/users", GetUsers).Methods("GET")
-	r.HandleFunc("/users", AddUser).Methods("POST")
-	r.HandleFunc("/users/current", GetCurrentUser).Methods("GET")
-	r.HandleFunc("/users/{email}", GetUserByEmail).Methods("GET")
-	r.HandleFunc("/users/{email}", DeleteUserByEmail).Methods("DELETE")
-	r.HandleFunc("/users/{email}/password", SetUserPassword).Methods("PATCH")
+	priv.HandleFunc("/users", GetUsers).Methods("GET")
+	priv.HandleFunc("/users", AddUser).Methods("POST")
+	priv.HandleFunc("/users/current", GetCurrentUser).Methods("GET")
+	priv.HandleFunc("/users/{email}", GetUserByEmail).Methods("GET")
+	priv.HandleFunc("/users/{email}", DeleteUserByEmail).Methods("DELETE")
+	priv.HandleFunc("/users/{email}/password", SetUserPassword).Methods("PATCH")
 
 	// Tenant routes
-	r.HandleFunc("/tenants", GetTenants).Methods("GET")
-	r.HandleFunc("/tenants", AddTenant).Methods("POST")
-	r.HandleFunc("/tenants/current", GetCurrentTenant).Methods("GET")
-	r.HandleFunc("/tenants/{code}", GetTenantByCode).Methods("GET")
-	r.HandleFunc("/tenants/{code}", DeleteTenantByCode).Methods("DELETE")
+	priv.HandleFunc("/tenants", GetTenants).Methods("GET")
+	priv.HandleFunc("/tenants", AddTenant).Methods("POST")
+	priv.HandleFunc("/tenants/current", GetCurrentTenant).Methods("GET")
+	priv.HandleFunc("/tenants/{code}", GetTenantByCode).Methods("GET")
+	priv.HandleFunc("/tenants/{code}", DeleteTenantByCode).Methods("DELETE")
 
 	// CMDB routes
-	r.HandleFunc("/cmdbs", GetCmdbs).Methods("GET")
-	r.HandleFunc("/cmdbs", AddCmdb).Methods("POST")
-	r.HandleFunc("/cmdbs/{name}", GetCmdbByName).Methods("GET")
-	r.HandleFunc("/cmdbs/{name}", DeleteCmdbByName).Methods("DELETE")
+	priv.HandleFunc("/cmdbs", GetCmdbs).Methods("GET")
+	priv.HandleFunc("/cmdbs", AddCmdb).Methods("POST")
+	priv.HandleFunc("/cmdbs/{name}", GetCmdbByName).Methods("GET")
+	priv.HandleFunc("/cmdbs/{name}", DeleteCmdbByName).Methods("DELETE")
 
 	// CI Type routes
-	r.HandleFunc("/cmdbs/{cmdb}/citypes", GetCITypes).Methods("GET")
-	r.HandleFunc("/cmdbs/{cmdb}/citypes", AddCIType).Methods("POST")
-	r.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", GetCITypeByName).Methods("GET")
-	r.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", DeleteCITypeByName).Methods("DELETE")
+	priv.HandleFunc("/cmdbs/{cmdb}/citypes", GetCITypes).Methods("GET")
+	priv.HandleFunc("/cmdbs/{cmdb}/citypes", AddCIType).Methods("POST")
+	priv.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", GetCITypeByName).Methods("GET")
+	priv.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", DeleteCITypeByName).Methods("DELETE")
 
 	// CI routes
-	r.HandleFunc("/cmdbs/{cmdb}/{citype}", GetCIs).Methods("GET")
-	r.HandleFunc("/cmdbs/{cmdb}/{citype}", AddCI).Methods("POST")
-	r.HandleFunc("/cmdbs/{cmdb}/{citype}/{id}", GetCIById).Methods("GET")
-	r.HandleFunc("/cmdbs/{cmdb}/{citype}/{id}", DeleteCIById).Methods("DELETE")
+	priv.HandleFunc("/cmdbs/{cmdb}/{citype}", GetCIs).Methods("GET")
+	priv.HandleFunc("/cmdbs/{cmdb}/{citype}", AddCI).Methods("POST")
+	priv.HandleFunc("/cmdbs/{cmdb}/{citype}/{id}", GetCIById).Methods("GET")
+	priv.HandleFunc("/cmdbs/{cmdb}/{citype}/{id}", DeleteCIById).Methods("DELETE")
 
 	// Init Negroni
-	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger(), NewAuthHandler())
-	n.UseHandler(r)
+	npriv := negroni.New(NewAuthHandler())
+	npriv.UseHandler(priv)
 
+	// If the public router can't find a match, pass the request to the
+	// private Negroni instance
+	pub.NotFoundHandler = npriv
+	npub := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
+	npub.UseHandler(pub)
+
+	// Search public routes first, fall back to private
+	n := negroni.New()
+	n.UseHandler(npub)
+	n.UseHandler(npriv)
 	return n
 }
 
