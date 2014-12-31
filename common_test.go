@@ -99,6 +99,34 @@ func PostInvalid(t *testing.T, uri string, body string) {
 	post(t, uri, body, http.StatusBadRequest)
 }
 
+func patch(t *testing.T, uri string, body string, code int) {
+	fmt.Printf("[TEST] PATCH %s (expecting %d)...\n", uri, code)
+
+	// Create request
+	reader := strings.NewReader(body)
+	req := NewRequest("PATCH", uri, reader)
+
+	// Create response recorder
+	res := httptest.NewRecorder()
+
+	// Start web server
+	n := GetServer()
+	n.ServeHTTP(res, req)
+
+	// Validate response
+	areEqual(t, res.Code, code)
+}
+
+// Patch posts the specified resource update and expects a 204 No content repsonse
+func Patch(t *testing.T, uri string, body string) {
+	patch(t, uri, body, http.StatusNoContent)
+}
+
+// Patch posts the specified invalid resource patch and expects a 400 Bad request response
+func PatchInvalid(t *testing.T, uri string, body string) {
+	patch(t, uri, body, http.StatusBadRequest)
+}
+
 func get(t *testing.T, uri string, code int) {
 	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
 

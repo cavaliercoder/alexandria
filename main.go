@@ -113,6 +113,7 @@ func GetServer() *negroni.Negroni {
 	router.HandleFunc("/users/current", GetCurrentUser).Methods("GET")
 	router.HandleFunc("/users/{email}", GetUserByEmail).Methods("GET")
 	router.HandleFunc("/users/{email}", DeleteUserByEmail).Methods("DELETE")
+	router.HandleFunc("/users/{email}/password", SetUserPassword).Methods("PATCH")
 
 	// Tenant routes
 	router.HandleFunc("/tenants", GetTenants).Methods("GET")

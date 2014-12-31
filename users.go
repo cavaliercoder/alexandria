@@ -21,6 +21,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 )
@@ -94,7 +95,6 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 	if Handle(res, req, err) {
 		return
 	}
-
 	user.InitModel()
 	user.TenantId = auth.User.TenantId
 
@@ -105,6 +105,7 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Store
 	err = RootDb().C("users").Insert(&user)
 	if Handle(res, req, err) {
 		return
@@ -118,6 +119,37 @@ func DeleteUserByEmail(res http.ResponseWriter, req *http.Request) {
 	email := GetPathVar(req, "email")
 
 	err := RootDb().C("users").Remove(M{"tenantid": auth.User.TenantId, "email": email})
+	if Handle(res, req, err) {
+		return
+	}
+
+	Render(res, req, http.StatusNoContent, "")
+}
+
+func SetUserPassword(res http.ResponseWriter, req *http.Request) {
+	auth := GetAuthContext(req)
+	email := GetPathVar(req, "email")
+
+	// Parse the request body. Should be:
+	// {"password":"S0m3P4ssw0RD"}
+	body := make(map[string]string)
+	err := Bind(req, &body)
+	if err != nil || body["password"] == "" {
+		ErrBadRequest(res, req, err)
+		return
+	}
+
+	// Find the user
+	var user User
+	err = RootDb().C("users").Find(M{"tenantid": auth.User.TenantId, "email": email}).One(&user)
+	if Handle(res, req, err) {
+		log.Printf("Could not update password for missing user: %s", email)
+		return
+	}
+
+	// Update the password
+	hash := HashPassword(body["password"])
+	err = RootDb().C("users").UpdateId(user.Id, M{"$set": M{"password": hash}})
 	if Handle(res, req, err) {
 		return
 	}

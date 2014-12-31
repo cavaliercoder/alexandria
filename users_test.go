@@ -44,6 +44,22 @@ func TestAddUser(t *testing.T) {
 	PostInvalid(t, uri, body)
 }
 
+func TestUserPassword(t *testing.T) {
+	// Create a temporary user
+	uri := V1Uri("/users")
+	body := fmt.Sprintf(`{"email":"%s","firstName":"%s","lastName":"%s"}`, testEmail, testFirstName, testLastName)
+	userurl := Post(t, uri, body)
+	defer Delete(t, userurl)
+
+	// Update the password
+	uri = fmt.Sprintf("%s/password", userurl)
+	password := `{"password":"Password1"}`
+	Patch(t, uri, password)
+
+	password = `{"invalid":true}`
+	PatchInvalid(t, uri, password)
+}
+
 func TestGetUsers(t *testing.T) {
 	// Test GET /users
 	Get(t, V1Uri("/users"))

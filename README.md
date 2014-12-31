@@ -101,6 +101,16 @@ curl -ikX POST -H "Content Type: application/json" -d "{\"key\":\"value\"}" http
 
 ### Update
 
+* Must be a `PUT` or `PATCH` request
+
+* The request body must not be empty
+
+* For 'PUT' requests, the entire resource will be replaced
+
+* For 'PATCH' requests, only a delta is applied to the resource
+
+* On success, must return `204 No Content` with an empty body
+
 ### Delete
 
 * Must be a `DELETE` request
