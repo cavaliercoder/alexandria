@@ -137,9 +137,10 @@ func BootStrap(answers *Answers) error {
 
 	// Create root user
 	user := User{
-		FirstName: answers.User.FirstName,
-		LastName:  answers.User.LastName,
-		Email:     answers.User.Email,
+		FirstName:    answers.User.FirstName,
+		LastName:     answers.User.LastName,
+		Email:        answers.User.Email,
+		PasswordHash: HashPassword(answers.User.Password),
 	}
 	user.InitModel()
 	user.TenantId = tenant.Id
