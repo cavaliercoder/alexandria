@@ -64,6 +64,10 @@ func HashPassword(password string) string {
 }
 
 func CheckPassword(hash string, password string) bool {
+	if password == "" {
+		return false
+	}
+
 	// Decode base64 hash to [32]byte SHA256 sum
 	b, err := base64.StdEncoding.DecodeString(hash)
 	if err != nil {

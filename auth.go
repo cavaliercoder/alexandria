@@ -42,13 +42,13 @@ func (c *AuthHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next
 	apiKey := req.Header.Get("X-Auth-Token")
 	if apiKey == "" {
 		log.Printf("X-Auth-Token header not set")
-		c.fail(res, req)
+		ErrUnauthorized(res, req)
 		return
 	} else {
 		context := GetAuthContext(req)
 		if context == nil {
 			log.Printf("No user or tenancy found with API Key: %s", apiKey)
-			c.fail(res, req)
+			ErrUnauthorized(res, req)
 			return
 		}
 	}
@@ -58,11 +58,6 @@ func (c *AuthHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next
 
 	// Remove the user from the request cache
 	delete(authCache, req)
-}
-
-func (c *AuthHandler) fail(res http.ResponseWriter, req *http.Request) {
-	res.WriteHeader(http.StatusUnauthorized)
-	res.Write([]byte("401 Unauthorized"))
 }
 
 var authCache AuthMap
@@ -109,4 +104,41 @@ func GetAuthContext(req *http.Request) *AuthContext {
 		authCache[req] = context
 		return context
 	}
+}
+
+// GetApiKey accepts a JSON request body with a user name and password
+// encapsulated and returns the user's API key
+func GetApiKey(res http.ResponseWriter, req *http.Request) {
+	// Parse the request body. Should be:
+	// {
+	//    "username":"some@email.com",
+	//    "password":"S0m3P4ssw0RD"
+	// }
+	body := make(map[string]string)
+	err := Bind(req, &body)
+	if err != nil || body["username"] == "" || body["password"] == "" {
+		ErrBadRequest(res, req, err)
+		return
+	}
+
+	// Find the user account
+	var user User
+	err = RootDb().C("users").Find(M{"email": body["username"]}).One(&user)
+	if err != nil {
+		ErrUnauthorized(res, req)
+		return
+	}
+
+	// Validate the password
+	if !CheckPassword(user.Password, body["password"]) {
+		ErrUnauthorized(res, req)
+		return
+	}
+
+	// Formulate response
+	key := map[string]string{
+		"apiKey": user.ApiKey,
+	}
+
+	Render(res, req, http.StatusOK, &key)
 }

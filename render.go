@@ -83,6 +83,11 @@ func ErrBadRequest(res http.ResponseWriter, req *http.Request, err error) {
 	res.Write([]byte(fmt.Sprintf("400 Bad request\n%s", err.Error())))
 }
 
+func ErrUnauthorized(res http.ResponseWriter, req *http.Request) {
+	res.WriteHeader(http.StatusUnauthorized)
+	res.Write([]byte("401 Unauthorized"))
+}
+
 func RenderCreated(res http.ResponseWriter, req *http.Request, url string) {
 	res.Header().Set("Location", url)
 	Render(res, req, http.StatusCreated, "")

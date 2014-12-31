@@ -19,6 +19,9 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -57,6 +60,28 @@ func TestUserPassword(t *testing.T) {
 
 	password = `{"invalid":true}`
 	PatchInvalid(t, uri, password)
+
+	// Test login
+	testLogin(t, testEmail, "Password1", http.StatusOK)
+	testLogin(t, testEmail, "BadPassword", http.StatusUnauthorized)
+	testLogin(t, "i_dont_exist", "AnyPassword", http.StatusUnauthorized)
+}
+
+func testLogin(t *testing.T, username string, password string, code int) {
+	uri := V1Uri("/apikey")
+	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
+
+	// Create request
+	body := fmt.Sprintf(`{"username":"%s","password":"%s"}`, username, password)
+	req := NewRequest("GET", uri, strings.NewReader(body))
+	res := httptest.NewRecorder()
+
+	// Start web server
+	n := GetServer()
+	n.ServeHTTP(res, req)
+
+	// Validate response
+	areEqual(t, res.Code, code)
 }
 
 func TestGetUsers(t *testing.T) {

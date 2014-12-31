@@ -104,7 +104,10 @@ func GetServer() *negroni.Negroni {
 	// Init Mux routes
 	rootRouter := mux.NewRouter()
 	router := rootRouter.PathPrefix(ApiV1Prefix).Subrouter()
+
+	// Generic routes
 	router.HandleFunc("/info", GetApiInfo).Methods("GET")
+	router.HandleFunc("/apikey", GetApiKey).Methods("GET")
 
 	// User routes
 	router.HandleFunc("/users", GetUsers).Methods("GET")
