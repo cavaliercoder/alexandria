@@ -14,7 +14,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * package controllers
  */
 package main
 
@@ -40,9 +39,11 @@ func TestPasswordHashing(t *testing.T) {
 }
 
 func TestApiKeyGeneration(t *testing.T) {
+	// Create a dummy user and API key
 	user := User{Email: "test@email.address"}
 	key := GenerateApiKey(user)
 
+	// Key should be case sensitive, alphanumeric and 32 characters long
 	r := regexp.MustCompile("^[a-zA-Z0-9]{32}$")
 
 	if match := r.MatchString(key); !match {
