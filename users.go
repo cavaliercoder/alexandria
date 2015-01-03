@@ -28,6 +28,7 @@ import (
 type User struct {
 	model        `json:"-" bson:",inline"`
 	TenantId     interface{} `json:"-"`
+	TenantCode   string      `json:"tenantCode,omitempty" bson:"-"`
 	ApiKey       string      `json:"-"`
 	FirstName    string      `json:"firstName"`
 	LastName     string      `json:"lastName"`
@@ -102,8 +103,20 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	user.InitModel()
-	user.TenantId = auth.User.TenantId
 	user.PasswordHash = HashPassword(user.Password)
+
+	// TODO: Implement permissions to ensure users can't create users in other tenancies
+	if user.TenantCode == "" {
+		user.TenantId = auth.Tenant.Id
+	} else {
+		var tenant Tenant
+		err := RootDb().C("tenants").Find(M{"code": user.TenantCode}).One(&tenant)
+		if Handle(res, req, err) {
+			return
+		}
+
+		user.TenantId = tenant.Id
+	}
 
 	// Validate
 	err = user.Validate()
