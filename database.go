@@ -169,7 +169,7 @@ func BootStrap(answers *Answers) error {
 		log.Fatal(err)
 	}
 	defer file.Close()
-	file.WriteString(fmt.Sprintf("ALEX_API_URL=\"http://localhost:%d%s\"\nALEX_API_KEY=\"%s\"\n", config.Server.ListenPort, ApiV1Prefix, user.ApiKey))
+	file.WriteString(fmt.Sprintf("ALEX_API_URL=\"http://localhost:%d%s\"\nALEX_API_KEY=\"%s\"\nALEX_API_DB=\"%s\"\n", config.Server.ListenPort, ApiV1Prefix, user.ApiKey, config.Database.Database))
 	file.Sync()
 	log.Printf("Saved Alexandria CMDB configuration to %s", rcfile)
 
