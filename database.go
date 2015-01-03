@@ -145,6 +145,11 @@ func BootStrap(answers *Answers) error {
 	user.InitModel()
 	user.TenantId = tenant.Id
 
+	// Preset ApiKey for dev
+	if !config.Server.Production {
+		user.ApiKey = "D8fzx4cpX0SrPm6cEb6HwLf6IvCb0MvA"
+	}
+
 	err = db.C("users").Insert(user)
 	if err != nil {
 		log.Fatal(err)

@@ -1,5 +1,6 @@
 {
 	"server": {
+		"production": false,
 		"listenPort": 3000
 	},
     "database": {

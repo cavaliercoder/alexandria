@@ -30,6 +30,7 @@ type Config struct {
 }
 
 type ServerConfig struct {
+	Production bool   `json:"production"`
 	ListenOn   string `json:"listenOn"`
 	ListenPort int    `json:"listenPort"`
 }
