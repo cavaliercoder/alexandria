@@ -88,6 +88,8 @@ func GetUserByEmail(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetCurrentUser(res http.ResponseWriter, req *http.Request) {
+	// TODO: Prevent proxy caching of the current user and tenant URLs
+	// TODO: Prevent DB query for current tenant when querying current user and vice versa
 	auth := GetAuthContext(req)
 	Render(res, req, http.StatusOK, auth.User)
 }
