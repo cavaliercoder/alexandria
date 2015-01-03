@@ -23,6 +23,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 )
 
 type User struct {
@@ -110,7 +111,7 @@ func AddUser(res http.ResponseWriter, req *http.Request) {
 		user.TenantId = auth.Tenant.Id
 	} else {
 		var tenant Tenant
-		err := RootDb().C("tenants").Find(M{"code": user.TenantCode}).One(&tenant)
+		err := RootDb().C("tenants").Find(M{"code": strings.ToLower(user.TenantCode)}).One(&tenant)
 		if Handle(res, req, err) {
 			return
 		}
