@@ -91,7 +91,7 @@ func ErrUnauthorized(res http.ResponseWriter, req *http.Request) {
 
 func RenderCreated(res http.ResponseWriter, req *http.Request, url string) {
 	res.Header().Set("Location", url)
-	Render(res, req, http.StatusCreated, "")
+	Render(res, req, http.StatusCreated, nil)
 }
 
 func Render(res http.ResponseWriter, req *http.Request, status int, v interface{}) {
@@ -100,12 +100,16 @@ func Render(res http.ResponseWriter, req *http.Request, status int, v interface{
 		format = "json"
 	}
 
-	switch format {
-	case "json":
-		RenderJson(res, req, status, v)
+	if v == nil {
+		res.WriteHeader(status)
+	} else {
+		switch format {
+		case "json":
+			RenderJson(res, req, status, v)
 
-	default:
-		log.Panic(fmt.Sprintf("Unsupported output format: %s", format))
+		default:
+			log.Panic(fmt.Sprintf("Unsupported output format: %s", format))
+		}
 	}
 }
 
