@@ -144,7 +144,7 @@ func GetCITypes(res http.ResponseWriter, req *http.Request) {
 
 func GetCITypeByName(res http.ResponseWriter, req *http.Request) {
 	// Get CMDB details
-	cmdb := GetPathVar(req, "cmdb")
+	cmdb := strings.ToLower(GetPathVar(req, "cmdb"))
 	db := GetCmdbBackend(req, cmdb)
 	if db == nil {
 		ErrNotFound(res, req)
