@@ -18,6 +18,9 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"os/user"
 	"regexp"
 	"strings"
 )
@@ -28,8 +31,8 @@ func GetShortName(name string) string {
 	// replace all spaces with hyphens
 	short = strings.Replace(short, " ", "-", -1)
 
-	// remove all non alphanumerics and non hyphens
-	r := regexp.MustCompile(`[^a-z0-9-]+`)
+	// remove all non alphanumerics and non hyphens or underscores
+	r := regexp.MustCompile(`[^a-z0-9-_]+`)
 	short = r.ReplaceAllString(short, "")
 
 	// Replace multiple hyphens
@@ -37,4 +40,21 @@ func GetShortName(name string) string {
 	short = r.ReplaceAllString(short, "-")
 
 	return short
+}
+
+func IsValidShortName(name string) bool {
+	match, err := regexp.MatchString("^[a-z0-9-_]+$", name)
+	if err != nil {
+		log.Panic(err)
+	}
+	return match
+}
+
+func ExpandPath(path string) string {
+	if path[:1] == "~" {
+		usr, _ := user.Current()
+		path = fmt.Sprintf("%s%s", usr.HomeDir, path[1:])
+	}
+
+	return path
 }

@@ -20,7 +20,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -32,12 +34,14 @@ type CIType struct {
 
 	InheritFrom string              `json:"inheritFrom"`
 	Name        string              `json:"name"`
+	ShortName   string              `json:"shortName"`
 	Description string              `json:"description"`
 	Attributes  CITypeAttributeList `json:"attributes"`
 }
 
 type CITypeAttribute struct {
 	Name        string              `json:"name"`
+	ShortName   string              `json:"shortName"`
 	Description string              `json:"description"`
 	Type        string              `json:"type"`
 	MinValues   int                 `json:"minValues"`
@@ -49,8 +53,9 @@ type CITypeAttribute struct {
 type CITypeAttributeList []CITypeAttribute
 
 func (c *CITypeAttributeList) Get(name string) *CITypeAttribute {
+	name = strings.ToLower(name)
 	for _, att := range *c {
-		if att.Name == name {
+		if att.ShortName == name {
 			return &att
 		}
 	}
@@ -59,12 +64,20 @@ func (c *CITypeAttributeList) Get(name string) *CITypeAttribute {
 }
 
 func (c *CIType) Validate() error {
-	if !IsValidShortName(c.Name) {
+	if c.Name == "" {
+		return errors.New("No CI Type name specified")
+	}
+
+	if c.ShortName == "" {
+		c.ShortName = GetShortName(c.Name)
+	}
+
+	if !IsValidShortName(c.ShortName) {
 		return errors.New("Invalid characters in CI Type name")
 	}
 
 	// Validate each attribute
-	err := c.validateAttributes(c.Attributes, "")
+	err := c.validateAttributes(&c.Attributes, "")
 	if err != nil {
 		return err
 	}
@@ -72,28 +85,39 @@ func (c *CIType) Validate() error {
 	return nil
 }
 
-func (c *CIType) validateAttributes(atts []CITypeAttribute, path string) error {
-	for _, att := range atts {
-		if !IsValidShortName(att.Name) {
-			return errors.New(fmt.Sprintf("Invalid characters in CI Attribute '%s%s'", path, att.Name))
+func (c *CIType) validateAttributes(atts *CITypeAttributeList, path string) error {
+	for index, _ := range *atts {
+		// Derefence the attribute so it may be modified
+		att := &(*atts)[index]
+
+		if att.Name == "" {
+			return errors.New("No attribute name specified")
+		}
+
+		if att.ShortName == "" {
+			att.ShortName = GetShortName(att.Name)
+		}
+
+		if !IsValidShortName(att.ShortName) {
+			return errors.New(fmt.Sprintf("Invalid characters in CI Attribute '%s%s'", path, att.ShortName))
 		}
 
 		if att.Type == "" {
-			return errors.New(fmt.Sprintf("No type specified for CI Attribute '%s%s'", path, att.Name))
+			return errors.New(fmt.Sprintf("No type specified for CI Attribute '%s%s'", path, att.ShortName))
 		}
 
 		if GetAttributeFormat(att.Type) == nil {
-			return errors.New(fmt.Sprintf("Unsupported attribute format '%s' for CI Attribute '%s%s'", att.Type, path, att.Name))
+			return errors.New(fmt.Sprintf("Unsupported attribute format '%s' for CI Attribute '%s%s'", att.Type, path, att.ShortName))
 		}
 
 		if att.Type == "group" {
 			// Validate children
-			err := c.validateAttributes(att.Children, fmt.Sprintf("%s.", att.Name))
+			err := c.validateAttributes(&att.Children, fmt.Sprintf("%s.", att.ShortName))
 			if err != nil {
 				return err
 			}
 		} else if len(att.Children) > 0 {
-			return errors.New(fmt.Sprintf("CI Attribute '%s%s' has children but is not a group attribute", path, att.Name))
+			return errors.New(fmt.Sprintf("CI Attribute '%s%s' has children but is not a group attribute", path, att.ShortName))
 		}
 	}
 
@@ -130,7 +154,7 @@ func GetCITypeByName(res http.ResponseWriter, req *http.Request) {
 	// Get the type
 	var citype CIType
 	name := GetPathVar(req, "name")
-	err := db.C(ciTypeCollection).Find(M{"name": name}).One(&citype)
+	err := db.C(ciTypeCollection).Find(M{"shortname": name}).One(&citype)
 	if Handle(res, req, err) {
 		return
 	}
@@ -168,7 +192,7 @@ func AddCIType(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	RenderCreated(res, req, V1Uri(fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb, citype.Name)))
+	RenderCreated(res, req, V1Uri(fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb, citype.ShortName)))
 }
 
 func DeleteCITypeByName(res http.ResponseWriter, req *http.Request) {
@@ -182,7 +206,7 @@ func DeleteCITypeByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := db.C(ciTypeCollection).Remove(M{"name": name})
+	err := db.C(ciTypeCollection).Remove(M{"shortname": name})
 	if Handle(res, req, err) {
 		return
 	}

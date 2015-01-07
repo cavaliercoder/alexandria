@@ -20,6 +20,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -52,14 +53,16 @@ func AddCI(res http.ResponseWriter, req *http.Request) {
 	// Get CMDB details
 	db := GetCmdbBackend(req, cmdb)
 	if db == nil {
+		log.Printf("No such CMDB found: %s", cmdb)
 		ErrNotFound(res, req)
 		return
 	}
 
 	// Get CI Type schema
 	var typ CIType
-	err = db.C("citypes").Find(M{"name": citype}).One(&typ)
+	err = db.C("citypes").Find(M{"shortname": citype}).One(&typ)
 	if Handle(res, req, err) {
+		log.Printf("No such CI type found: %s", citype)
 		return
 	}
 
@@ -130,6 +133,7 @@ func GetCIs(res http.ResponseWriter, req *http.Request) {
 	cmdb := GetPathVar(req, "cmdb")
 	db := GetCmdbBackend(req, cmdb)
 	if db == nil {
+		log.Printf("No such CMDB found: %s", cmdb)
 		ErrNotFound(res, req)
 		return
 	}
@@ -149,6 +153,7 @@ func GetCIById(res http.ResponseWriter, req *http.Request) {
 	cmdb := GetPathVar(req, "cmdb")
 	db := GetCmdbBackend(req, cmdb)
 	if db == nil {
+		log.Printf("No such CMDB found: %s", cmdb)
 		ErrNotFound(res, req)
 		return
 	}
@@ -181,6 +186,7 @@ func DeleteCIById(res http.ResponseWriter, req *http.Request) {
 	// Get CMDB details
 	db := GetCmdbBackend(req, cmdb)
 	if db == nil {
+		log.Printf("No such CMDB found: %s", cmdb)
 		ErrNotFound(res, req)
 		return
 	}

@@ -20,6 +20,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -27,12 +28,21 @@ type Cmdb struct {
 	model       `json:"-" bson:",inline"`
 	TenantId    interface{} `json:"-"`
 	Name        string      `json:"name"`
+	ShortName   string      `json:"shortName"`
 	Description string      `json:"description"`
 }
 
 func (c *Cmdb) Validate() error {
-	if !IsValidShortName(c.Name) {
-		return errors.New("Invalid characters in CMDB name")
+	if c.Name == "" {
+		return errors.New("No CMDB name specified")
+	}
+
+	if c.ShortName == "" {
+		c.ShortName = GetShortName(c.Name)
+	}
+
+	if !IsValidShortName(c.ShortName) {
+		return errors.New(fmt.Sprintf("Invalid characters in CMDB name: '%s'", c.ShortName))
 	}
 
 	if c.TenantId == nil {
@@ -91,14 +101,15 @@ func AddCmdb(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Prevent duplicates
-	_, ok := auth.Tenant.Cmdbs[cmdb.Name]
+	_, ok := auth.Tenant.Cmdbs[cmdb.ShortName]
 	if ok {
+		log.Printf("Bad request: A CMDB already exists with name '%s'", cmdb.ShortName)
 		ErrConflict(res, req)
 		return
 	}
 
 	// Insert in database
-	field := fmt.Sprintf("cmdbs.%s", cmdb.Name)
+	field := fmt.Sprintf("cmdbs.%s", cmdb.ShortName)
 	mgoErr := RootDb().C("tenants").Update(M{"_id": auth.User.TenantId}, M{"$set": M{field: &cmdb}})
 	if Handle(res, req, mgoErr) {
 		return
@@ -111,7 +122,7 @@ func AddCmdb(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Tell the world
-	RenderCreated(res, req, V1Uri(fmt.Sprintf("/cmdbs/%s", cmdb.Name)))
+	RenderCreated(res, req, V1Uri(fmt.Sprintf("/cmdbs/%s", cmdb.ShortName)))
 }
 
 func DeleteCmdbByName(res http.ResponseWriter, req *http.Request) {
@@ -124,7 +135,7 @@ func DeleteCmdbByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	field := fmt.Sprintf("cmdbs.%s", cmdb.Name)
+	field := fmt.Sprintf("cmdbs.%s", cmdb.ShortName)
 	mgoErr := RootDb().C("tenants").Update(M{"_id": auth.User.TenantId}, M{"$unset": M{field: ""}})
 	if Handle(res, req, mgoErr) {
 		return

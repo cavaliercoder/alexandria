@@ -36,7 +36,7 @@ func TestCITypes(t *testing.T) {
 	// Test POST .../citypes
 	uri = V1Uri(fmt.Sprintf("/cmdbs/%s/citypes", ciTypeDB))
 	body = `{
-		"name":"Test_CI_Type",
+		"name":"Test_CI_Type with w!3rd CH@RS!",
 		"description": "A test CI Type",
 		"attributes": [
 			{
@@ -59,21 +59,6 @@ func TestCITypes(t *testing.T) {
 		]
 		}`
 	Crud(t, uri, body, true)
-
-	// Test POST .../citypes with invalid name
-	body = `{"name":"Invalid Name!"}`
-	PostInvalid(t, uri, body)
-
-	// Test POST .../citypes with invalid attribute name
-	body = `{
-		"name":"BadAttributeName",
-		"attributes":[
-			{
-				"name":"This is a bad name!",
-				"type":"string"
-			}
-		]}`
-	PostInvalid(t, uri, body)
 
 	// Test POST .../citypes with invalid attribute type
 	body = `{

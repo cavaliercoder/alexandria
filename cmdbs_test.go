@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	cmdbName        = "TestCMDB"
+	cmdbName        = "TestCMDB with 0dd n@me!"
 	cmdbDescription = "A temporary test CMDB"
 )
 
@@ -32,9 +32,6 @@ func TestAddCmdb(t *testing.T) {
 	uri := V1Uri("/cmdbs")
 	body := fmt.Sprintf(`{"name":"%s","description":"%s"}`, cmdbName, cmdbDescription)
 	Crud(t, uri, body, true)
-
-	body = `{"name":"Invalid Name!"}`
-	PostInvalid(t, uri, body)
 }
 
 func TestGetCmdbs(t *testing.T) {

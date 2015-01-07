@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	ciDB   = "TestCIDB"
-	ciType = "TestCIType"
+	ciDB   = "test-ci-db"
+	ciType = "test-ci-type"
 )
 
 func TestCI(t *testing.T) {
@@ -37,7 +37,7 @@ func TestCI(t *testing.T) {
 	// Create temporary CI Type
 	uri = V1Uri(fmt.Sprintf("/cmdbs/%s/citypes", ciDB))
 	body = `{
-		"name":"TestCIType",
+		"name":"Test CI Type",
 		"description": "A test CI Type",
 		"attributes": [
 			{
@@ -71,7 +71,7 @@ func TestCI(t *testing.T) {
 	typUrl := Post(t, uri, body)
 	defer Delete(t, typUrl)
 
-	// Test POST ../CI
+	// Test POST .../CI
 	uri = V1Uri(fmt.Sprintf("/cmdbs/%s/%s", ciDB, ciType))
 	body = `{
 		"alphanumeric":"StringValue123",

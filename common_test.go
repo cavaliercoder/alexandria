@@ -20,6 +20,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -176,23 +177,28 @@ func Delete(t *testing.T, uri string) {
 // expects a 409 Conflict response.
 func Crud(t *testing.T, uri string, body string, testDuplicates bool) {
 	// Create a new resource
+	log.Printf("CREATE resource at %s", uri)
 	location := Post(t, uri, body)
 
 	if location == "" {
 		t.Errorf("No location header was returned for new resource in: %s", uri)
 	} else {
 		// Retrieve the new resource
+		log.Printf("RETRIEVE resource from %s", location)
 		Get(t, location)
 
 		// Make sure duplicates can't be created
 		if testDuplicates {
+			log.Printf("CREATE duplicate resource of %s", location)
 			post(t, uri, body, http.StatusConflict)
 		}
 
 		// Delete the resource
+		log.Printf("DELETE resource %s", location)
 		Delete(t, location)
 
 		// Ensure it is missing
+		log.Printf("RETRIEVE delete resource %s", location)
 		GetMissing(t, location)
 	}
 }

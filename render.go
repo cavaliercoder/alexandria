@@ -26,6 +26,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -90,6 +91,7 @@ func ErrUnauthorized(res http.ResponseWriter, req *http.Request) {
 }
 
 func RenderCreated(res http.ResponseWriter, req *http.Request, url string) {
+	log.Printf("Created resource: %s", url)
 	res.Header().Set("Location", url)
 	Render(res, req, http.StatusCreated, nil)
 }
@@ -165,6 +167,8 @@ func GetPathVar(req *http.Request, name string) string {
 }
 
 func GetCmdbBackend(req *http.Request, name string) *mgo.Database {
+	name = strings.ToLower(name)
+
 	// Get authentication context
 	auth := GetAuthContext(req)
 	if auth == nil {

@@ -194,7 +194,7 @@ func CreateCmdb(name string) error {
 		return err
 	}
 
-	err = db.C("citypes").EnsureIndex(mgo.Index{Key: []string{"name"}, Unique: true})
+	err = db.C("citypes").EnsureIndex(mgo.Index{Key: []string{"shortname"}, Unique: true})
 	if err != nil {
 		return err
 	}

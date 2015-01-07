@@ -24,8 +24,6 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"os"
-	"os/user"
-	"regexp"
 )
 
 func main() {
@@ -165,21 +163,4 @@ func Serve() {
 
 	n := GetServer()
 	n.Run(fmt.Sprintf("%s:%d", config.Server.ListenOn, config.Server.ListenPort))
-}
-
-func ExpandPath(path string) string {
-	if path[:1] == "~" {
-		usr, _ := user.Current()
-		path = fmt.Sprintf("%s%s", usr.HomeDir, path[1:])
-	}
-
-	return path
-}
-
-func IsValidShortName(name string) bool {
-	match, err := regexp.MatchString("^[a-zA-Z0-9-_]+$", name)
-	if err != nil {
-		log.Panic(err)
-	}
-	return match
 }
