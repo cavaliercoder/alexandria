@@ -226,8 +226,9 @@ func UpdateCITypeByName(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Prepare the new record
-	citype.Created = orig.Created
 	citype.Id = orig.Id
+	citype.Created = orig.Created
+	citype.ShortName = GetShortName(citype.Name)
 	citype.InitModel()
 
 	// Update
