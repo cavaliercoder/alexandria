@@ -26,6 +26,29 @@ const (
 	ciTypeDB = "CITypeDB"
 )
 
+func TestUpdateCIType(t *testing.T) {
+	// Create a temporary cmdb
+	uri := V1Uri("/cmdbs")
+	body := fmt.Sprintf(`{"name":"%s"}`, ciTypeDB)
+	dburl := Post(t, uri, body)
+	defer Delete(t, dburl)
+
+	// Create a CIType
+	uri = V1Uri(fmt.Sprintf("/cmdbs/%s/citypes", ciTypeDB))
+	body = `{"name":"Original CI Type"}`
+	location := Post(t, uri, body)
+	defer DeleteMissing(t, location)
+
+	// Update it
+	body = `{"name":"Updated CI Name"}`
+	newLocation := PutRelocate(t, location, body)
+	defer Delete(t, newLocation)
+
+	// bad request
+	body = `{"noname":"should fail"}`
+	PutInvalid(t, newLocation, body)
+}
+
 func TestCITypes(t *testing.T) {
 	// Create a temporary cmdb
 	uri := V1Uri("/cmdbs")

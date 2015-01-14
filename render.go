@@ -90,12 +90,6 @@ func ErrUnauthorized(res http.ResponseWriter, req *http.Request) {
 	res.Write([]byte("401 Unauthorized"))
 }
 
-func RenderCreated(res http.ResponseWriter, req *http.Request, url string) {
-	log.Printf("Created resource: %s", url)
-	res.Header().Set("Location", url)
-	Render(res, req, http.StatusCreated, nil)
-}
-
 func Render(res http.ResponseWriter, req *http.Request, status int, v interface{}) {
 	format := req.URL.Query().Get("format")
 	if format == "" {
@@ -134,6 +128,23 @@ func RenderJson(res http.ResponseWriter, req *http.Request, status int, v interf
 	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(status)
 	res.Write(data)
+}
+
+func RenderCreated(res http.ResponseWriter, req *http.Request, url string) {
+	log.Printf("Created resource: %s", url)
+	res.Header().Set("Location", url)
+	Render(res, req, http.StatusCreated, nil)
+}
+
+func RenderUpdated(res http.ResponseWriter, req *http.Request, url string) {
+	if url == "" {
+		log.Printf("Updated resource: %s", req.URL.String())
+		Render(res, req, http.StatusNoContent, nil)
+	} else {
+		log.Printf("Updated resource: %s (moved to %s)", req.URL.String(), url)
+		res.Header().Set("Location", url)
+		Render(res, req, http.StatusMovedPermanently, nil)
+	}
 }
 
 func Bind(req *http.Request, v interface{}) error {

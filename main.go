@@ -133,6 +133,7 @@ func GetServer() *negroni.Negroni {
 	priv.HandleFunc("/cmdbs/{cmdb}/citypes", GetCITypes).Methods("GET")
 	priv.HandleFunc("/cmdbs/{cmdb}/citypes", AddCIType).Methods("POST")
 	priv.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", GetCITypeByName).Methods("GET")
+	priv.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", UpdateCITypeByName).Methods("PUT")
 	priv.HandleFunc("/cmdbs/{cmdb}/citypes/{name}", DeleteCITypeByName).Methods("DELETE")
 
 	// CI routes

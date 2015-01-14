@@ -18,6 +18,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -31,6 +32,15 @@ import (
 func areEqual(t *testing.T, a interface{}, b interface{}) bool {
 	if a != b {
 		t.Errorf("Expected %v (type %v) - Got %v (type %v)", b, reflect.TypeOf(b), a, reflect.TypeOf(a))
+		return false
+	}
+
+	return true
+}
+
+func areUnequal(t *testing.T, a interface{}, b interface{}) bool {
+	if a == b {
+		t.Errorf("Expected unequal - Got %v (type %v)", a, reflect.TypeOf(a))
 		return false
 	}
 
@@ -99,6 +109,38 @@ func PostInvalid(t *testing.T, uri string, body string) {
 	post(t, uri, body, http.StatusBadRequest)
 }
 
+func put(t *testing.T, uri string, body string, code int) string {
+	fmt.Printf("[TEST] PUT %s (expecting %d)...\n", uri, code)
+
+	// Create request
+	reader := strings.NewReader(body)
+	req := NewRequest("PUT", uri, reader)
+
+	// Create response recorder
+	res := httptest.NewRecorder()
+
+	// Start web server
+	n := GetServer()
+	n.ServeHTTP(res, req)
+
+	// Validate response
+	areEqual(t, res.Code, code)
+
+	return res.HeaderMap.Get("Location")
+}
+
+func Put(t *testing.T, uri string, body string) {
+	put(t, uri, body, http.StatusNoContent)
+}
+
+func PutRelocate(t *testing.T, uri string, body string) string {
+	return put(t, uri, body, http.StatusMovedPermanently)
+}
+
+func PutInvalid(t *testing.T, uri string, body string) {
+	put(t, uri, body, http.StatusBadRequest)
+}
+
 func patch(t *testing.T, uri string, body string, code int) {
 	fmt.Printf("[TEST] PATCH %s (expecting %d)...\n", uri, code)
 
@@ -127,7 +169,7 @@ func PatchInvalid(t *testing.T, uri string, body string) {
 	patch(t, uri, body, http.StatusBadRequest)
 }
 
-func get(t *testing.T, uri string, code int) {
+func get(t *testing.T, uri string, code int) map[string]interface{} {
 	fmt.Printf("[TEST] GET %s (expecting %d)...\n", uri, code)
 
 	// Create request
@@ -142,11 +184,19 @@ func get(t *testing.T, uri string, code int) {
 
 	// Validate response
 	areEqual(t, res.Code, code)
+
+	var v map[string]interface{}
+	if res.Body != nil {
+		// best effort decode
+		json.NewDecoder(res.Body).Decode(&v)
+	}
+
+	return v
 }
 
 // Get retrieves a resource and expects a 200 Ok response
-func Get(t *testing.T, uri string) {
-	get(t, uri, http.StatusOK)
+func Get(t *testing.T, uri string) map[string]interface{} {
+	return get(t, uri, http.StatusOK)
 }
 
 // Get retrieves a nonexistant resource and expects a 404 Not found response
@@ -155,7 +205,7 @@ func GetMissing(t *testing.T, uri string) {
 }
 
 // Delete deletes a resource and expects a 204 No content response
-func Delete(t *testing.T, uri string) {
+func _delete(t *testing.T, uri string, code int) {
 	fmt.Printf("[TEST] DELETE %s...\n", uri)
 
 	// Create request
@@ -169,7 +219,14 @@ func Delete(t *testing.T, uri string) {
 	n.ServeHTTP(res, req)
 
 	// Validate response
-	areEqual(t, res.Code, http.StatusNoContent)
+	areEqual(t, res.Code, code)
+}
+
+func Delete(t *testing.T, uri string) {
+	_delete(t, uri, http.StatusNoContent)
+}
+func DeleteMissing(t *testing.T, uri string) {
+	_delete(t, uri, http.StatusNotFound)
 }
 
 // Crud tests the creation, retrieval, update and deletion of an api resource.

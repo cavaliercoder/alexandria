@@ -20,7 +20,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -193,6 +192,57 @@ func AddCIType(res http.ResponseWriter, req *http.Request) {
 	}
 
 	RenderCreated(res, req, V1Uri(fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb, citype.ShortName)))
+}
+
+func UpdateCITypeByName(res http.ResponseWriter, req *http.Request) {
+	// Parse request into CIType
+	var citype CIType
+	err := Bind(req, &citype)
+	if Handle(res, req, err) {
+		return
+	}
+
+	// Skip InitModel() but still validate
+	err = citype.Validate()
+	if err != nil {
+		ErrBadRequest(res, req, err)
+		return
+	}
+
+	// Get CMDB details
+	cmdb := GetPathVar(req, "cmdb")
+	db := GetCmdbBackend(req, cmdb)
+	if db == nil {
+		ErrNotFound(res, req)
+		return
+	}
+
+	// Fetch the original CIType
+	name := GetPathVar(req, "name")
+	var orig CIType
+	err = db.C(ciTypeCollection).Find(M{"shortname": name}).One(&orig)
+	if Handle(res, req, err) {
+		return
+	}
+
+	// Prepare the new record
+	citype.Created = orig.Created
+	citype.Id = orig.Id
+	citype.InitModel()
+
+	// Update
+	err = db.C(ciTypeCollection).Update(M{"_id": orig.Id}, &citype)
+	if Handle(res, req, err) {
+		return
+	}
+
+	// Compute the new URL
+	location := ""
+	if citype.ShortName != orig.ShortName {
+		location = V1Uri(fmt.Sprintf("/cmdbs/%s/citypes/%s", cmdb, citype.ShortName))
+	}
+
+	RenderUpdated(res, req, location)
 }
 
 func DeleteCITypeByName(res http.ResponseWriter, req *http.Request) {
