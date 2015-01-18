@@ -93,9 +93,7 @@ func (c *CIType) validateAttributes(atts *CITypeAttributeList, path string) erro
 			return errors.New("No attribute name specified")
 		}
 
-		if att.ShortName == "" {
-			att.ShortName = GetShortName(att.Name)
-		}
+		att.ShortName = GetShortName(att.Name)
 
 		if !IsValidShortName(att.ShortName) {
 			return errors.New(fmt.Sprintf("Invalid characters in CI Attribute '%s%s'", path, att.ShortName))
