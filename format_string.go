@@ -39,13 +39,13 @@ func (c *StringFormat) Validate(att *CITypeAttribute, val interface{}) error {
 		return errors.New(fmt.Sprintf("Value for '%s' is not a string", att.Name))
 	}
 
-	if att.Filter != "" {
-		match, err := regexp.MatchString(att.Filter, valStr)
+	for _, constraint := range att.Constraints {
+		match, err := regexp.MatchString(constraint, valStr)
 		if err != nil {
 			return err
 		}
 		if !match {
-			return errors.New(fmt.Sprintf("Value for '%s' does not match the required filter: /%s/", att.Name, att.Filter))
+			return errors.New(fmt.Sprintf("Value for '%s' does not match the required filter: /%s/", att.Name, constraint))
 		}
 	}
 

@@ -43,9 +43,7 @@ type CITypeAttribute struct {
 	ShortName   string              `json:"shortName"`
 	Description string              `json:"description"`
 	Type        string              `json:"type"`
-	MinValues   int                 `json:"minValues"`
-	MaxValues   int                 `json:"maxValues"`
-	Filter      string              `json:"filter"`
+	Constraints []string            `json:"constraints"`
 	Children    CITypeAttributeList `json:"children"`
 }
 

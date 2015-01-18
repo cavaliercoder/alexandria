@@ -35,9 +35,9 @@ func TestStringFormat(t *testing.T) {
 	}
 
 	att := &CITypeAttribute{
-		Name:   "Test",
-		Type:   "string",
-		Filter: "^[a-zA-Z]+$",
+		Name:        "Test",
+		Type:        "string",
+		Constraints: []string{"^[a-zA-Z]+$"},
 	}
 
 	var err error
@@ -68,9 +68,9 @@ func TestGroupFormat(t *testing.T) {
 	}
 
 	att := &CITypeAttribute{
-		Name:   "Test",
-		Type:   "group",
-		Filter: "^[a-zA-Z]+$",
+		Name:        "Test",
+		Type:        "group",
+		Constraints: []string{"^[a-zA-Z]+$"},
 	}
 
 	var err error

@@ -43,7 +43,7 @@ func TestCI(t *testing.T) {
 			{
 				"name":"alphanumeric",
 				"type":"string",
-				"filter":"^[A-Za-z0-9]+$"
+				"constraints":["^[A-Za-z0-9]+$"]
 			},
 			{
 				"name":"group",
