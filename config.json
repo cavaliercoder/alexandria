@@ -1,7 +1,7 @@
 {
 	"server": {
 		"production": false,
-		"listenPort": 3000
+		"listenPort": 4123
 	},
     "database": {
         "driver": "mongodb",
