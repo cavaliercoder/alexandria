@@ -31,26 +31,38 @@ const (
 type CIType struct {
 	model `json:"-" bson:",inline"`
 
-	InheritFrom string              `json:"inheritFrom"`
 	Name        string              `json:"name"`
 	ShortName   string              `json:"shortName"`
-	Description string              `json:"description"`
+	Description string              `json:"description" bson:",omitempty"`
+	InheritFrom string              `json:"inheritFrom" bson:",omitempty"`
 	Attributes  CITypeAttributeList `json:"attributes"`
 }
 
 type CITypeAttribute struct {
 	Name        string              `json:"name"`
 	ShortName   string              `json:"shortName"`
-	Description string              `json:"description"`
 	Type        string              `json:"type"`
-	Children    CITypeAttributeList `json:"children"`
+	Description string              `json:"description" bson:",omitempty"`
+	Children    CITypeAttributeList `json:"children" bson:",omitempty"`
 
-	// Options
-	Required  bool     `json:"required,omitempty"`
-	IsArray   bool     `json:"isArray,omitempty"`
-	MinLength uint     `json:"minLength,omitempty"`
-	MaxLength uint     `json:"maxLength,omitempty"`
-	Filters   []string `json:"filters,omitempty"`
+	// Common Options
+	Required bool `json:"required,omitempty" bson:",omitempty"`
+	IsArray  bool `json:"isArray,omitempty" bson:",omitempty"`
+
+	// Group options
+	Singular string `json:"singular,omitempty" bson:",omitempty"`
+
+	// String options
+	MinLength uint     `json:"minLength,omitempty" bson:",omitempty"`
+	MaxLength uint     `json:"maxLength,omitempty" bson:",omitempty"`
+	Filters   []string `json:"filters,omitempty" bson:",omitempty"`
+
+	// Number options
+	Units    string `json:"units,omitempty" bson:",omitempty"`
+	MinValue int    `json:"minValue,omitempty" bson:",omitempty"`
+	MaxValue int    `json:"maxValue,omitempty" bson:",omitempty"`
+	Signed   bool   `json:"signed,omitempty" bson:",omitempty"`
+	Float    bool   `json:"float,omitempty" bson:",omitempty"`
 }
 
 type CITypeAttributeList []CITypeAttribute
