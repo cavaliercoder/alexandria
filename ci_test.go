@@ -80,7 +80,7 @@ func TestCI(t *testing.T) {
 	body = `{
 		"alphanumeric":"StringValue123",
 		"number":123,
-		"required":false,
+		"required":"Yes",
 		"group":{
 			"allCaps":"ABC",
 			"grandchildren":{

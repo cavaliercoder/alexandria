@@ -33,6 +33,7 @@ func GetAttributeFormat(name string) AttributeFormat {
 			&StringFormat{},
 			&NumberFormat{},
 			&BooleanFormat{},
+			&TimeStampFormat{},
 		}
 
 		for _, format := range formats {

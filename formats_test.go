@@ -167,6 +167,36 @@ func TestGroupFormat(t *testing.T) {
 	}
 }
 
+func TestTimestampFormat(t *testing.T) {
+	format := GetAttributeFormat("timestamp")
+	if format == nil {
+		t.Errorf("Timestamp attribute format does not appear to be registered")
+		return
+	}
+
+	var err error
+	att := &CITypeAttribute{
+		Name: "Test",
+		Type: "timestamp",
+	}
+
+	kt := int64(-849135477000)
+	tests := []interface{}{
+		"-849135477000",
+		"1943-02-04T01:02:03.000Z",
+		"Thu, 04 Feb 1943 01:02:03 GMT",
+	}
+
+	for _, test := range tests {
+		if err = format.Validate(att, &test); err != nil {
+			t.Errorf("Expected timestamp '%v' to validate but it failed with: %v", test, err)
+		} else {
+			// Ensure the validate and updated value matches the desired input
+			areEqual(t, test, kt)
+		}
+	}
+}
+
 func TestBooleanFormat(t *testing.T) {
 	format := GetAttributeFormat("boolean")
 	if format == nil {
