@@ -130,6 +130,15 @@ func validateFields(fields *map[string]interface{}, schema *CITypeAttributeList,
 		}
 	}
 
+	// Ensure all required fields were included
+	for _, att := range *schema {
+		if att.Required {
+			if _, ok := (*fields)[att.ShortName]; !ok {
+				return errors.New(fmt.Sprintf("Required field '%s' is not present", att.Name))
+			}
+		}
+	}
+
 	return nil
 }
 

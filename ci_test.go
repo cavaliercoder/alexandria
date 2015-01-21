@@ -45,6 +45,11 @@ func TestCI(t *testing.T) {
 				"maxValue":200
 			},
 			{
+				"name":"Required",
+				"type":"boolean",
+				"required":true
+			},
+			{
 				"name":"group",
 				"type":"group",
 				"children":[
@@ -75,6 +80,7 @@ func TestCI(t *testing.T) {
 	body = `{
 		"alphanumeric":"StringValue123",
 		"number":123,
+		"required":false,
 		"group":{
 			"allCaps":"ABC",
 			"grandchildren":{
@@ -85,23 +91,22 @@ func TestCI(t *testing.T) {
 	Crud(t, uri, body, false)
 
 	// test POST invalid CI schema
-	body = `{
-		"badAttribute":"some value"
-	}`
+	body = `{"badAttribute":"some value", "required":false}`
 	PostInvalid(t, uri, body)
 
 	// test POST string filter
-	body = `{
-		"alphanumeric":"Not!"
-	}`
+	body = `{"alphanumeric":"Not @lphANUM3r1c!", "required": false}`
 	PostInvalid(t, uri, body)
 
 	// test number minimum
-	body = `{"number":1}`
+	body = `{"number":1, "required":false}`
 	PostInvalid(t, uri, body)
 
 	// test number maximum
-	body = `{"number":321}`
+	body = `{"number":321, "required":false}`
 	PostInvalid(t, uri, body)
 
+	// test missing required value
+	body = `{"alphanumeric":"abc123","number":"123"}`
+	PostInvalid(t, uri, body)
 }
