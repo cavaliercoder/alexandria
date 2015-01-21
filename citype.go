@@ -43,8 +43,14 @@ type CITypeAttribute struct {
 	ShortName   string              `json:"shortName"`
 	Description string              `json:"description"`
 	Type        string              `json:"type"`
-	Constraints []string            `json:"constraints"`
 	Children    CITypeAttributeList `json:"children"`
+
+	// Options
+	Required  bool     `json:"required,omitempty"`
+	IsArray   bool     `json:"isArray,omitempty"`
+	MinLength int      `json:"minLength,omitempty"`
+	MaxLength int      `json:"maxLength,omitempty"`
+	Filters   []string `json:"filters,omitempty"`
 }
 
 type CITypeAttributeList []CITypeAttribute

@@ -24,13 +24,22 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
 )
 
+func TestMain(m *testing.M) {
+	// Create a 'temp' CMDB for testing
+	Post(nil, V1Uri("/cmdbs"), `{"name":"temp"}`)
+	exitCode := m.Run()
+	Delete(nil, V1Uri("/cmdbs/temp"))
+	os.Exit(exitCode)
+}
+
 func areEqual(t *testing.T, a interface{}, b interface{}) bool {
-	if a != b {
+	if t != nil && a != b {
 		t.Errorf("Expected %v (type %v) - Got %v (type %v)", b, reflect.TypeOf(b), a, reflect.TypeOf(a))
 		return false
 	}
@@ -39,7 +48,7 @@ func areEqual(t *testing.T, a interface{}, b interface{}) bool {
 }
 
 func areUnequal(t *testing.T, a interface{}, b interface{}) bool {
-	if a == b {
+	if t != nil && a == b {
 		t.Errorf("Expected unequal - Got %v (type %v)", a, reflect.TypeOf(a))
 		return false
 	}
@@ -241,7 +250,7 @@ func Crud(t *testing.T, uri string, body string, testDuplicates bool) {
 		t.Errorf("No location header was returned for new resource in: %s", uri)
 	} else {
 		// Retrieve the new resource
-		log.Printf("RETRIEVE resource from %s", location)
+		log.Printf("RETRIEVE created resource from %s", location)
 		Get(t, location)
 
 		// Make sure duplicates can't be created
@@ -255,7 +264,7 @@ func Crud(t *testing.T, uri string, body string, testDuplicates bool) {
 		Delete(t, location)
 
 		// Ensure it is missing
-		log.Printf("RETRIEVE delete resource %s", location)
+		log.Printf("RETRIEVE deleted resource %s", location)
 		GetMissing(t, location)
 	}
 }

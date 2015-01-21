@@ -39,7 +39,7 @@ func (c *StringFormat) Validate(att *CITypeAttribute, val interface{}) error {
 		return errors.New(fmt.Sprintf("Value for '%s' is not a string", att.Name))
 	}
 
-	for _, constraint := range att.Constraints {
+	for _, constraint := range att.Filters {
 		match, err := regexp.MatchString(constraint, valStr)
 		if err != nil {
 			return err

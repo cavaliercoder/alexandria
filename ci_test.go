@@ -23,27 +23,20 @@ import (
 )
 
 const (
-	ciDB   = "test-ci-db"
 	ciType = "test-ci-type"
 )
 
 func TestCI(t *testing.T) {
-	// Create a temporary cmdb
-	uri := V1Uri("/cmdbs")
-	body := fmt.Sprintf(`{"name":"%s"}`, ciDB)
-	dburl := Post(t, uri, body)
-	defer Delete(t, dburl)
-
 	// Create temporary CI Type
-	uri = V1Uri(fmt.Sprintf("/cmdbs/%s/citypes", ciDB))
-	body = `{
+	uri := V1Uri("/cmdbs/temp/citypes")
+	body := `{
 		"name":"Test CI Type",
 		"description": "A test CI Type",
 		"attributes": [
 			{
 				"name":"alphanumeric",
 				"type":"string",
-				"constraints":["^[A-Za-z0-9]+$"]
+				"filters": ["^[A-Za-z0-9]+$"]
 			},
 			{
 				"name":"group",
@@ -52,7 +45,7 @@ func TestCI(t *testing.T) {
 					{
 						"name":"allCaps",
 						"type":"string",
-						"filter":"^[A-Z]+$"
+						"filters":["^[A-Z]+$"]
 					},
 					{
 						"name":"grandchildren",
@@ -72,7 +65,7 @@ func TestCI(t *testing.T) {
 	defer Delete(t, typUrl)
 
 	// Test POST .../CI
-	uri = V1Uri(fmt.Sprintf("/cmdbs/%s/%s", ciDB, ciType))
+	uri = V1Uri(fmt.Sprintf("/cmdbs/temp/%s", ciType))
 	body = `{
 		"alphanumeric":"StringValue123",
 		"group":{

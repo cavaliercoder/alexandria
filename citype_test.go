@@ -18,24 +18,17 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 )
 
 const (
-	ciTypeDB = "CITypeDB"
+	ciTypeDB = "temp"
 )
 
 func TestUpdateCIType(t *testing.T) {
-	// Create a temporary cmdb
-	uri := V1Uri("/cmdbs")
-	body := fmt.Sprintf(`{"name":"%s"}`, ciTypeDB)
-	dburl := Post(t, uri, body)
-	defer Delete(t, dburl)
-
 	// Create a CIType
-	uri = V1Uri(fmt.Sprintf("/cmdbs/%s/citypes", ciTypeDB))
-	body = `{"name":"Original CI Type"}`
+	uri := V1Uri("/cmdbs/temp/citypes")
+	body := `{"name":"Original CI Type"}`
 	location := Post(t, uri, body)
 	defer DeleteMissing(t, location)
 
@@ -43,22 +36,65 @@ func TestUpdateCIType(t *testing.T) {
 	body = `{"name":"Updated CI Name"}`
 	newLocation := PutRelocate(t, location, body)
 	defer Delete(t, newLocation)
+}
+
+func TestBadUpdateCIType(t *testing.T) {
+	// Create a CIType
+	uri := V1Uri("/cmdbs/temp/citypes")
+	body := `{"name":"Original CI Type"}`
+	location := Post(t, uri, body)
+	defer Delete(t, location)
 
 	// bad request
 	body = `{"noname":"should fail"}`
-	PutInvalid(t, newLocation, body)
+	PutInvalid(t, location, body)
 }
 
-func TestCITypes(t *testing.T) {
-	// Create a temporary cmdb
-	uri := V1Uri("/cmdbs")
-	body := fmt.Sprintf(`{"name":"%s"}`, ciTypeDB)
-	dburl := Post(t, uri, body)
-	defer Delete(t, dburl)
+func TestGetAllCITypes(t *testing.T) {
+	Get(t, V1Uri("/cmdbs/temp/citypes"))
+}
 
+func TestInvalidAttributeType(t *testing.T) {
+	uri := V1Uri("/cmdbs/temp/citypes")
+
+	// Test POST .../citypes with invalid attribute type
+	body := `{
+		"name":"BadAttributeName",
+		"attributes":[
+			{
+				"name":"FirstAttribute",
+				"type":"some_bad_type"
+			}
+		]}`
+	PostInvalid(t, uri, body)
+
+}
+
+func TestNongroupWithChildren(t *testing.T) {
+	uri := V1Uri("/cmdbs/temp/citypes")
+
+	// Test POST .../citypes with invalid group attribute
+	body := `{
+		"name":"BadGroupAttribute",
+		"attributes":[
+			{
+				"name":"BadAttribute",
+				"type":"string",
+				"children":[
+					{
+						"name":"Impossible",
+						"type":"string"
+					}
+				]
+			}
+		]}`
+	PostInvalid(t, uri, body)
+}
+
+func TestCrudCITypes(t *testing.T) {
 	// Test POST .../citypes
-	uri = V1Uri(fmt.Sprintf("/cmdbs/%s/citypes", ciTypeDB))
-	body = `{
+	uri := V1Uri("/cmdbs/temp/citypes")
+	body := `{
 		"name":"Test_CI_Type with w!3rd CH@RS!",
 		"description": "A test CI Type",
 		"attributes": [
@@ -82,35 +118,4 @@ func TestCITypes(t *testing.T) {
 		]
 		}`
 	Crud(t, uri, body, true)
-
-	// Test POST .../citypes with invalid attribute type
-	body = `{
-		"name":"BadAttributeName",
-		"attributes":[
-			{
-				"name":"FirstAttribute",
-				"type":"some_bad_type"
-			}
-		]}`
-	PostInvalid(t, uri, body)
-
-	// Test POST .../citypes with invalid group attribute
-	body = `{
-		"name":"BadGroupAttribute",
-		"attributes":[
-			{
-				"name":"BadAttribute",
-				"type":"string",
-				"children":[
-					{
-						"name":"Impossible",
-						"type":"string"
-					}
-				]
-			}
-		]}`
-	PostInvalid(t, uri, body)
-
-	// Test get all
-	Get(t, uri)
 }
