@@ -42,12 +42,15 @@ type CITypeAttribute struct {
 	Name        string              `json:"name"`
 	ShortName   string              `json:"shortName"`
 	Type        string              `json:"type"`
-	Description string              `json:"description" bson:",omitempty"`
-	Children    CITypeAttributeList `json:"children" bson:",omitempty"`
+	Description string              `json:"description,omitempty" bson:",omitempty"`
+	Children    CITypeAttributeList `json:"children,omitempty" bson:",omitempty"`
 
 	// Common Options
 	Required bool `json:"required,omitempty" bson:",omitempty"`
+
 	IsArray  bool `json:"isArray,omitempty" bson:",omitempty"`
+	MinCount int  `json:"minCount,omitempty" bson:",omitempty"`
+	MaxCount int  `json:"maxCount,omitempty" bson:",omitempty"`
 
 	// Group options
 	Singular string `json:"singular,omitempty" bson:",omitempty"`
