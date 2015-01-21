@@ -19,6 +19,7 @@ package main
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -103,6 +104,9 @@ func Render(res http.ResponseWriter, req *http.Request, status int, v interface{
 		case "json":
 			RenderJson(res, req, status, v)
 
+		case "xml":
+			RenderXml(res, req, status, v)
+
 		default:
 			log.Panic(fmt.Sprintf("Unsupported output format: %s", format))
 		}
@@ -126,6 +130,27 @@ func RenderJson(res http.ResponseWriter, req *http.Request, status int, v interf
 	}
 
 	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(status)
+	res.Write(data)
+}
+
+func RenderXml(res http.ResponseWriter, req *http.Request, status int, v interface{}) {
+	if v == nil {
+		v = new(struct{})
+	}
+
+	var err error
+	var data []byte
+	if req.URL.Query().Get("pretty") == "true" {
+		data, err = xml.MarshalIndent(v, "", "    ")
+	} else {
+		data, err = xml.Marshal(v)
+	}
+	if err != nil {
+		log.Panic(err)
+	}
+
+	res.Header().Set("Content-Type", "application/xml")
 	res.WriteHeader(status)
 	res.Write(data)
 }

@@ -183,9 +183,10 @@ func TestTimestampFormat(t *testing.T) {
 	// Test some valid dates
 	kt := int64(-849135477000)
 	tests := []interface{}{
-		"-849135477000",                 // Ms since 1970
+		"-849135477000",                 // Milliseconds since 1970
 		"1943-02-04T01:02:03.000Z",      // RFC3339
 		"Thu, 04 Feb 1943 01:02:03 GMT", // RFC1123
+		"1943-02-04T01:02:03Z",          // ISO 8601
 	}
 
 	for _, test := range tests {
