@@ -28,6 +28,8 @@ func TestFormatFactory(t *testing.T) {
 }
 
 func TestStringFormat(t *testing.T) {
+	var err error
+
 	format := GetAttributeFormat("string")
 	if format == nil {
 		t.Errorf("String attribute format does not appear to be registered")
@@ -35,29 +37,63 @@ func TestStringFormat(t *testing.T) {
 	}
 
 	att := &CITypeAttribute{
-		Name:    "Test",
-		Type:    "string",
-		Filters: []string{"^[a-zA-Z]+$"},
+		Name: "Test",
+		Type: "notstring",
 	}
 
-	var err error
+	// Test invalid attribute type
+	err = format.Validate(att, "ShouldPass")
+	if err == nil {
+		t.Errorf("Expected invalid attribute type to fail but it did not")
+	}
+	att.Type = "string"
 
+	// Test filters
+	att.Filters = []string{"^[a-zA-Z]+$", "^ShouldPass$"}
 	err = format.Validate(att, "ShouldPass")
 	if err != nil {
 		t.Errorf("Expected string to validate but it did not:\n%s", err.Error())
 	}
 
-	err = format.Validate(att, "Should N0T pass!")
+	err = format.Validate(att, "ShouldNotPass")
 	if err == nil {
 		t.Errorf("Expected string to fail validation but it passed")
 	}
+	att.Filters = nil
 
-	att.Type = "notstring"
-	err = format.Validate(att, "ShouldPass")
+	// Test required value
+	att.Required = true
+	err = format.Validate(att, "")
 	if err == nil {
-		t.Errorf("Expected invalid attribute type to fail but it did not")
+		t.Errorf("Expected string to fail with a required value but it passed")
 	}
+	att.Required = false
 
+	// Test minimum length
+	att.MinLength = 10
+	err = format.Validate(att, "too short")
+	if err == nil {
+		t.Errorf("Expected string to fail minimum length requirement but it passed")
+	}
+	att.MinLength = 0
+
+	// Test maximum length
+	att.MaxLength = 7
+	err = format.Validate(att, "too long")
+	if err == nil {
+		t.Errorf("Expected string to fail maximum length requirement but it passed")
+	}
+	att.MaxLength = 0
+
+	// Test multiple
+	att.MinLength = 17
+	att.MaxLength = 17
+	att.Required = true
+	att.Filters = []string{"^Lorem Ipsum D0lor$", "^[LoremIpsuD0l ]+$", "^[a-zA-Z0-9 ]+$"}
+	err = format.Validate(att, "Lorem Ipsum D0lor")
+	if err != nil {
+		t.Errorf("Expected string to pass multiple requirements but it failed with:\n    %s", err.Error())
+	}
 }
 
 func TestGroupFormat(t *testing.T) {

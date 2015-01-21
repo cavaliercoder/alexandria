@@ -34,11 +34,27 @@ func (c *StringFormat) Validate(att *CITypeAttribute, val interface{}) error {
 		return errors.New(fmt.Sprintf("Attribute '%s' is not the correct type", att.Name))
 	}
 
+	// Ensure it is a string value
 	valStr, ok := val.(string)
 	if !ok {
 		return errors.New(fmt.Sprintf("Value for '%s' is not a string", att.Name))
 	}
 
+	// Validate required attribute
+	if att.Required && valStr == "" {
+		return errors.New(fmt.Sprintf("Value for '%s' is required", att.Name))
+	}
+
+	// Validate length
+	if len(valStr) < att.MinLength {
+		return errors.New(fmt.Sprintf("Value for '%s' does not meet minimum length requirement of %d characters", att.Name, att.MinLength))
+	}
+
+	if att.MaxLength > 0 && len(valStr) > att.MaxLength {
+		return errors.New(fmt.Sprintf("Value for '%s' exceeds maximum length requirement of %d characters", att.Name, att.MaxLength))
+	}
+
+	// Apply regex filters
 	for _, constraint := range att.Filters {
 		match, err := regexp.MatchString(constraint, valStr)
 		if err != nil {
