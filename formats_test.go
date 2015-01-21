@@ -180,11 +180,12 @@ func TestTimestampFormat(t *testing.T) {
 		Type: "timestamp",
 	}
 
+	// Test some valid dates
 	kt := int64(-849135477000)
 	tests := []interface{}{
-		"-849135477000",
-		"1943-02-04T01:02:03.000Z",
-		"Thu, 04 Feb 1943 01:02:03 GMT",
+		"-849135477000",                 // Ms since 1970
+		"1943-02-04T01:02:03.000Z",      // RFC3339
+		"Thu, 04 Feb 1943 01:02:03 GMT", // RFC1123
 	}
 
 	for _, test := range tests {
@@ -194,6 +195,13 @@ func TestTimestampFormat(t *testing.T) {
 			// Ensure the validate and updated value matches the desired input
 			areEqual(t, test, kt)
 		}
+	}
+
+	// test invalidate date
+	var bad interface{} = "Bad date"
+	err = format.Validate(att, &bad)
+	if err == nil {
+		t.Errorf("Expected timestamp '%v' to fail validation but it passed", bad)
 	}
 }
 

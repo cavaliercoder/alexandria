@@ -49,6 +49,7 @@ func TestCI(t *testing.T) {
 				"type":"boolean",
 				"required":true
 			},
+			{ "name":"timestamp", "type":"timestamp" },
 			{
 				"name":"group",
 				"type":"group",
@@ -78,13 +79,14 @@ func TestCI(t *testing.T) {
 	// Test POST .../CI
 	uri = V1Uri(fmt.Sprintf("/cmdbs/temp/%s", ciType))
 	body = `{
-		"alphanumeric":"StringValue123",
-		"number":123,
-		"required":"Yes",
-		"group":{
-			"allCaps":"ABC",
-			"grandchildren":{
-				"grandchild":"Some value"
+		"alphanumeric": "StringValue123",
+		"number": 123,
+		"required": "Yes",
+		"timestamp": -849135477000,
+		"group": {
+			"allCaps": "ABC",
+			"grandchildren": {
+				"grandchild": "Some value"
 			}
 		}
 	}`
@@ -104,6 +106,10 @@ func TestCI(t *testing.T) {
 
 	// test number maximum
 	body = `{"number":321, "required":false}`
+	PostInvalid(t, uri, body)
+
+	// test bad timestamp
+	body = `{"timestamp":"The day after tomorrow", "required":false}`
 	PostInvalid(t, uri, body)
 
 	// test missing required value
