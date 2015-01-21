@@ -122,6 +122,7 @@ func TestNumberFormat(t *testing.T) {
 		float64(12345.12345),
 		float64(-12345.12345),
 		"-12345.12345",
+		"1.2345e67",
 	}
 
 	for _, val := range vals {
@@ -130,6 +131,7 @@ func TestNumberFormat(t *testing.T) {
 		}
 	}
 
+	// Ensure invalid numbers fail
 	var val interface{} = "Not a valid number"
 	if err := format.Validate(att, &val); err == nil {
 		t.Errorf("Expected non-number '%v' to fail validation but it passed", val)

@@ -39,6 +39,12 @@ func TestCI(t *testing.T) {
 				"filters": ["^[A-Za-z0-9]+$"]
 			},
 			{
+				"name":"number",
+				"type":"number",
+				"minValue":100,
+				"maxValue":200
+			},
+			{
 				"name":"group",
 				"type":"group",
 				"children":[
@@ -68,6 +74,7 @@ func TestCI(t *testing.T) {
 	uri = V1Uri(fmt.Sprintf("/cmdbs/temp/%s", ciType))
 	body = `{
 		"alphanumeric":"StringValue123",
+		"number":123,
 		"group":{
 			"allCaps":"ABC",
 			"grandchildren":{
@@ -83,9 +90,18 @@ func TestCI(t *testing.T) {
 	}`
 	PostInvalid(t, uri, body)
 
-	// test POST invalid CI value
+	// test POST string filter
 	body = `{
 		"alphanumeric":"Not!"
 	}`
 	PostInvalid(t, uri, body)
+
+	// test number minimum
+	body = `{"number":1}`
+	PostInvalid(t, uri, body)
+
+	// test number maximum
+	body = `{"number":321}`
+	PostInvalid(t, uri, body)
+
 }
