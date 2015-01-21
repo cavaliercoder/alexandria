@@ -121,7 +121,10 @@ func Post(t *testing.T, uri string, body string) string {
 
 // Post posts the specified invalid resource and expects a 400 Bad request response
 func PostInvalid(t *testing.T, uri string, body string) {
-	post(t, uri, body, http.StatusBadRequest)
+	location := post(t, uri, body, http.StatusBadRequest)
+	if location != "" {
+		Delete(t, location)
+	}
 }
 
 func put(t *testing.T, uri string, body string, code int) string {
