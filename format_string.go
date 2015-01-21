@@ -46,11 +46,11 @@ func (c *StringFormat) Validate(att *CITypeAttribute, val *interface{}) error {
 	}
 
 	// Validate length
-	if uint(len(valStr)) < att.MinLength {
+	if len(valStr) < att.MinLength {
 		return errors.New(fmt.Sprintf("Value for '%s' does not meet minimum length requirement of %d characters", att.Name, att.MinLength))
 	}
 
-	if att.MaxLength > 0 && uint(len(valStr)) > att.MaxLength {
+	if att.MaxLength > 0 && len(valStr) > att.MaxLength {
 		return errors.New(fmt.Sprintf("Value for '%s' exceeds maximum length requirement of %d characters", att.Name, att.MaxLength))
 	}
 

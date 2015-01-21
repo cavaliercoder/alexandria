@@ -56,16 +56,14 @@ type CITypeAttribute struct {
 	Singular string `json:"singular,omitempty" bson:",omitempty"`
 
 	// String options
-	MinLength uint     `json:"minLength,omitempty" bson:",omitempty"`
-	MaxLength uint     `json:"maxLength,omitempty" bson:",omitempty"`
+	MinLength int      `json:"minLength,omitempty" bson:",omitempty"`
+	MaxLength int      `json:"maxLength,omitempty" bson:",omitempty"`
 	Filters   []string `json:"filters,omitempty" bson:",omitempty"`
 
 	// Number options
-	Units    string `json:"units,omitempty" bson:",omitempty"`
-	MinValue int    `json:"minValue,omitempty" bson:",omitempty"`
-	MaxValue int    `json:"maxValue,omitempty" bson:",omitempty"`
-	Signed   bool   `json:"signed,omitempty" bson:",omitempty"`
-	Float    bool   `json:"float,omitempty" bson:",omitempty"`
+	Units    string  `json:"units,omitempty" bson:",omitempty"`
+	MinValue float64 `json:"minValue,omitempty" bson:",omitempty"`
+	MaxValue float64 `json:"maxValue,omitempty" bson:",omitempty"`
 }
 
 type CITypeAttributeList []CITypeAttribute

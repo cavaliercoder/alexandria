@@ -56,6 +56,12 @@ func areUnequal(t *testing.T, a interface{}, b interface{}) bool {
 	return true
 }
 
+func handleError(t *testing.T, err error) {
+	if err != nil {
+		t.Errorf("Caught error: %s", err.Error())
+	}
+}
+
 func getRootUser() *User {
 	// Get apiInfo
 	var apiInfo ApiInfo

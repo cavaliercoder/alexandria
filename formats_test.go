@@ -104,6 +104,38 @@ func TestStringFormat(t *testing.T) {
 	}
 }
 
+func TestNumberFormat(t *testing.T) {
+	format := GetAttributeFormat("number")
+	if format == nil {
+		t.Errorf("Number attribute format does not appear to be registered")
+		return
+	}
+
+	att := &CITypeAttribute{
+		Name: "Test",
+		Type: "number",
+	}
+
+	vals := []interface{}{
+		float64(-12345),
+		float64(12345),
+		float64(12345.12345),
+		float64(-12345.12345),
+		"-12345.12345",
+	}
+
+	for _, val := range vals {
+		if err := format.Validate(att, &val); err != nil {
+			t.Errorf("Expected number %v to validate but it did not:\n%s", val, err.Error())
+		}
+	}
+
+	var val interface{} = "Not a valid number"
+	if err := format.Validate(att, &val); err == nil {
+		t.Errorf("Expected non-number '%v' to fail validation but it passed", val)
+	}
+}
+
 func TestGroupFormat(t *testing.T) {
 	format := GetAttributeFormat("group")
 	if format == nil {

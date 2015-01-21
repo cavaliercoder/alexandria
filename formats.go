@@ -31,6 +31,7 @@ func GetAttributeFormat(name string) AttributeFormat {
 		formats := []AttributeFormat{
 			&GroupFormat{},
 			&StringFormat{},
+			&NumberFormat{},
 			&BooleanFormat{},
 		}
 
