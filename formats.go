@@ -19,7 +19,7 @@ package main
 
 type AttributeFormat interface {
 	GetName() string
-	Validate(*CITypeAttribute, interface{}) error
+	Validate(*CITypeAttribute, *interface{}) error
 }
 
 var formatMap map[string]AttributeFormat
@@ -31,6 +31,7 @@ func GetAttributeFormat(name string) AttributeFormat {
 		formats := []AttributeFormat{
 			&GroupFormat{},
 			&StringFormat{},
+			&BooleanFormat{},
 		}
 
 		for _, format := range formats {

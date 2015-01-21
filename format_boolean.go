@@ -20,22 +20,69 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
-type GroupFormat struct{}
+type BooleanFormat struct{}
 
-func (c *GroupFormat) GetName() string {
-	return "group"
+func (c *BooleanFormat) GetName() string {
+	return "boolean"
 }
 
-func (c *GroupFormat) Validate(att *CITypeAttribute, val *interface{}) error {
+func (c *BooleanFormat) Validate(att *CITypeAttribute, val *interface{}) error {
 	if att.Type != c.GetName() {
 		return errors.New(fmt.Sprintf("Attribute '%s' is not the correct type", att.Name))
 	}
 
-	_, ok := (*val).(map[string]interface{})
+	// Parse a string
+	if str, ok := (*val).(string); ok {
+		str = strings.ToLower(str)
+		truthies := []string{
+			"true",
+			"yes",
+			"y",
+			"1",
+		}
+
+		for _, t := range truthies {
+			if str == t {
+				*val = true
+				return nil
+			}
+		}
+
+		falsies := []string{
+			"false",
+			"no",
+			"n",
+			"0",
+		}
+
+		for _, f := range falsies {
+			if str == f {
+				*val = false
+				return nil
+			}
+		}
+
+		return errors.New(fmt.Sprintf("Value '%s' for '%s' is not a valid boolean value", str, att.Name))
+	}
+
+	// Parse a number
+	if num, ok := (*val).(int); ok {
+		if num > 0 {
+			*val = true
+		} else {
+			*val = false
+		}
+
+		return nil
+	}
+
+	// Parse as native boolean
+	_, ok := (*val).(bool)
 	if !ok {
-		return errors.New(fmt.Sprintf("Value for '%s' is not an attribute group", att.Name))
+		return errors.New(fmt.Sprintf("Value for '%s' is not a valid boolean", att.Name))
 	}
 
 	return nil

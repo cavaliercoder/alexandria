@@ -29,13 +29,13 @@ func (c *StringFormat) GetName() string {
 	return "string"
 }
 
-func (c *StringFormat) Validate(att *CITypeAttribute, val interface{}) error {
+func (c *StringFormat) Validate(att *CITypeAttribute, val *interface{}) error {
 	if att.Type != c.GetName() {
 		return errors.New(fmt.Sprintf("Attribute '%s' is not the correct type", att.Name))
 	}
 
 	// Ensure it is a string value
-	valStr, ok := val.(string)
+	valStr, ok := (*val).(string)
 	if !ok {
 		return errors.New(fmt.Sprintf("Value for '%s' is not a string", att.Name))
 	}
@@ -46,11 +46,11 @@ func (c *StringFormat) Validate(att *CITypeAttribute, val interface{}) error {
 	}
 
 	// Validate length
-	if len(valStr) < att.MinLength {
+	if uint(len(valStr)) < att.MinLength {
 		return errors.New(fmt.Sprintf("Value for '%s' does not meet minimum length requirement of %d characters", att.Name, att.MinLength))
 	}
 
-	if att.MaxLength > 0 && len(valStr) > att.MaxLength {
+	if att.MaxLength > 0 && uint(len(valStr)) > att.MaxLength {
 		return errors.New(fmt.Sprintf("Value for '%s' exceeds maximum length requirement of %d characters", att.Name, att.MaxLength))
 	}
 

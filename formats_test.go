@@ -41,8 +41,11 @@ func TestStringFormat(t *testing.T) {
 		Type: "notstring",
 	}
 
+	var val interface{}
+
 	// Test invalid attribute type
-	err = format.Validate(att, "ShouldPass")
+	val = "ShouldPass"
+	err = format.Validate(att, &val)
 	if err == nil {
 		t.Errorf("Expected invalid attribute type to fail but it did not")
 	}
@@ -50,12 +53,13 @@ func TestStringFormat(t *testing.T) {
 
 	// Test filters
 	att.Filters = []string{"^[a-zA-Z]+$", "^ShouldPass$"}
-	err = format.Validate(att, "ShouldPass")
+	err = format.Validate(att, &val)
 	if err != nil {
 		t.Errorf("Expected string to validate but it did not:\n%s", err.Error())
 	}
 
-	err = format.Validate(att, "ShouldNotPass")
+	val = "ShouldNotPass"
+	err = format.Validate(att, &val)
 	if err == nil {
 		t.Errorf("Expected string to fail validation but it passed")
 	}
@@ -63,7 +67,8 @@ func TestStringFormat(t *testing.T) {
 
 	// Test required value
 	att.Required = true
-	err = format.Validate(att, "")
+	val = ""
+	err = format.Validate(att, &val)
 	if err == nil {
 		t.Errorf("Expected string to fail with a required value but it passed")
 	}
@@ -71,7 +76,8 @@ func TestStringFormat(t *testing.T) {
 
 	// Test minimum length
 	att.MinLength = 10
-	err = format.Validate(att, "too short")
+	val = "too short"
+	err = format.Validate(att, &val)
 	if err == nil {
 		t.Errorf("Expected string to fail minimum length requirement but it passed")
 	}
@@ -79,7 +85,8 @@ func TestStringFormat(t *testing.T) {
 
 	// Test maximum length
 	att.MaxLength = 7
-	err = format.Validate(att, "too long")
+	val = "too long"
+	err = format.Validate(att, &val)
 	if err == nil {
 		t.Errorf("Expected string to fail maximum length requirement but it passed")
 	}
@@ -90,7 +97,8 @@ func TestStringFormat(t *testing.T) {
 	att.MaxLength = 17
 	att.Required = true
 	att.Filters = []string{"^Lorem Ipsum D0lor$", "^[LoremIpsuD0l ]+$", "^[a-zA-Z0-9 ]+$"}
-	err = format.Validate(att, "Lorem Ipsum D0lor")
+	val = "Lorem Ipsum D0lor"
+	err = format.Validate(att, &val)
 	if err != nil {
 		t.Errorf("Expected string to pass multiple requirements but it failed with:\n    %s", err.Error())
 	}
@@ -110,15 +118,91 @@ func TestGroupFormat(t *testing.T) {
 	}
 
 	var err error
+	var val interface{}
 
-	err = format.Validate(att, map[string]interface{}{})
+	val = map[string]interface{}{}
+	err = format.Validate(att, &val)
 	if err != nil {
 		t.Errorf("Expected group to validate but it did not:\n%s", err.Error())
 	}
 
 	att.Type = "notgroup"
-	err = format.Validate(att, map[string]interface{}{})
+	err = format.Validate(att, &val)
 	if err == nil {
 		t.Errorf("Expected invalid attribute type to fail but it did not")
 	}
+}
+
+func TestBooleanFormat(t *testing.T) {
+	format := GetAttributeFormat("boolean")
+	if format == nil {
+		t.Errorf("Boolean attribute format does not appear to be registered")
+		return
+	}
+
+	var err error
+	att := &CITypeAttribute{
+		Name: "Test",
+		Type: "boolean",
+	}
+
+	var val interface{}
+
+	// Test native booleans
+	val = true
+	err = format.Validate(att, &val)
+	if err != nil {
+		t.Errorf("Expected boolean attribute to validate but it did not")
+	}
+
+	val = false
+	err = format.Validate(att, &val)
+	if err != nil {
+		t.Errorf("Expected boolean attribute to validate but it did not")
+	}
+
+	// Test strings
+	val = "TRUE"
+	err = format.Validate(att, &val)
+	if err != nil {
+		t.Error("Expected boolean string to validate but it did not")
+	}
+	if val != true {
+		t.Errorf("Expected native true; got: %#v", val)
+	}
+
+	val = "False"
+	err = format.Validate(att, &val)
+	if err != nil {
+		t.Error("Expected boolean string to validate but it did not")
+	}
+	if val != false {
+		t.Errorf("Expected native true; got: %#v", val)
+	}
+
+	val = "Not a truthy or falsy"
+	err = format.Validate(att, &val)
+	if err == nil {
+		t.Error("Expected boolean string to validate but it did not")
+	}
+
+	// Test numbers
+	val = 10
+	err = format.Validate(att, &val)
+	if err != nil {
+		t.Error("Expected boolean number to validate but it did not")
+	}
+	if val != true {
+		t.Errorf("Expected native true; got: %#v", val)
+	}
+
+	val = -10
+	err = format.Validate(att, &val)
+	if err != nil {
+		t.Error("Expected boolean number to validate but it did not")
+	}
+	if val != false {
+		t.Errorf("Expected native true; got: %#v", val)
+	}
+
 }

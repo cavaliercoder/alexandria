@@ -74,7 +74,7 @@ func AddCI(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Validate against schema
-	err = validateFields(ci.Value, &typ.Attributes, "")
+	err = validateFields(&ci.Value, &typ.Attributes, "")
 	if err != nil {
 		ErrBadRequest(res, req, err)
 		return
@@ -89,9 +89,12 @@ func AddCI(res http.ResponseWriter, req *http.Request) {
 	RenderCreated(res, req, V1Uri(fmt.Sprintf("/cmdbs/%s/%s/%s", cmdb, citype, IdToString(ci.Id))))
 }
 
-func validateFields(fields map[string]interface{}, schema *CITypeAttributeList, path string) error {
-	for key, val := range fields {
+func validateFields(fields *map[string]interface{}, schema *CITypeAttributeList, path string) error {
+	for key, _ := range *fields {
 		fullPath := fmt.Sprintf("%s.%s", path, key)
+
+		// Dereference the value so it may be modified by format.Validate()
+		val := (*fields)[key]
 
 		// Does this key exist in the schema?
 		att := schema.Get(key)
@@ -106,7 +109,9 @@ func validateFields(fields map[string]interface{}, schema *CITypeAttributeList, 
 		}
 
 		// Is the value valid?
-		err := format.Validate(att, val)
+		// This will also translate the value if required
+		// TODO: Need to dereference val in the range loop so the original object is updated
+		err := format.Validate(att, &val)
 		if err != nil {
 			return err
 		}
@@ -118,7 +123,7 @@ func validateFields(fields map[string]interface{}, schema *CITypeAttributeList, 
 				return errors.New(fmt.Sprintf("Expected '%s' to be a valid JSON object", fullPath))
 			}
 
-			err = validateFields(childFields, &att.Children, fullPath)
+			err = validateFields(&childFields, &att.Children, fullPath)
 			if err != nil {
 				return err
 			}

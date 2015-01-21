@@ -48,8 +48,8 @@ type CITypeAttribute struct {
 	// Options
 	Required  bool     `json:"required,omitempty"`
 	IsArray   bool     `json:"isArray,omitempty"`
-	MinLength int      `json:"minLength,omitempty"`
-	MaxLength int      `json:"maxLength,omitempty"`
+	MinLength uint     `json:"minLength,omitempty"`
+	MaxLength uint     `json:"maxLength,omitempty"`
 	Filters   []string `json:"filters,omitempty"`
 }
 
@@ -98,11 +98,11 @@ func (c *CIType) validateAttributes(atts *CITypeAttributeList, path string) erro
 		}
 
 		att.ShortName = GetShortName(att.Name)
-
 		if !IsValidShortName(att.ShortName) {
 			return errors.New(fmt.Sprintf("Invalid characters in CI Attribute '%s%s'", path, att.ShortName))
 		}
 
+		// Validate format
 		if att.Type == "" {
 			return errors.New(fmt.Sprintf("No type specified for CI Attribute '%s%s'", path, att.ShortName))
 		}
@@ -111,8 +111,8 @@ func (c *CIType) validateAttributes(atts *CITypeAttributeList, path string) erro
 			return errors.New(fmt.Sprintf("Unsupported attribute format '%s' for CI Attribute '%s%s'", att.Type, path, att.ShortName))
 		}
 
+		// Validate children
 		if att.Type == "group" {
-			// Validate children
 			err := c.validateAttributes(&att.Children, fmt.Sprintf("%s.", att.ShortName))
 			if err != nil {
 				return err
