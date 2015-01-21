@@ -28,14 +28,14 @@ type Model interface {
 }
 
 type model struct {
-	Id       interface{} `json:"-" bson:"_id,omitempty"`
-	Created  time.Time   `json:"-" bson:"created"`
-	Modified time.Time   `json:"-" bson:"modified"`
+	Id       interface{} `json:"-" xml:"-" bson:"_id,omitempty"`
+	Created  time.Time   `json:"-" xml:"-" bson:"created"`
+	Modified time.Time   `json:"-" xml:"-" bson:"modified"`
 }
 
 type tenantedModel struct {
 	model    `bson:",inline"`
-	TenantId interface{} `json:"-"`
+	TenantId interface{} `json:"-" xml:"-"`
 }
 
 func (c *model) InitModel() {

@@ -25,7 +25,7 @@ import (
 )
 
 type CI struct {
-	model `json:"_" bson:",inline"`
+	model `json:"-" xml:"-" bson:",inline"`
 
 	Value map[string]interface{}
 }

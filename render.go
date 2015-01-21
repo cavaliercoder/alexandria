@@ -55,6 +55,12 @@ func Handle(res http.ResponseWriter, req *http.Request, err error) bool {
 		}
 	}
 
+	// Mongo 'ns not found' error?
+	// These are expected whe deleting a collection
+	if err != nil && err.Error() == "ns not found" {
+		return false
+	}
+
 	// Unknown error
 	if err != nil {
 		ErrUnknown(res, req, err)
@@ -152,6 +158,7 @@ func RenderXml(res http.ResponseWriter, req *http.Request, status int, v interfa
 
 	res.Header().Set("Content-Type", "application/xml")
 	res.WriteHeader(status)
+	res.Write([]byte(xml.Header))
 	res.Write(data)
 }
 

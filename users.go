@@ -28,14 +28,14 @@ import (
 
 type User struct {
 	model        `json:"-" bson:",inline"`
-	TenantId     interface{} `json:"-"`
-	TenantCode   string      `json:"tenantCode,omitempty" bson:"-"`
-	ApiKey       string      `json:"-"`
+	TenantId     interface{} `json:"-" xml:"-"`
+	TenantCode   string      `json:"tenantCode,omitempty" xml:",omitempty" bson:"-"`
+	ApiKey       string      `json:"-" xml:"-"`
 	FirstName    string      `json:"firstName"`
 	LastName     string      `json:"lastName"`
 	Email        string      `json:"email"`
-	Password     string      `json:"password,omitempty" bson:"-"`
-	PasswordHash string      `json:"-" bson:"password"`
+	Password     string      `json:"password,omitempty" xml:",omitempty" bson:"-"`
+	PasswordHash string      `json:"-" xml:"-" bson:"password"`
 }
 
 func (c *User) InitModel() {

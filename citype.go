@@ -33,37 +33,37 @@ type CIType struct {
 
 	Name        string              `json:"name"`
 	ShortName   string              `json:"shortName"`
-	Description string              `json:"description" bson:",omitempty"`
-	InheritFrom string              `json:"inheritFrom" bson:",omitempty"`
-	Attributes  CITypeAttributeList `json:"attributes"`
+	Description string              `json:"description,omitempty" xml:",omitempty" bson:",omitempty"`
+	InheritFrom string              `json:"inheritFrom,omitempty" xml:",omitempty" bson:",omitempty"`
+	Attributes  CITypeAttributeList `json:"attributes" xml:"attribute"`
 }
 
 type CITypeAttribute struct {
-	Name        string              `json:"name"`
-	ShortName   string              `json:"shortName"`
-	Type        string              `json:"type"`
-	Description string              `json:"description,omitempty" bson:",omitempty"`
-	Children    CITypeAttributeList `json:"children,omitempty" bson:",omitempty"`
+	Name        string              `json:"name" xml:",attr"`
+	ShortName   string              `json:"shortName" xml:",attr"`
+	Type        string              `json:"type" xml:",attr"`
+	Description string              `json:"description,omitempty" xml:",omitempty" bson:",omitempty"`
+	Children    CITypeAttributeList `json:"children,omitempty" xml:"attribute,omitempty" bson:",omitempty"`
 
 	// Common Options
-	Required bool `json:"required,omitempty" bson:",omitempty"`
+	Required bool `json:"required,omitempty" xml:",omitempty" bson:",omitempty"`
 
-	IsArray  bool `json:"isArray,omitempty" bson:",omitempty"`
-	MinCount int  `json:"minCount,omitempty" bson:",omitempty"`
-	MaxCount int  `json:"maxCount,omitempty" bson:",omitempty"`
+	IsArray  bool `json:"isArray,omitempty" xml:",omitempty" bson:",omitempty"`
+	MinCount int  `json:"minCount,omitempty" xml:",omitempty" bson:",omitempty"`
+	MaxCount int  `json:"maxCount,omitempty" xml:",omitempty" bson:",omitempty"`
 
 	// Group options
-	Singular string `json:"singular,omitempty" bson:",omitempty"`
+	Singular string `json:"singular,omitempty" xml:",omitempty" bson:",omitempty"`
 
 	// String options
-	MinLength int      `json:"minLength,omitempty" bson:",omitempty"`
-	MaxLength int      `json:"maxLength,omitempty" bson:",omitempty"`
-	Filters   []string `json:"filters,omitempty" bson:",omitempty"`
+	MinLength int      `json:"minLength,omitempty" xml:",omitempty" bson:",omitempty"`
+	MaxLength int      `json:"maxLength,omitempty" xml:",omitempty" bson:",omitempty"`
+	Filters   []string `json:"filters,omitempty" xml:",omitempty" bson:",omitempty"`
 
 	// Number options
-	Units    string  `json:"units,omitempty" bson:",omitempty"`
-	MinValue float64 `json:"minValue,omitempty" bson:",omitempty"`
-	MaxValue float64 `json:"maxValue,omitempty" bson:",omitempty"`
+	Units    string  `json:"units,omitempty" xml:",omitempty" bson:",omitempty"`
+	MinValue float64 `json:"minValue,omitempty" xml:",omitempty" bson:",omitempty"`
+	MaxValue float64 `json:"maxValue,omitempty" xml:",omitempty" bson:",omitempty"`
 }
 
 type CITypeAttributeList []CITypeAttribute
@@ -272,7 +272,14 @@ func DeleteCITypeByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Remove CI Type entry
 	err := db.C(ciTypeCollection).Remove(M{"shortname": name})
+	if Handle(res, req, err) {
+		return
+	}
+
+	// Remove associated CI collection
+	err = db.C(name).DropCollection()
 	if Handle(res, req, err) {
 		return
 	}

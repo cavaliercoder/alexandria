@@ -26,7 +26,7 @@ import (
 
 type Cmdb struct {
 	model       `json:"-" bson:",inline"`
-	TenantId    interface{} `json:"-"`
+	TenantId    interface{} `json:"-" xml:"-"`
 	Name        string      `json:"name"`
 	ShortName   string      `json:"shortName"`
 	Description string      `json:"description"`
