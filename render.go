@@ -209,6 +209,21 @@ func GetPathVar(req *http.Request, name string) string {
 	return result
 }
 
+func GetRequestSelecter(req *http.Request) (interface{}, error) {
+	if str := req.URL.Query().Get("select"); str != "" {
+		var sel interface{}
+		err := json.Unmarshal([]byte(str), &sel)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return sel, nil
+	}
+
+	return nil, nil
+}
+
 func GetCmdbBackend(req *http.Request, name string) *mgo.Database {
 	name = strings.ToLower(name)
 

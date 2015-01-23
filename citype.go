@@ -31,11 +31,11 @@ const (
 type CIType struct {
 	model `json:"-" bson:",inline"`
 
-	Name        string              `json:"name"`
-	ShortName   string              `json:"shortName"`
+	Name        string              `json:"name,omitempty"`
+	ShortName   string              `json:"shortName,omitempty"`
 	Description string              `json:"description,omitempty" xml:",omitempty" bson:",omitempty"`
 	InheritFrom string              `json:"inheritFrom,omitempty" xml:",omitempty" bson:",omitempty"`
-	Attributes  CITypeAttributeList `json:"attributes" xml:"attribute"`
+	Attributes  CITypeAttributeList `json:"attributes,omitempty" xml:"attribute"`
 }
 
 type CITypeAttribute struct {
@@ -147,8 +147,18 @@ func GetCITypes(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Build query
+	sel, err := GetRequestSelecter(req)
+	if err != nil {
+		ErrBadRequest(res, req, err)
+	}
+	query := db.C(ciTypeCollection).Find(nil)
+	if sel != nil {
+		query = query.Select(sel)
+	}
+
 	var citypes []CIType
-	err := db.C(ciTypeCollection).Find(nil).All(&citypes)
+	err = query.All(&citypes)
 	if Handle(res, req, err) {
 		return
 	}
@@ -165,10 +175,21 @@ func GetCITypeByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Build query
+	name := GetPathVar(req, "name")
+	sel, err := GetRequestSelecter(req)
+	if err != nil {
+		ErrBadRequest(res, req, err)
+	}
+
+	query := db.C(ciTypeCollection).Find(M{"shortname": name})
+	if sel != nil {
+		query = query.Select(sel)
+	}
+
 	// Get the type
 	var citype CIType
-	name := GetPathVar(req, "name")
-	err := db.C(ciTypeCollection).Find(M{"shortname": name}).One(&citype)
+	err = query.One(&citype)
 	if Handle(res, req, err) {
 		return
 	}
