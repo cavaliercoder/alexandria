@@ -12,6 +12,8 @@ This project is in infancy and not ready for deployment. It aims to achieve the 
 
 * Automated data sourcing, transformation and validation
 
+* Message bus integration
+
 * Vertical and horizontal scalability
 
 * High availability
@@ -39,82 +41,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    
-## Libraries
-* [Negroni](http://negroni.codegangsta.io/)
-
-* [mgo.v2](https://labix.org/mgo)
-
-## RESTful API Spec
-
-### Generics
-
-For Go `net/http` response codes see: [Package http](http://golang.org/pkg/net/http/#pkg-constants)
-
-* All entities must be retrievable from one or more persistent URIs
-
-* All response bodies must be empty or in JSON format
-
-* On failure, must return on of:
-
-  * `401 Unauthorized` if the end user is not authorized for the request
-  
-  * `405 Method not allowed` if the request method is not supported for the requested URI
-  
-  * `406 Not acceptable` if the `Content-Type` request header is not set to `application/json`
-
-### Create
-
-* Must be a POST request
-
-* The request body should be a JSON formatted entity
-
-```bash
-curl -ikX POST -H "Content Type: application/json" -d "{\"key\":\"value\"}" http://<api-url>
-```
-
-* On success, must return `201 Created` or `202 Accepted` if the request has been queued
-
-* On success, must return `Location` header with the relative URL of the new entity
-
-* On failure, must return one of:
-  
-  * `403 Forbidden` if the entity collection is read only
-  
-  * `406 Not Acceptable` if the entity is invalid
-
-  * `409 Conflict` if the entity already exists
-
-### Retrieve
-
-* Must be a `GET` or `HEAD` request
-
-* The request body should be empty
-
-* On success, must return `200 OK` with a JSON formatted response body
-
-* On success, must return an appropriate `cache-control` header
-
-* On failure, must return one of:
-
-  * `404 Not found` if the resource is not found
-
-### Update
-
-* Must be a `PUT` or `PATCH` request
-
-* The request body must not be empty
-
-* For 'PUT' requests, the entire resource will be replaced
-
-* For 'PATCH' requests, only a delta is applied to the resource
-
-* On success, must return `204 No Content` with an empty body
-
-### Delete
-
-* Must be a `DELETE` request
-
-* The request body should be empty
-
-* On success, must return `204 No Content` with an empty body
