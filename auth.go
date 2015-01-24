@@ -34,6 +34,8 @@ type AuthContext struct {
 
 type AuthMap map[*http.Request]*AuthContext
 
+var authCache AuthMap
+
 func NewAuthHandler() *AuthHandler {
 	return &AuthHandler{}
 }
@@ -60,8 +62,6 @@ func (c *AuthHandler) ServeHTTP(res http.ResponseWriter, req *http.Request, next
 	// Remove the user from the request cache
 	delete(authCache, req)
 }
-
-var authCache AuthMap
 
 func GetAuthContext(req *http.Request) *AuthContext {
 	// Initialize the context cache
@@ -100,7 +100,7 @@ func GetAuthContext(req *http.Request) *AuthContext {
 			return nil
 		}
 
-		// Add the conext to the cache
+		// Add the context to the cache
 		context = &AuthContext{&user, &tenant}
 		authCache[req] = context
 		return context

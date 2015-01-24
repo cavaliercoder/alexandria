@@ -29,7 +29,7 @@ type Tenant struct {
 	model `json:"-" bson:",inline"`
 	Code  string          `json:"code"`
 	Name  string          `json:"name"`
-	Cmdbs map[string]Cmdb `json:"-" xml:"-"`
+	Cmdbs map[string]Cmdb `json:"cmdbs,omitempty" xml:"cmdbs,omitempty"`
 }
 
 func (c *Tenant) InitModel() {
@@ -59,7 +59,12 @@ func (c *Tenant) Validate() error {
 
 func GetTenants(res http.ResponseWriter, req *http.Request) {
 	var tenants []Tenant
-	err := RootDb().C("tenants").Find(nil).All(&tenants)
+	err := RootDb().
+		C("tenants").
+		Find(nil).
+		Select(M{"cmdbs": 0}).
+		All(&tenants)
+
 	Handle(res, req, err)
 
 	Render(res, req, http.StatusOK, tenants)
@@ -69,7 +74,12 @@ func GetTenantByCode(res http.ResponseWriter, req *http.Request) {
 	code := GetPathVar(req, "code")
 
 	var tenant Tenant
-	err := RootDb().C("tenants").Find(M{"code": code}).One(&tenant)
+	err := RootDb().
+		C("tenants").
+		Find(M{"code": code}).
+		Select(M{"cmdbs": 0}).
+		One(&tenant)
+
 	if Handle(res, req, err) {
 		return
 	}
