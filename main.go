@@ -143,7 +143,7 @@ func GetServer() *negroni.Negroni {
 	priv.HandleFunc("/cmdbs/{cmdb}/{citype}/{id}", DeleteCIById).Methods("DELETE")
 
 	// Init Negroni with public routes
-	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
+	n := negroni.New(negroni.NewRecovery(), NewLogger())
 	n.UseHandler(pub)
 
 	// If the public router can't find a match, pass the request to the
