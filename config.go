@@ -64,10 +64,10 @@ func GetConfig() (*Config, error) {
 	if config == nil {
 		// Select a config file
 		if confFilePath == "" {
-			if _, err := os.Stat("./config.json"); err == nil {
-				confFilePath = "./config.json"
-			} else if _, err := os.Stat("/etc/alexandria/config.json"); err == nil {
-				confFilePath = "/etc/alexandria/config.json"
+			if _, err := os.Stat("./api.json"); err == nil {
+				confFilePath = "./api.json"
+			} else if _, err := os.Stat("/etc/alexandria/api.json"); err == nil {
+				confFilePath = "/etc/alexandria/api.json"
 			} else {
 				return nil, errors.New("no configuration file was found")
 			}
