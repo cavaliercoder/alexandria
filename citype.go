@@ -34,7 +34,6 @@ type CIType struct {
 	Name        string              `json:"name,omitempty"`
 	ShortName   string              `json:"shortName,omitempty"`
 	Description string              `json:"description,omitempty" xml:",omitempty" bson:",omitempty"`
-	InheritFrom string              `json:"inheritFrom,omitempty" xml:",omitempty" bson:",omitempty"`
 	Attributes  CITypeAttributeList `json:"attributes,omitempty" xml:"attribute"`
 }
 
