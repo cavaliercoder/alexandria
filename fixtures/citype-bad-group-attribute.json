@@ -1,0 +1,15 @@
+{
+	"name":"BadGroupAttribute",
+	"attributes":[
+		{
+			"name":"BadAttribute",
+			"type":"string",
+			"children":[
+				{
+					"name":"Impossible",
+					"type":"string"
+				}
+			]
+		}
+	]
+}

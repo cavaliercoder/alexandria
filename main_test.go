@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -77,6 +78,15 @@ func getRootUser() *User {
 	}
 
 	return &user
+}
+
+func LoadTestFixture(name string) string {
+	bytes, err := ioutil.ReadFile(fmt.Sprintf("./fixtures/%s", name))
+	if err != nil {
+		panic(err)
+	}
+
+	return string(bytes)
 }
 
 func NewRequest(method string, uri string, body io.Reader) *http.Request {

@@ -58,14 +58,7 @@ func TestInvalidAttributeType(t *testing.T) {
 	uri := V1Uri("/cmdbs/temp/citypes")
 
 	// Test POST .../citypes with invalid attribute type
-	body := `{
-		"name":"BadAttributeName",
-		"attributes":[
-			{
-				"name":"FirstAttribute",
-				"type":"some_bad_type"
-			}
-		]}`
+	body := LoadTestFixture("citype-bad-attribute-name.json")
 	PostInvalid(t, uri, body)
 
 }
@@ -74,48 +67,13 @@ func TestNongroupWithChildren(t *testing.T) {
 	uri := V1Uri("/cmdbs/temp/citypes")
 
 	// Test POST .../citypes with invalid group attribute
-	body := `{
-		"name":"BadGroupAttribute",
-		"attributes":[
-			{
-				"name":"BadAttribute",
-				"type":"string",
-				"children":[
-					{
-						"name":"Impossible",
-						"type":"string"
-					}
-				]
-			}
-		]}`
+	body := LoadTestFixture("citype-bad-group-attribute.json")
 	PostInvalid(t, uri, body)
 }
 
 func TestCrudCITypes(t *testing.T) {
 	// Test POST .../citypes
 	uri := V1Uri("/cmdbs/temp/citypes")
-	body := `{
-		"name":"Test_CI_Type with w!3rd CH@RS!",
-		"description": "A test CI Type",
-		"attributes": [
-			{
-				"name":"FirstAttribute",
-				"description": "The first attribute",
-				"type":"string"
-			},
-			{
-				"name":"SecondAttribute",
-				"description":"The second attribute (with children)",
-				"type":"group",
-				"children":[
-					{
-						"name":"GrandchildAttribute",
-						"description":"Grandchild Attribute",
-						"type":"string"
-					}
-				]
-			}
-		]
-		}`
+	body := LoadTestFixture("citype.json")
 	Crud(t, uri, body, true)
 }

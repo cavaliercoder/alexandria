@@ -1,0 +1,12 @@
+{
+	"alphanumeric": "StringValue123",
+	"number": 123,
+	"required": "Yes",
+	"timestamp": -849135477000,
+	"group": {
+		"allCaps": "ABC",
+		"grandchildren": {
+			"grandchild": "Some value"
+		}
+	}
+}

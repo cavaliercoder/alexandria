@@ -29,67 +29,13 @@ const (
 func TestCI(t *testing.T) {
 	// Create temporary CI Type
 	uri := V1Uri("/cmdbs/temp/citypes")
-	body := `{
-		"name":"Test CI Type",
-		"description": "A test CI Type",
-		"attributes": [
-			{
-				"name":"alphanumeric",
-				"type":"string",
-				"filters": ["^[A-Za-z0-9]+$"]
-			},
-			{
-				"name":"number",
-				"type":"number",
-				"minValue":100,
-				"maxValue":200
-			},
-			{
-				"name":"Required",
-				"type":"boolean",
-				"required":true
-			},
-			{ "name":"timestamp", "type":"timestamp" },
-			{
-				"name":"group",
-				"type":"group",
-				"children":[
-					{
-						"name":"allCaps",
-						"type":"string",
-						"filters":["^[A-Z]+$"]
-					},
-					{
-						"name":"grandchildren",
-						"type":"group",
-						"children":[
-							{
-								"name":"grandchild",
-								"type":"string"
-							}
-						]
-					}
-				]
-			}
-		]
-		}`
+	body := LoadTestFixture("citype-test.json")
 	typUrl := Post(t, uri, body)
 	defer Delete(t, typUrl)
 
 	// Test POST .../CI
 	uri = V1Uri(fmt.Sprintf("/cmdbs/temp/%s", ciType))
-	body = `{
-		"alphanumeric": "StringValue123",
-		"number": 123,
-		"required": "Yes",
-		"timestamp": -849135477000,
-		"group": {
-			"allCaps": "ABC",
-			"grandchildren": {
-				"grandchild": "Some value"
-			}
-		}
-	}`
+	body = LoadTestFixture("ci-test.json")
 	Crud(t, uri, body, false)
 
 	// test POST invalid CI schema

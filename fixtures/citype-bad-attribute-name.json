@@ -1,0 +1,9 @@
+{
+	"name":"BadAttributeName",
+	"attributes":[
+		{
+			"name":"FirstAttribute",
+			"type":"some_bad_type"
+		}
+	]
+}

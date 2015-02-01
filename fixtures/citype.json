@@ -1,0 +1,23 @@
+{
+	"name":"Test_CI_Type with w!3rd CH@RS!",
+	"description": "A test CI Type",
+	"attributes": [
+		{
+			"name":"FirstAttribute",
+			"description": "The first attribute",
+			"type":"string"
+		},
+		{
+			"name":"SecondAttribute",
+			"description":"The second attribute (with children)",
+			"type":"group",
+			"children":[
+				{
+					"name":"GrandchildAttribute",
+					"description":"Grandchild Attribute",
+					"type":"string"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,44 @@
+{
+	"name":"Test CI Type",
+	"description": "A test CI Type",
+	"attributes": [
+		{
+			"name":"alphanumeric",
+			"type":"string",
+			"filters": ["^[A-Za-z0-9]+$"]
+		},
+		{
+			"name":"number",
+			"type":"number",
+			"minValue":100,
+			"maxValue":200
+		},
+		{
+			"name":"Required",
+			"type":"boolean",
+			"required":true
+		},
+		{ "name":"timestamp", "type":"timestamp" },
+		{
+			"name":"group",
+			"type":"group",
+			"children":[
+				{
+					"name":"allCaps",
+					"type":"string",
+					"filters":["^[A-Z]+$"]
+				},
+				{
+					"name":"grandchildren",
+					"type":"group",
+					"children":[
+						{
+							"name":"grandchild",
+							"type":"string"
+						}
+					]
+				}
+			]
+		}
+	]
+}
